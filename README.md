@@ -1,6 +1,6 @@
-# zoo-inventory
+# zootally
 
-Django web app to inventory zoo animals
+Django web app to tally zoo animals
 
 ## Deployment notes
 
