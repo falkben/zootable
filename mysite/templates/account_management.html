@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Management{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+  <h2>Account management for {{ user.username }}</h2>
+  <p><a href="{% url 'account_reset_password' %}">reset password</p>
+  <p><a href="{% url 'account_email' %}">manage email</p>
+
+  <p><a href="{% url 'account_logout' %}">logout</a></p>
+  {% comment %} <p><a href="{% url 'socialaccount_connections' %}">manage social accounts</p> {% endcomment %}
+{% else %}
+  <p>You are not logged in</p>
+  <a href="{% url 'account_login' %}">login</a> |
+  <a href="{% url 'account_signup' %}">sign up</a>
+{% endif %}
+
+{% endblock %}
