@@ -1,0 +1,21 @@
+<div class="top">
+
+<div class="container">
+
+<h1 class="logo"><a href="{% url 'home' %}">Zootally</a></h1>
+
+<div class="login_logout">
+<ul>
+{% if user.is_authenticated %}
+  <li><a href="account_management">{{ user.username }}</a></li>
+  <li><a href="{% url 'account_logout' %}">Logout</a></li>
+{% else %}
+  <li><a href="{% url 'account_login' %}">Login</a></li>
+  <li><a href="{% url 'account_signup' %}">Sign up</a></li>
+{% endif %}
+</ul>
+</div>
+
+</div>
+
+</div>

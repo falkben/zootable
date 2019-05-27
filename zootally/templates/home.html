@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+  <p>Hi {{ user.username }}</p>
+{% else %}
+    {% include "partials/login_message.html" %}
+{% endif %}
+</ul>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Management{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+  <h2>Account management for {{ user.username }}</h2>
+  <p><a href="{% url 'account_reset_password' %}">Reset password</p>
+  <p><a href="{% url 'account_email' %}">Manage email</p>
+  <p><a href="{% url 'account_logout' %}">Logout</a></p>
+{% else %}
+  {% include "partials/login_message.html" %}
+{% endif %}
+
+{% endblock %}

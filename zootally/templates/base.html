@@ -1,0 +1,25 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Zoo Checks{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'normalize.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+<body>
+  <main>
+    {% block top_bar %}
+      {% include 'partials/top_bar.html' %}
+    {% endblock %}
+    
+    <div class="container">
+      <div class="main">
+      {% block content %}
+      {% endblock %}
+      </div>
+    </div>
+  </main>
+</body>
+</html>
