@@ -1,72 +1,23 @@
-/* top bar */
+/* give main content a little margin */
 
-html {
+main {
+  margin-left: 30px;
+  margin-top: 5px;
 }
 
-body {
+.mdl-mini-footer {
+  padding: 10px 5px;
 }
 
-.top {
-  position: relative;
-  margin: 0;
-  padding: 10px 0 6px;
-  overflow: hidden;
-}
+/* override style of footer taking more vertical space */
 
-.container {
-  margin: 0 auto;
-  max-width: 1400px;
-  padding: 0 4.16667%;
-}
-
-.logo {
-  margin-left: 0;
-  font-size: 2.5rem;
-  display: block;
+.mdl-logo {
   float: left;
-  font-weight: 700;
-  margin: 10px;
-  text-decoration: none;
-  width: 180px;
-  height: 48px;
-  overflow: hidden;
+  margin-bottom: 0;
+  margin-right: 16px;
 }
 
-.logo a {
-  text-decoration: none;
-  color: green;
-}
-
-/* Login/Logout */
-.login_logout {
-  width: auto;
-  float: right;
-}
-
-.login_logout ul {
-  padding: 0;
-}
-
-/* .login-logout ul, */
-.login_logout ul li {
-  margin: 0;
-  border: 0;
-  float: left;
-  text-align: left;
-
-  font-size: 1.3rem;
-  display: block;
-  font-weight: 700;
-  line-height: 16px;
-}
-
-.login_logout ul li a {
-  padding: 20px 10px;
-}
-
-/* Main (content) */
-.main {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 4.16667%;
+.mdl-mini-footer--link-list li,
+.mdl-mini-footer__link-list li {
+  line-height: 36px;
 }

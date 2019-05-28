@@ -17,14 +17,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView
 
+from zoo_checks import views
+
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls, name="admin"),
     path("accounts/", include("allauth.urls")),
-    # path("accounts/", include("django.contrib.auth.urls")),
     path(
-        "account_management",
+        "account_management/",
         TemplateView.as_view(template_name="account_management.html"),
         name="account_management",
     ),
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
+    path("count/", views.count, name="count"),
 ]

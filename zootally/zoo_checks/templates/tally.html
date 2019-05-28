@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Tally animals{% endblock %}
+
+{% block content %}
+<h2>Exhibits</h2>
+{% for exhibit in exhibits %}
+    <h3>{{exhibit}}</h3>
+    
+    {% if exhibit.species.all %}
+    <h4>
+    Species
+    </h4>
+    <ul>
+    {% for spec in exhibit.species.all %}
+        <li>{{spec.common_name}}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    
+    {% if exhibit.animals.all %}
+    <h4>
+    Animals
+    </h4>
+    <ul>
+    {% for anim in exhibit.animals.all %}
+        <li>{{anim.name}}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+{% endfor %}
+
+{% endblock %}
