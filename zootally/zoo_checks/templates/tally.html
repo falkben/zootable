@@ -3,14 +3,25 @@
 {% block title %}Tally animals{% endblock %}
 
 {% block content %}
-<h2>Exhibits</h2>
+<h2>Count</h2>
+
+<form action="/count/" method="post">
+    {% csrf_token %}
+    {% for form in form_list %}
+        {{ form.as_p }}
+    {% endfor %}
+    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+</form>
+
+
+<h3>Exhibits</h3>
 {% for exhibit in exhibits %}
-    <h3>{{exhibit}}</h3>
+    <h4>{{exhibit}}</h4>
     
     {% if exhibit.species.all %}
-    <h4>
+    <h5>
     Species
-    </h4>
+    </h5>
     <ul>
     {% for spec in exhibit.species.all %}
         <li>{{spec.common_name}}</li>
@@ -19,9 +30,9 @@
     {% endif %}
     
     {% if exhibit.animals.all %}
-    <h4>
+    <h5>
     Animals
-    </h4>
+    </h5>
     <ul>
     {% for anim in exhibit.animals.all %}
         <li>{{anim.name}}</li>
