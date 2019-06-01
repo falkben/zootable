@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -9,15 +11,23 @@ from .models import Animal, Exhibit, Species, AnimalCount, SpeciesExhibitCount
 
 
 def create_combined_form(exhibits):
+    # TODO: counts should default to maximum (across users) for the day
+    # TODO: condition should default to median condition (across users) for the day
+
     form_list = []
+
+    count_kwargs = {"datetime": datetime.now()}
+
     for exhibit in exhibits:
         for spec in exhibit.species.all():
-            spec_count = SpeciesExhibitCount(species=spec, exhibit=exhibit)
+            spec_count = SpeciesExhibitCount(
+                species=spec, exhibit=exhibit, **count_kwargs
+            )
             form_list.append(SpeciesExhibitCountForm(instance=spec_count))
 
             anim_spec_exhib = Animal.objects.filter(exhibit=exhibit, species=spec)
             for anim in anim_spec_exhib:
-                anim_count = AnimalCount(animal=anim)
+                anim_count = AnimalCount(animal=anim, **count_kwargs)
                 form_list.append(AnimalCountForm(instance=anim_count))
 
     return form_list
@@ -34,6 +44,8 @@ def count(request):
             form = AnimalCountForm(request.POST)
             # check whether it's valid:
             if form.is_valid():
+                # TODO: add current user to the list of users on this count object
+
                 # process the data in form.cleaned_data as required
                 # ...
                 pass
