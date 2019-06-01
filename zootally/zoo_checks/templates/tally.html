@@ -7,8 +7,14 @@
 
 <form action="/count/" method="post">
     {% csrf_token %}
-    {% for form in form_list %}
-        {{ form.as_p }}
+    {% for exhibit, exhibit_count_forms in form_dict.items %}
+        <h3>{{exhibit}}</h3>
+        {% for spec, subforms in exhibit_count_forms.items %}
+            <h4>{{spec}}</h4>
+            {% for form in subforms.values %}
+                {{ form.as_p }}
+            {% endfor %}
+        {% endfor %}            
     {% endfor %}
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
