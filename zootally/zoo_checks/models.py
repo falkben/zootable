@@ -58,7 +58,9 @@ class AnimalCount(Count):
         (MISSING, "Missing (Avic. only)"),
     ]
 
-    condition = models.CharField(max_length=2, choices=CONDITIONS, default="")
+    condition = models.CharField(
+        max_length=2, choices=CONDITIONS, default="", blank=True
+    )
 
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
 
