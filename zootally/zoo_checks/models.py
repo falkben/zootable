@@ -36,8 +36,7 @@ class Animal(models.Model):
 
 
 class Count(models.Model):
-    count_val = models.PositiveSmallIntegerField(default=0)
-    count_date = models.DateTimeField()
+    datetime = models.DateTimeField()
 
     user = models.ManyToManyField(User)
 
@@ -46,9 +45,26 @@ class Count(models.Model):
 
 
 class AnimalCount(Count):
+    SEEN = "SE"
+    NEEDSATTENTION = "NA"
+    BAR = "BA"
+    MISSING = "MI"
+
+    CONDITIONS = [
+        ("", ""),
+        (SEEN, "seen"),
+        (NEEDSATTENTION, "Needs Attention"),
+        (BAR, "BAR (Sr. Avic.)"),
+        (MISSING, "Missing (Avic. only)"),
+    ]
+
+    condition = models.CharField(max_length=2, choices=CONDITIONS, default="")
+
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
 
 
 class SpeciesExhibitCount(Count):
+    count = models.PositiveSmallIntegerField(default=0)
+
     species = models.ForeignKey(Species, on_delete=models.CASCADE)
     exhibit = models.ForeignKey(Exhibit, on_delete=models.CASCADE)
