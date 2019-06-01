@@ -14,8 +14,10 @@ def create_combined_form(exhibits):
         for spec in exhibit.species.all():
             form_list.append(SpeciesExhibitCountForm(instance=spec))
 
-        for anim in exhibit.animals.all():
-            form_list.append(AnimalCountForm(instance=anim))
+            anim_spec_exhib = Animal.objects.filter(exhibit=exhibit, species=spec)
+            for anim in anim_spec_exhib:
+                form_list.append(AnimalCountForm(instance=anim))
+
     return form_list
 
 
