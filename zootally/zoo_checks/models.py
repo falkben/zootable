@@ -10,6 +10,9 @@ class Exhibit(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["name"]
+
 
 class Species(models.Model):
     common_name = models.CharField(max_length=80)
@@ -19,6 +22,9 @@ class Species(models.Model):
 
     def __str__(self):
         return self.common_name
+
+    class Meta:
+        ordering = ["common_name"]
 
 
 class Animal(models.Model):
@@ -34,6 +40,9 @@ class Animal(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["name"]
+
 
 class Count(models.Model):
     datetime = models.DateTimeField()
@@ -42,6 +51,7 @@ class Count(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ["datetime"]
 
 
 class AnimalCount(Count):

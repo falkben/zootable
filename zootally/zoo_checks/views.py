@@ -5,18 +5,20 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from .forms import AnimalCountForm, SpeciesExhibitCountForm
-from .models import Animal, Exhibit, Species
+from .models import Animal, Exhibit, Species, AnimalCount, SpeciesExhibitCount
 
 
 def create_combined_form(exhibits):
     form_list = []
     for exhibit in exhibits:
         for spec in exhibit.species.all():
-            form_list.append(SpeciesExhibitCountForm(instance=spec))
+            spec_count = SpeciesExhibitCount(species=spec, exhibit=exhibit)
+            form_list.append(SpeciesExhibitCountForm(instance=spec_count))
 
             anim_spec_exhib = Animal.objects.filter(exhibit=exhibit, species=spec)
             for anim in anim_spec_exhib:
-                form_list.append(AnimalCountForm(instance=anim))
+                anim_count = AnimalCount(animal=anim)
+                form_list.append(AnimalCountForm(instance=anim_count))
 
     return form_list
 
