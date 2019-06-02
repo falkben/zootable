@@ -29,7 +29,7 @@ class Species(models.Model):
 
 class Animal(models.Model):
     name = models.CharField(max_length=40)
-    accession_number = models.PositiveIntegerField()
+    accession_number = models.PositiveIntegerField(unique=True)
     identifier = models.CharField(max_length=40)
 
     species = models.ForeignKey(Species, on_delete=models.CASCADE)
