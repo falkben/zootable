@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from .forms import AnimalCountForm, SpeciesExhibitCountForm
-from .models import Animal, Exhibit, Species, AnimalCount, SpeciesExhibitCount
+from .forms import AnimalCountForm, DateInput, SpeciesExhibitCountForm
+from .models import Animal, AnimalCount, Exhibit, Species, SpeciesExhibitCount
 
 
 def create_combined_form(exhibits):
@@ -62,9 +62,12 @@ def count(request):
     # if a GET (or any other method) we'll create a blank form
     else:
         form_dict = create_combined_form(exhibits)
+        dateform = DateInput()
 
     return render(
-        request, "tally.html", context={"form_dict": form_dict, "exhibits": exhibits}
+        request,
+        "tally.html",
+        context={"form_dict": form_dict, "dateform": dateform, "exhibits": exhibits},
     )
 
 

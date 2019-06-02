@@ -1,50 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}Tally animals{% endblock %}
+{% block title %}Count{% endblock %}
 
 {% block content %}
-<h2>Count</h2>
+<h2>{{Count}}</h2>
 
 <form action="/count/" method="post">
     {% csrf_token %}
+
+    {{dateform.as_p}}
+
     {% for exhibit, exhibit_count_forms in form_dict.items %}
-        <h3>{{exhibit}}</h3>
+        <h3>Exhibit: {{exhibit}}</h3>
         {% for spec, subforms in exhibit_count_forms.items %}
-            <h4>{{spec}}</h4>
-            {% for form in subforms.values %}
+            {% for key, form in subforms.items %}
+                <h4>{{key}}</h4>
                 {{ form.as_p }}
             {% endfor %}
         {% endfor %}            
     {% endfor %}
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
-
-
-<h3>Exhibits</h3>
-{% for exhibit in exhibits %}
-    <h4>{{exhibit}}</h4>
-    
-    {% if exhibit.species.all %}
-    <h5>
-    Species
-    </h5>
-    <ul>
-    {% for spec in exhibit.species.all %}
-        <li>{{spec.common_name}}</li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-    
-    {% if exhibit.animals.all %}
-    <h5>
-    Animals
-    </h5>
-    <ul>
-    {% for anim in exhibit.animals.all %}
-        <li>{{anim.name}}</li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-{% endfor %}
-
 {% endblock %}
