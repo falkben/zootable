@@ -21,3 +21,9 @@ main {
 .mdl-mini-footer__link-list li {
   line-height: 36px;
 }
+
+ul#id_condition{
+  display: inline-flex;
+  list-style: none;
+  margin: 0;
+}
