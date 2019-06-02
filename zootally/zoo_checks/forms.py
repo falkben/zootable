@@ -2,6 +2,10 @@ from django import forms
 
 from .models import AnimalCount, SpeciesExhibitCount
 
+# TODO: create form at the exhibit level
+# ExhibitCountFormset (nested) https://micropyramid.com/blog/how-to-use-nested-formsets-in-django/
+# Inline formset: https://docs.djangoproject.com/en/2.2/topics/forms/modelforms/#inline-formsets
+
 
 class AnimalCountForm(forms.ModelForm):
     class Meta:

@@ -3,32 +3,14 @@
 {% block title %}Count{% endblock %}
 
 {% block content %}
-<h2>{{Count}}</h2>
+<h2>Exhibit: {{exhibit}}</h2>
 
-<form action="/count/" method="post">
+<form action="/count/{{exhibit.id}}" method="post">
     {% csrf_token %}
-    {% for exhibit, exhibit_items in form_dict.items %}
-        <h3>Exhibit: {{exhibit}}</h3>
-
-        {% for spec_form_dict in exhibit_items.species %}
-            {% for spec, form in spec_form_dict.items %}
-                <h4>{{spec}}</h4>
-                {{form.as_p}}
-
-                {% for spec_dicts in exhibit_items.animals %}
-                    {% for key, value in spec_dicts.items %}
-                        {% if key == spec %}
-                            {% for anim, anim_form in value.items %}
-                                <h5>{{anim}}</h5>
-                                {{anim_form.as_p}}
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            {% endfor %}
-        {% endfor %}
-    <hr />
-    {% endfor %}
+    <h3>Species</h3>
+    {{species_formset.as_p}}
+    <h3>Animals</h3>
+    {{animal_formset.as_p}}
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
 {% endblock %}

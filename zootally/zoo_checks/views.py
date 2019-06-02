@@ -3,8 +3,9 @@ from datetime import datetime
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 from .forms import AnimalCountForm, SpeciesExhibitCountForm
 from .models import Animal, AnimalCount, Exhibit, Species, SpeciesExhibitCount
@@ -12,7 +13,7 @@ from .models import Animal, AnimalCount, Exhibit, Species, SpeciesExhibitCount
 
 def create_combined_form(exhibits):
     # TODO: counts should default to maximum (across users) for the day
-    # TODO: condition should default to median condition (across users) for the day
+    # TODO: condition should default to median? condition (across users) for the day
 
     form_dict = {}
 
@@ -40,35 +41,51 @@ def create_combined_form(exhibits):
     return form_dict
 
 
-def count(request):
+@login_required
+def home(request):
     exhibits = Exhibit.objects.filter(user=request.user)
+
+    return render(request, "home.html", {"exhibits": exhibits})
+
+
+@login_required
+def count(request, exhibit_id):
+    exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
+
+    SpeciesCountFormset = inlineformset_factory(
+        Exhibit, SpeciesExhibitCount, fields=("count",), can_delete=False
+    )
+    AnimalCountFormset = inlineformset_factory(
+        Exhibit, AnimalCount, fields=("condition",), can_delete=False
+    )
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
-        for form in form_dict:
-            # need to figure out whether it's an AnimalCountForm or a SpeciesCountForm
-            form_complete = AnimalCountForm(request.POST)
-            # check whether it's valid:
-            if form.is_valid():
-                # TODO: add current user to the list of users on this count object
-
-                # process the data in form.cleaned_data as required
-                # ...
-                pass
-
-        # if all forms were valid...
-        # redirect to a new URL:
-        return HttpResponseRedirect("/view_counts/")
+        species_formset = SpeciesCountFormset(
+            request.POST, request.FILES, instance=exhibit
+        )
+        animal_formset = AnimalCountFormset(
+            request.POST, request.FILES, instance=exhibit
+        )
+        # check whether it's valid:
+        if species_formset.is_valid() and animal_formset.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect("/table/")
 
     # if a GET (or any other method) we'll create a blank form
     else:
-        form_dict = create_combined_form(exhibits)
+        species_formset = SpeciesCountFormset(instance=exhibit)
+        animal_formset = AnimalCountFormset(instance=exhibit)
 
-    return render(request, "tally.html", context={"form_dict": form_dict})
-
-
-def view_counts(request):
-    # a view of entered data
-
-    pass
+    return render(
+        request,
+        "tally.html",
+        {
+            "exhibit": exhibit,
+            "species_formset": species_formset,
+            "animal_formset": animal_formset,
+        },
+    )

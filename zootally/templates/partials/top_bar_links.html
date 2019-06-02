@@ -1,6 +1,11 @@
 {% if user.is_authenticated %}
     <a class="mdl-navigation__link" href="{% url 'home' %}">Home</a>
-    <a class="mdl-navigation__link" href="{% url 'account_management' %}">{{ user.username }}</a>
+    <a class="mdl-navigation__link" href="{% url 'account_management' %}">Profile</a>
+    {% if user.is_superuser %}
+    <a class="mdl-navigation__link" href="{% url 'admin:index' %}">
+        Admin
+    </a>
+    {% endif %}
     <a class="mdl-navigation__link" href="{% url 'account_logout' %}">Logout</a>
 {% else %}
     <a class="mdl-navigation__link" href="{% url 'account_login' %}">Login</a>

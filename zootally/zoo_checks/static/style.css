@@ -1,3 +1,5 @@
+/* TODO: look into materialize css framework https://materializecss.com */
+
 /* give main content a little margin */
 
 main {
@@ -22,8 +24,18 @@ main {
   line-height: 36px;
 }
 
-ul#id_condition{
+ul#id_condition {
   display: inline-flex;
   list-style: none;
   margin: 0;
+}
+
+/* for message list */
+ul.message {
+  padding: 0;
+  margin: 0;
+}
+
+ul.message li {
+  display: block;
 }

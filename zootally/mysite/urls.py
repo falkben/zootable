@@ -27,6 +27,6 @@ urlpatterns = [
         TemplateView.as_view(template_name="account_management.html"),
         name="account_management",
     ),
-    path("", TemplateView.as_view(template_name="home.html"), name="home"),
-    path("count/", views.count, name="count"),
+    path("", views.home, name="home"),
+    path("count/<int:exhibit_id>", views.count, name="count"),
 ]
