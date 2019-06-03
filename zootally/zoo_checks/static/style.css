@@ -8,7 +8,7 @@ main {
 }
 
 .mdl-mini-footer {
-  padding: 10px 5px;
+  padding: 5px 10px;
 }
 
 /* override style of footer taking more vertical space */
@@ -24,7 +24,7 @@ main {
   line-height: 36px;
 }
 
-ul#id_condition {
+form ul {
   display: inline-flex;
   list-style: none;
   margin: 0;

@@ -35,4 +35,4 @@ class SpeciesExhibitCountForm(forms.ModelForm):
         fields = ["count", "species", "exhibit"]
 
         # hide species/exhibit form elements
-        widgets = {"species": forms.HiddenInput(), "exhibit": forms.HiddenInput()}
+        widgets = {"species": forms.HiddenInput()}

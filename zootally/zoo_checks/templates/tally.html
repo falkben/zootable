@@ -5,12 +5,23 @@
 {% block content %}
 <h2>Exhibit: {{exhibit}}</h2>
 
+{% load index %}
+
 <form action="/count/{{exhibit.id}}" method="post">
+    {% comment %} TODO: move animals to be under their species (JS) {% endcomment %}
     {% csrf_token %}
     <h3>Species</h3>
-    {{species_formset.as_p}}
+    {{ species_formset.management_form}}
+    {% for form in species_formset %}
+        <h4>{{exhibit_species|index:forloop.counter0}}</h4>
+        {{form.as_p}}
+    {% endfor %}
     <h3>Animals</h3>
-    {{animal_formset.as_p}}
+    {{ animal_formset.management_form}}
+    {% for form in animal_formset %}
+        <h4>{{exhibit_animals|index:forloop.counter0}}</h4>
+        {{form.as_p}}
+    {% endfor %}
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
 {% endblock %}

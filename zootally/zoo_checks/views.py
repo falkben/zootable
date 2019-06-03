@@ -11,37 +11,8 @@ from .forms import AnimalCountForm, SpeciesExhibitCountForm
 from .models import Animal, AnimalCount, Exhibit, Species, SpeciesExhibitCount
 
 
-def create_combined_form(exhibits):
-    # TODO: counts should default to maximum (across users) for the day
-    # TODO: condition should default to median? condition (across users) for the day
-
-    form_dict = {}
-
-    for exhibit in exhibits:
-        form_dict[exhibit] = {}
-        form_dict[exhibit]["species"] = []
-        form_dict[exhibit]["animals"] = []
-        for spec in exhibit.species.all():
-            spec_count = SpeciesExhibitCount(species=spec, exhibit=exhibit)
-            form_dict[exhibit]["species"].append(
-                {spec: SpeciesExhibitCountForm(instance=spec_count)}
-            )
-
-            # animals of this species on this exhibit
-
-            anim_spec_exhib = Animal.objects.filter(exhibit=exhibit, species=spec)
-            for anim in anim_spec_exhib:
-                anim_count = AnimalCount(animal=anim)
-                # TODO: only users w/ specific privaledges can mark certain conditions
-
-                form_dict[exhibit]["animals"].append(
-                    {spec: {anim: AnimalCountForm(instance=anim_count)}}
-                )
-
-    return form_dict
-
-
 @login_required
+# TODO: logins may not be sufficient - they need to be a part of a group
 def home(request):
     exhibits = Exhibit.objects.filter(user=request.user)
 
@@ -50,35 +21,53 @@ def home(request):
 
 @login_required
 def count(request, exhibit_id):
+    # TODO: counts should default to maximum (across users) for the day
+    # TODO: condition should default to median? condition (across users) for the day
+
     exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
+    exhibit_species = exhibit.species.all()
+    exhibit_animals = exhibit.animals.all()
 
     SpeciesCountFormset = inlineformset_factory(
-        Exhibit, SpeciesExhibitCount, fields=("count",), can_delete=False
+        Exhibit,
+        SpeciesExhibitCount,
+        form=SpeciesExhibitCountForm,
+        can_delete=False,
+        can_order=False,
+        extra=len(exhibit_species),  # exhibit.species.count(),
     )
     AnimalCountFormset = inlineformset_factory(
-        Exhibit, AnimalCount, fields=("condition",), can_delete=False
+        Exhibit,
+        AnimalCount,
+        form=AnimalCountForm,
+        can_delete=False,
+        can_order=False,
+        extra=len(exhibit_animals),  # exhibit.animals.count(),
     )
+
+    init_sp_vals = [{"species": sp} for sp in exhibit_species]
+    init_anim_vals = [{"animal": anim} for anim in exhibit_animals]
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         species_formset = SpeciesCountFormset(
-            request.POST, request.FILES, instance=exhibit
+            request.POST, request.FILES, instance=exhibit, initial=init_sp_vals
         )
         animal_formset = AnimalCountFormset(
-            request.POST, request.FILES, instance=exhibit
+            request.POST, request.FILES, instance=exhibit, initial=init_anim_vals
         )
         # check whether it's valid:
         if species_formset.is_valid() and animal_formset.is_valid():
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
-            return HttpResponseRedirect("/table/")
+            return HttpResponseRedirect("/")
 
     # if a GET (or any other method) we'll create a blank form
     else:
-        species_formset = SpeciesCountFormset(instance=exhibit)
-        animal_formset = AnimalCountFormset(instance=exhibit)
+        species_formset = SpeciesCountFormset(instance=exhibit, initial=init_sp_vals)
+        animal_formset = AnimalCountFormset(instance=exhibit, initial=init_anim_vals)
 
     return render(
         request,
@@ -87,5 +76,7 @@ def count(request, exhibit_id):
             "exhibit": exhibit,
             "species_formset": species_formset,
             "animal_formset": animal_formset,
+            "exhibit_animals": list(exhibit_animals),
+            "exhibit_species": list(exhibit_species),
         },
     )
