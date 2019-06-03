@@ -13,15 +13,26 @@
     <h3>Species</h3>
     {{ species_formset.management_form}}
     {% for form in species_formset %}
-        <h4>{{exhibit_species|index:forloop.counter0}}</h4>
+        {% with spec=exhibit_species|index:forloop.counter0 %}
+        <h4>{{spec.common_name}} <em>({{spec.latin_name}})</em></h4>
         {{form.as_p}}
+        <div class="{{spec.common_name}}">
+        </div>
+        <hr>
+        {% endwith %}
     {% endfor %}
-    <h3>Animals</h3>
     {{ animal_formset.management_form}}
     {% for form in animal_formset %}
-        <h4>{{exhibit_animals|index:forloop.counter0}}</h4>
+        {% with anim=exhibit_animals|index:forloop.counter0%}
+        <div class="{{anim.name}}">
+            <b>{{anim.name}}, {{anim.identifier}}, {{anim.accession_number}}</b>
         {{form.as_p}}
+        </div>
+        {% endwith %}
     {% endfor %}
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
+
+{% comment %} For sorting.
+{{species_animals_dict}} {% endcomment %}
 {% endblock %}

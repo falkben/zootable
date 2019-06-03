@@ -45,6 +45,14 @@ def count(request, exhibit_id):
         extra=len(exhibit_animals),  # exhibit.animals.count(),
     )
 
+    # to set the order in JS
+    species_animals_dict = {}
+    for spec in exhibit_species:
+        spec_anim_list = []
+        for animal in exhibit_animals.filter(species=spec):
+            spec_anim_list.append(animal.name)
+        species_animals_dict[spec.common_name] = spec_anim_list
+
     init_sp_vals = [{"species": sp} for sp in exhibit_species]
     init_anim_vals = [{"animal": anim} for anim in exhibit_animals]
 
@@ -78,5 +86,6 @@ def count(request, exhibit_id):
             "animal_formset": animal_formset,
             "exhibit_animals": list(exhibit_animals),
             "exhibit_species": list(exhibit_species),
+            "species_animals_dict": species_animals_dict,
         },
     )
