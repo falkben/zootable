@@ -1,6 +1,6 @@
-# zootally
+# Zootable
 
-Django web app to tally zoo animals
+Web app to tally zoo animals
 
 ## Deployment notes
 
