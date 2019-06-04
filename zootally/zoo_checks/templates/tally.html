@@ -6,6 +6,7 @@
 <h2>Exhibit: {{exhibit}}</h2>
 
 {% load index %}
+{% load range %}
 
 <form action="/count/{{exhibit.id}}" method="post">
     {% comment %} TODO: move animals to be under their species (JS) {% endcomment %}
@@ -17,6 +18,12 @@
         <h4>{{spec.common_name}} <em>({{spec.latin_name}})</em></h4>
         {{form.as_p}}
         <div class="{{spec.common_name}}">
+        
+        {% comment %} {% for c in 1|range:6 %}
+            {{ c }}
+        {% endfor %} {% endcomment %}
+        {% comment %} {% for exhibit_animals|index:forloop.counter0 %} {% endcomment %}
+        
         </div>
         <hr>
         {% endwith %}

@@ -3,8 +3,7 @@
 /* give main content a little margin */
 
 main {
-  margin-left: 30px;
-  margin-top: 5px;
+  margin: 5px 0 5px 30px;
 }
 
 .mdl-mini-footer {

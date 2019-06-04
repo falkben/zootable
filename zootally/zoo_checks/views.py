@@ -45,7 +45,7 @@ def count(request, exhibit_id):
         extra=len(exhibit_animals),  # exhibit.animals.count(),
     )
 
-    # to set the order in JS
+    # to set the order
     species_animals_dict = {}
     for spec in exhibit_species:
         spec_anim_list = []
