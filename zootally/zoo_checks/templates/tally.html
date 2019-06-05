@@ -11,32 +11,15 @@
 <form action="/count/{{exhibit.id}}" method="post">
     {% comment %} TODO: move animals to be under their species (JS) {% endcomment %}
     {% csrf_token %}
-    <h3>Species</h3>
-    {{ species_formset.management_form}}
-    {% for form in species_formset %}
-        {% with spec=exhibit_species|index:forloop.counter0 %}
-        <h4>{{spec.common_name}} <em>({{spec.latin_name}})</em></h4>
-        {{form.as_p}}
-        <div class="{{spec.common_name}}">
+    {% for spec_id, spec_dict in formset_dict.items %}
+        <p>{{spec_dict.species.common_name}} <em>{{spec_dict.species.common_name}}</em></p>
+        <p>{{spec_dict.animals}}</p>
         
-        {% comment %} {% for c in 1|range:6 %}
-            {{ c }}
-        {% endfor %} {% endcomment %}
-        {% comment %} {% for exhibit_animals|index:forloop.counter0 %} {% endcomment %}
-        
-        </div>
-        <hr>
-        {% endwith %}
+        {% for ff in spec_dict.animalformset %}
+            {{ff.as_p}}
+        {% endfor %}
     {% endfor %}
-    {{ animal_formset.management_form}}
-    {% for form in animal_formset %}
-        {% with anim=exhibit_animals|index:forloop.counter0%}
-        <div class="{{anim.name}}">
-            <b>{{anim.name}}, {{anim.identifier}}, {{anim.accession_number}}</b>
-        {{form.as_p}}
-        </div>
-        {% endwith %}
-    {% endfor %}
+
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
 
