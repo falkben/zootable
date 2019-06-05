@@ -52,7 +52,7 @@ def count(request, exhibit_id):
 
     exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
     exhibit_species = exhibit.species.all()
-    exhibit_animals = exhibit.animals.all()
+    exhibit_animals = exhibit.animals.all().order_by("species", "name")
 
     SpeciesCountFormset = inlineformset_factory(
         Exhibit,
@@ -82,6 +82,7 @@ def count(request, exhibit_id):
         species_formset = SpeciesCountFormset(
             request.POST, request.FILES, instance=exhibit, initial=init_spec
         )
+        # TODO: Need to test to make sure we are editing the right animal counts
         animals_formset = AnimalCountFormset(
             request.POST, request.FILES, instance=exhibit, initial=init_anim
         )
