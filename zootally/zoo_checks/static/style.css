@@ -23,10 +23,19 @@ main {
   line-height: 36px;
 }
 
+form li {
+  list-style: none;
+}
+
 form ul {
   display: inline-flex;
   list-style: none;
   margin: 0;
+  padding: 0;
+}
+
+.right-align {
+  text-align: right;
 }
 
 /* for message list */

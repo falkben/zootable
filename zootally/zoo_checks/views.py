@@ -19,53 +19,28 @@ def home(request):
     return render(request, "home.html", {"exhibits": exhibits})
 
 
-def create_formsets(exhibit, exhibit_species, exhibit_animals, request=None):
+def get_formset_order(
+    exhibit_species, exhibit_animals, species_formset, animals_formset
+):
     """
-    Creates formsets in a dictionary in a particular order that we can 
-    render in the template
+    Creates an order to display the formsets that we can call in the template
     """
-
-    SpeciesCountFormset = inlineformset_factory(
-        Exhibit,
-        SpeciesExhibitCount,
-        form=SpeciesExhibitCountForm,
-        can_delete=False,
-        can_order=False,
-        extra=1,  # one species at a time in "our" order
-        # extra=len(exhibit_species),  # exhibit.species.count(),
-    )
-    AnimalCountFormset = inlineformset_factory(
-        Exhibit,
-        AnimalCount,
-        form=AnimalCountForm,
-        can_delete=False,
-        can_order=False,
-        extra=1,  # one animal at a time, in "our" order
-        # extra=len(exhibit_animals),  # exhibit.animals.count(),
-    )
 
     # to set the order
     formset_dict = {}
-    for spec in exhibit_species:
-        # create species formset
-        species_formset = SpeciesCountFormset(
-            instance=exhibit, initial=[{"species": spec}]
-        )
-
-        spec_anim_list = []
-        spec_anim_formset = []
-        for animal in exhibit_animals.filter(species=spec):
-            spec_anim_list.append(animal)
-            animal_formset = AnimalCountFormset(
-                instance=exhibit, initial=[{"animal": animal}]
-            )
-            spec_anim_formset.append(animal_formset)
+    anim_total = 0
+    for ind, spec in enumerate(exhibit_species):
+        spec_anim_list = exhibit_animals.filter(species=spec)
+        spec_anim_index = list(range(anim_total, spec_anim_list.count() + anim_total))
+        anim_total += spec_anim_list.count()
 
         # store in dictionary, using id because that's known unique
         formset_dict[spec.id] = {}
         formset_dict[spec.id]["species"] = spec
-        formset_dict[spec.id]["specformset"] = species_formset
-        formset_dict[spec.id]["animalformset"] = zip(spec_anim_list, spec_anim_formset)
+        formset_dict[spec.id]["formset"] = species_formset[ind]
+        formset_dict[spec.id]["animalformset_index"] = zip(
+            spec_anim_list, [animals_formset[i] for i in spec_anim_index]
+        )
 
     return formset_dict
 
@@ -79,17 +54,39 @@ def count(request, exhibit_id):
     exhibit_species = exhibit.species.all()
     exhibit_animals = exhibit.animals.all()
 
+    SpeciesCountFormset = inlineformset_factory(
+        Exhibit,
+        SpeciesExhibitCount,
+        form=SpeciesExhibitCountForm,
+        can_delete=False,
+        can_order=False,
+        # extra=1,  # one species at a time in "our" order
+        extra=len(exhibit_species),  # exhibit.species.count(),
+    )
+    AnimalCountFormset = inlineformset_factory(
+        Exhibit,
+        AnimalCount,
+        form=AnimalCountForm,
+        can_delete=False,
+        can_order=False,
+        # extra=1,  # one animal at a time, in "our" order
+        extra=len(exhibit_animals),  # exhibit.animals.count(),
+    )
+
+    init_spec = [{"species": obj} for obj in exhibit_species]
+    init_anim = [{"species": obj} for obj in exhibit_animals]
+
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         species_formset = SpeciesCountFormset(
-            request.POST, request.FILES, instance=exhibit, initial=init_sp_vals
+            request.POST, request.FILES, instance=exhibit, initial=init_spec
         )
-        animal_formset = AnimalCountFormset(
-            request.POST, request.FILES, instance=exhibit, initial=init_anim_vals
+        animals_formset = AnimalCountFormset(
+            request.POST, request.FILES, instance=exhibit, initial=init_anim
         )
         # check whether it's valid:
-        if species_formset.is_valid() and animal_formset.is_valid():
+        if species_formset.is_valid() and animals_formset.is_valid():
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
@@ -97,7 +94,11 @@ def count(request, exhibit_id):
 
     # if a GET (or any other method) we'll create a blank form
     else:
-        formset_dict = create_formsets(exhibit, exhibit_species, exhibit_animals)
+        species_formset = SpeciesCountFormset(instance=exhibit, initial=init_spec)
+        animals_formset = AnimalCountFormset(instance=exhibit, initial=init_anim)
+        formset_order = get_formset_order(
+            exhibit_species, exhibit_animals, species_formset, animals_formset
+        )
 
     return render(
         request,
@@ -106,6 +107,8 @@ def count(request, exhibit_id):
             "exhibit": exhibit,
             "exhibit_animals": list(exhibit_animals),
             "exhibit_species": list(exhibit_species),
-            "formset_dict": formset_dict,
+            "species_formset": species_formset,
+            "animals_formset": animals_formset,
+            "formset_order": formset_order,
         },
     )
