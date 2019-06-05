@@ -49,10 +49,7 @@ def create_formsets(exhibit, exhibit_species, exhibit_animals, request=None):
     for spec in exhibit_species:
         # create species formset
         species_formset = SpeciesCountFormset(
-            instance=exhibit, initial={"species": spec}
-        )
-        species_formset = SpeciesCountFormset(
-            instance=exhibit, initial={"species": spec}
+            instance=exhibit, initial=[{"species": spec}]
         )
 
         spec_anim_list = []
@@ -60,7 +57,7 @@ def create_formsets(exhibit, exhibit_species, exhibit_animals, request=None):
         for animal in exhibit_animals.filter(species=spec):
             spec_anim_list.append(animal)
             animal_formset = AnimalCountFormset(
-                instance=exhibit, initial={"animal": animal}
+                instance=exhibit, initial=[{"animal": animal}]
             )
             spec_anim_formset.append(animal_formset)
 
@@ -68,8 +65,7 @@ def create_formsets(exhibit, exhibit_species, exhibit_animals, request=None):
         formset_dict[spec.id] = {}
         formset_dict[spec.id]["species"] = spec
         formset_dict[spec.id]["specformset"] = species_formset
-        formset_dict[spec.id]["animals"] = spec_anim_list
-        formset_dict[spec.id]["animalformset"] = spec_anim_formset
+        formset_dict[spec.id]["animalformset"] = zip(spec_anim_list, spec_anim_formset)
 
     return formset_dict
 
