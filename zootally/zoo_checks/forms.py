@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import AnimalCount, SpeciesExhibitCount
+from .models import AnimalCount, SpeciesCount
 
 # TODO: create form at the exhibit level
 # ExhibitCountFormset (nested) https://micropyramid.com/blog/how-to-use-nested-formsets-in-django/
@@ -29,10 +29,30 @@ class AnimalCountForm(forms.ModelForm):
     condition = forms.ChoiceField(choices=CONDITIONS, widget=forms.RadioSelect)
 
 
-class SpeciesExhibitCountForm(forms.ModelForm):
+class SpeciesCountForm(forms.ModelForm):
     class Meta:
-        model = SpeciesExhibitCount
+        model = SpeciesCount
         fields = ["count", "species", "exhibit"]
 
         # hide species/exhibit form elements
         widgets = {"species": forms.HiddenInput()}
+
+
+class BaseAnimalCountFormset(forms.BaseInlineFormSet):
+    def clean(self):
+        if any(self.errors):
+            # Don't bother validating the formset unless each form is valid on its own
+            return
+        for form in self.forms:
+            # Where we put validation
+            pass
+
+
+class BaseSpeciesCountFormset(forms.BaseInlineFormSet):
+    def clean(self):
+        if any(self.errors):
+            # Don't bother validating the formset unless each form is valid on its own
+            return
+        for form in self.forms:
+            # Where we put validation
+            pass

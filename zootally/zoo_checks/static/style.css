@@ -47,3 +47,12 @@ ul.message {
 ul.message li {
   display: block;
 }
+
+/* form errors */
+
+.errorlist {
+  margin: 10px 0px;
+  padding: 12px;
+  color: #d8000c;
+  background-color: #ffd2d2;
+}

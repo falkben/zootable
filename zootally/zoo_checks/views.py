@@ -7,8 +7,13 @@ from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
-from .forms import AnimalCountForm, SpeciesExhibitCountForm
-from .models import Animal, AnimalCount, Exhibit, Species, SpeciesExhibitCount
+from .forms import (
+    AnimalCountForm,
+    BaseAnimalCountFormset,
+    BaseSpeciesCountFormset,
+    SpeciesCountForm,
+)
+from .models import Animal, AnimalCount, Exhibit, Species, SpeciesCount
 
 
 @login_required
@@ -56,12 +61,12 @@ def count(request, exhibit_id):
 
     SpeciesCountFormset = inlineformset_factory(
         Exhibit,
-        SpeciesExhibitCount,
-        form=SpeciesExhibitCountForm,
+        SpeciesCount,
+        form=SpeciesCountForm,
         can_delete=False,
         can_order=False,
-        # extra=1,  # one species at a time in "our" order
         extra=len(exhibit_species),  # exhibit.species.count(),
+        formset=BaseSpeciesCountFormset,
     )
     AnimalCountFormset = inlineformset_factory(
         Exhibit,
@@ -69,12 +74,12 @@ def count(request, exhibit_id):
         form=AnimalCountForm,
         can_delete=False,
         can_order=False,
-        # extra=1,  # one animal at a time, in "our" order
         extra=len(exhibit_animals),  # exhibit.animals.count(),
+        formset=BaseAnimalCountFormset,
     )
 
     init_spec = [{"species": obj} for obj in exhibit_species]
-    init_anim = [{"species": obj} for obj in exhibit_animals]
+    init_anim = [{"animal": obj} for obj in exhibit_animals]
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
@@ -86,10 +91,28 @@ def count(request, exhibit_id):
         animals_formset = AnimalCountFormset(
             request.POST, request.FILES, instance=exhibit, initial=init_anim
         )
+
+        # needed in the case the form wasn't submitted properly and we have to re-render the form
+        formset_order = get_formset_order(
+            exhibit_species, exhibit_animals, species_formset, animals_formset
+        )
+
         # check whether it's valid:
         if species_formset.is_valid() and animals_formset.is_valid():
             # process the data in form.cleaned_data as required
-            # ...
+
+            for form in species_formset:
+                if len(form.cleaned_data) > 0:
+                    spec = form.cleaned_data["species"]
+                    count = form.cleaned_data["count"]
+                    exhibit = form.cleaned_data["exhibit"]
+
+            for form in animals_formset:
+                if len(form.cleaned_data) > 0:
+                    condition = form.cleaned_data["condition"]
+                    animal = form.cleaned_data["animal"]
+                    exhibit = form.cleaned_data["exhibit"]
+
             # redirect to a new URL:
             return HttpResponseRedirect("/")
 

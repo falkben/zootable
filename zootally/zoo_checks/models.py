@@ -76,7 +76,7 @@ class AnimalCount(Count):
     exhibit = models.ForeignKey(Exhibit, on_delete=models.CASCADE)
 
 
-class SpeciesExhibitCount(Count):
+class SpeciesCount(Count):
     count = models.PositiveSmallIntegerField(default=0)
 
     species = models.ForeignKey(Species, on_delete=models.CASCADE)
