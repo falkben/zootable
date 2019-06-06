@@ -13,7 +13,7 @@ class AnimalCountForm(forms.ModelForm):
         fields = ["condition", "animal"]
 
         # hide animal form element
-        widgets = {"animal": forms.HiddenInput()}
+        # widgets = {"animal": forms.HiddenInput()}
 
     SEEN = "SE"
     NEEDSATTENTION = "NA"
@@ -35,7 +35,7 @@ class SpeciesCountForm(forms.ModelForm):
         fields = ["count", "species", "exhibit"]
 
         # hide species/exhibit form elements
-        widgets = {"species": forms.HiddenInput()}
+        # widgets = {"species": forms.HiddenInput()}
 
 
 class BaseAnimalCountFormset(forms.BaseInlineFormSet):

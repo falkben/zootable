@@ -35,7 +35,7 @@ def get_formset_order(
     formset_dict = {}
     anim_total = 0
     for ind, spec in enumerate(exhibit_species):
-        spec_anim_list = exhibit_animals.filter(species=spec)
+        spec_anim_list = exhibit_animals.filter(species=spec).order_by("name")
         spec_anim_index = list(range(anim_total, spec_anim_list.count() + anim_total))
         anim_total += spec_anim_list.count()
 
@@ -72,6 +72,7 @@ def count(request, exhibit_id):
         can_order=False,
         extra=len(exhibit_species),  # exhibit.species.count(),
         formset=BaseSpeciesCountFormset,
+        max_num=len(exhibit_species),
     )
     AnimalCountFormset = inlineformset_factory(
         Exhibit,
@@ -81,6 +82,7 @@ def count(request, exhibit_id):
         can_order=False,
         extra=len(exhibit_animals),  # exhibit.animals.count(),
         formset=BaseAnimalCountFormset,
+        max_num=len(exhibit_animals),
     )
 
     init_sp_counts = [0] * exhibit_species.count()
@@ -90,9 +92,9 @@ def count(request, exhibit_id):
             init_sp_counts[i] = sp_count.aggregate(Max("count"))["count__max"]
 
     init_spec = [
-        {"species": obj, "count": c, "datecounted": date.today()}
-        for obj, c in zip(exhibit_species, init_sp_counts)
+        {"species": obj, "datecounted": date.today()} for obj in exhibit_species
     ]
+    [init.update({"count": c}) for init, c in zip(init_spec, init_sp_counts)]
     init_anim = [
         {"animal": obj, "datecounted": date.today()} for obj in exhibit_animals
     ]
@@ -116,8 +118,11 @@ def count(request, exhibit_id):
         # check whether it's valid:
         if species_formset.is_valid() and animals_formset.is_valid():
             # process the data in form.cleaned_data as required
-            species_formset.save()
-            animals_formset.save()
+            for form in species_formset.save():
+                form.users.add(request.user)
+
+            for form in animals_formset.save():
+                form.users.add(request.user)
 
             # redirect to a new URL:
             return HttpResponseRedirect("/")
@@ -129,6 +134,7 @@ def count(request, exhibit_id):
         formset_order = get_formset_order(
             exhibit_species, exhibit_animals, species_formset, animals_formset
         )
+        # TODO: figure out why we have more forms than we need in species formset
 
     return render(
         request,

@@ -47,7 +47,7 @@ class Animal(models.Model):
 class Count(models.Model):
     datecounted = models.DateField(auto_now=True)
 
-    user = models.ManyToManyField(User)
+    users = models.ManyToManyField(User)
 
     class Meta:
         abstract = True
