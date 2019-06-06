@@ -1,8 +1,8 @@
-from datetime import datetime
-
+from datetime import date
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Max
 from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -58,6 +58,11 @@ def count(request, exhibit_id):
     exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
     exhibit_species = exhibit.species.all()
     exhibit_animals = exhibit.animals.all().order_by("species", "name")
+    species_counts_today = (
+        SpeciesCount.objects.filter(species__in=exhibit_species)
+        .filter(datecounted__gte=date.today())
+        .order_by("species")
+    )
 
     SpeciesCountFormset = inlineformset_factory(
         Exhibit,
@@ -78,8 +83,19 @@ def count(request, exhibit_id):
         formset=BaseAnimalCountFormset,
     )
 
-    init_spec = [{"species": obj} for obj in exhibit_species]
-    init_anim = [{"animal": obj} for obj in exhibit_animals]
+    init_sp_counts = [0] * exhibit_species.count()
+    for i, sp in enumerate(exhibit_species):
+        sp_count = species_counts_today.filter(species=sp)
+        if sp_count.count() > 0:
+            init_sp_counts[i] = sp_count.aggregate(Max("count"))["count__max"]
+
+    init_spec = [
+        {"species": obj, "count": c, "datecounted": date.today()}
+        for obj, c in zip(exhibit_species, init_sp_counts)
+    ]
+    init_anim = [
+        {"animal": obj, "datecounted": date.today()} for obj in exhibit_animals
+    ]
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
@@ -100,18 +116,8 @@ def count(request, exhibit_id):
         # check whether it's valid:
         if species_formset.is_valid() and animals_formset.is_valid():
             # process the data in form.cleaned_data as required
-
-            for form in species_formset:
-                if len(form.cleaned_data) > 0:
-                    spec = form.cleaned_data["species"]
-                    count = form.cleaned_data["count"]
-                    exhibit = form.cleaned_data["exhibit"]
-
-            for form in animals_formset:
-                if len(form.cleaned_data) > 0:
-                    condition = form.cleaned_data["condition"]
-                    animal = form.cleaned_data["animal"]
-                    exhibit = form.cleaned_data["exhibit"]
+            species_formset.save()
+            animals_formset.save()
 
             # redirect to a new URL:
             return HttpResponseRedirect("/")

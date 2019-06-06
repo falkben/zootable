@@ -45,13 +45,13 @@ class Animal(models.Model):
 
 
 class Count(models.Model):
-    datetime = models.DateTimeField()
+    datecounted = models.DateField(auto_now=True)
 
     user = models.ManyToManyField(User)
 
     class Meta:
         abstract = True
-        ordering = ["datetime"]
+        ordering = ["datecounted"]
 
 
 class AnimalCount(Count):
