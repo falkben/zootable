@@ -1,9 +1,11 @@
 from datetime import date
+
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Max
-from django.forms import inlineformset_factory, formset_factory
+from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
@@ -68,9 +70,19 @@ def get_init_spec_count_form(exhibit, exhibit_species, species_counts_today):
     return init_spec
 
 
-def get_init_anim_count_form(exhibit, exhibit_animals):
+def get_init_anim_count_form(exhibit, exhibit_animals, animal_conditions_today):
     # TODO: condition should default to median? condition (across users) for the day
     init_anim = [{"animal": obj} for obj in exhibit_animals]
+
+    anims_conds = []
+    for anim in exhibit_animals:
+        try:
+            cond = animal_conditions_today.get(animal=anim).condition
+        except ObjectDoesNotExist:
+            cond = ""
+        anims_conds.append(cond)
+
+    [init.update({"condition": c}) for init, c in zip(init_anim, anims_conds)]
 
     return init_anim
 
@@ -82,6 +94,11 @@ def count(request, exhibit_id):
     exhibit_animals = exhibit.animals.all().order_by("species", "name")
     species_counts_today = (
         SpeciesCount.objects.filter(species__in=exhibit_species)
+        .filter(datecounted__gte=date.today())
+        .order_by("species")
+    )
+    animal_conditions_today = (
+        AnimalCount.objects.filter(animal__in=exhibit_animals)
         .filter(datecounted__gte=date.today())
         .order_by("species")
     )
@@ -109,7 +126,9 @@ def count(request, exhibit_id):
     )
 
     init_spec = get_init_spec_count_form(exhibit, exhibit_species, species_counts_today)
-    init_anim = get_init_anim_count_form(exhibit, exhibit_animals)
+    init_anim = get_init_anim_count_form(
+        exhibit, exhibit_animals, animal_conditions_today
+    )
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
@@ -125,11 +144,17 @@ def count(request, exhibit_id):
         # check whether it's valid:
         if species_formset.is_valid() and animals_formset.is_valid():
             # process the data in form.cleaned_data as required
-            for form in species_formset.save():
-                form.users.add(request.user)
+            for form in species_formset:
+                if form.has_changed():
+                    spec = form.save(commit=False)
+                    spec.user = request.user
+                    spec.save()
 
-            for form in animals_formset.save():
-                form.users.add(request.user)
+            for form in animals_formset:
+                if form.has_changed():
+                    anim = form.save(commit=False)
+                    anim.user = request.user
+                    anim.save()
 
             # redirect to a new URL:
             return HttpResponseRedirect("/")

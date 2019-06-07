@@ -16,13 +16,13 @@
     <tr><td colspan="100%"><hr></td></tr>
     {% for spec_id, spec_dict in formset_order.items %}
         <tr>
-        <td class="right-align"><b>{{spec_dict.species.common_name}} <em>({{spec_dict.species.common_name}})</em></b></td>
+        <td class="right-align"><b>{{spec_dict.species.common_name}} <em>({{spec_dict.species.latin_name}})</em></b></td>
         <td>{{spec_dict.formset.as_ul}}</td>
         </tr>
 
         {% for anim, ff in spec_dict.animalformset_index %}
             <tr>
-            <td class="right-align"><b>{{anim}}</b></td>
+            <td class="right-align"><b>{{anim.name}} | {{anim.identifier}} | {{anim.sex}} ({{anim.accession_number}})</b></td>
             <td>{{ff.as_ul}}</td>
             </tr>
         {% endfor %}

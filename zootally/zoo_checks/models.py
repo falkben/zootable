@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class Exhibit(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
 
     user = models.ManyToManyField(User)
 
@@ -39,14 +39,17 @@ class AnimalSet(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return self.name
+        return " | ".join((self.name, str(self.accession_number)))
 
 
 class Animal(AnimalSet):
     """An AnimalSet of 1
     """
 
+    SEX = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
+
     identifier = models.CharField(max_length=40)
+    sex = models.CharField(max_length=1, choices=SEX, default="U")
 
     exhibit = models.ForeignKey(
         Exhibit, on_delete=models.SET_NULL, related_name="animals", null=True
@@ -93,6 +96,9 @@ class AnimalCount(Count):
 
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return "|".join((self.animal.name, str(self.datecounted), self.condition))
+
 
 class GroupCount(Count):
     count = models.PositiveSmallIntegerField(default=0)
@@ -109,4 +115,6 @@ class SpeciesCount(Count):
     species = models.ForeignKey(Species, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.count)
+        return "|".join(
+            (self.species.latin_name, str(self.datecounted), str(self.count))
+        )
