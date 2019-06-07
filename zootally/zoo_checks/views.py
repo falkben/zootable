@@ -17,7 +17,7 @@ from .models import Animal, AnimalCount, Exhibit, Species, SpeciesCount
 
 
 @login_required
-# TODO: logins may not be sufficient - they need to be a part of a group
+# TODO: logins may not be sufficient - user a part of a group?
 def home(request):
     exhibits = Exhibit.objects.filter(user=request.user)
 
@@ -40,7 +40,6 @@ def get_formset_order(
         anim_total += spec_anim_list.count()
 
         species_formset.forms[ind].initial.update(species_formset.initial_extra[ind])
-        # species_formset.forms[ind].initial["count"] = species_formset
 
         # store in dictionary, using id because that's known unique
         formset_dict[spec.id] = {}

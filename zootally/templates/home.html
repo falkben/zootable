@@ -4,6 +4,8 @@
 
 {% block content %}
 
+{% if exhibits|length > 0 %}
+
 <h2>Exhibits</h2>
 
 {% for exhibit in exhibits %}
@@ -13,5 +15,13 @@
   </a>
 </p>
 {% endfor %}
+
+{% else %}
+
+<div class="errorlist">
+No exhibits found. Contact an admin to have them add you to an exhibit
+</div>
+
+{% endif%}
 
 {% endblock %}
