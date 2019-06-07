@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Max
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
@@ -50,11 +50,32 @@ def get_formset_order(
     return formset_dict
 
 
+def get_init_spec_count_form(exhibit, exhibit_species, species_counts_today):
+    # TODO: counts should default to maximum (across users) for the day
+    init_sp_counts = [0] * exhibit_species.count()
+    for i, sp in enumerate(exhibit_species):
+        sp_count = species_counts_today.filter(species=sp)
+        if sp_count.count() > 0:
+            init_sp_counts[i] = sp_count.aggregate(Max("count"))["count__max"]
+
+    init_spec = [
+        {"species": obj, "exhibit": exhibit}
+        for obj in exhibit_species.all().order_by("common_name")
+    ]
+    [init.update({"count": c}) for init, c in zip(init_spec, init_sp_counts)]
+
+    return init_spec
+
+
+def get_init_anim_count_form(exhibit, exhibit_animals):
+    # TODO: condition should default to median? condition (across users) for the day
+    init_anim = [{"animal": obj, "exhibit": exhibit} for obj in exhibit_animals]
+
+    return init_anim
+
+
 @login_required
 def count(request, exhibit_id):
-    # TODO: counts should default to maximum (across users) for the day
-    # TODO: condition should default to median? condition (across users) for the day
-
     exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
     exhibit_species = exhibit.species.all()
     exhibit_animals = exhibit.animals.all().order_by("species", "name")
@@ -64,55 +85,34 @@ def count(request, exhibit_id):
         .order_by("species")
     )
 
-    SpeciesCountFormset = inlineformset_factory(
-        Exhibit,
-        SpeciesCount,
-        form=SpeciesCountForm,
-        can_delete=False,
-        can_order=False,
-        extra=len(exhibit_species),  # exhibit.species.count(),
+    SpeciesCountFormset = formset_factory(
+        SpeciesCountForm,
         formset=BaseSpeciesCountFormset,
-        max_num=len(exhibit_species),
-    )
-    AnimalCountFormset = inlineformset_factory(
-        Exhibit,
-        AnimalCount,
-        form=AnimalCountForm,
-        can_delete=False,
+        extra=exhibit_species.count(),
+        max_num=exhibit_species.count(),
         can_order=False,
-        extra=len(exhibit_animals),  # exhibit.animals.count(),
-        formset=BaseAnimalCountFormset,
-        max_num=len(exhibit_animals),
     )
 
-    init_sp_counts = [0] * exhibit_species.count()
-    for i, sp in enumerate(exhibit_species):
-        sp_count = species_counts_today.filter(species=sp)
-        if sp_count.count() > 0:
-            init_sp_counts[i] = sp_count.aggregate(Max("count"))["count__max"]
+    AnimalCountFormset = formset_factory(
+        AnimalCountForm,
+        formset=BaseAnimalCountFormset,
+        extra=exhibit_animals.count(),
+        max_num=exhibit_animals.count(),
+        can_order=False,
+    )
 
-    init_spec = [
-        {"species": obj, "datecounted": date.today()} for obj in exhibit_species
-    ]
-    [init.update({"count": c}) for init, c in zip(init_spec, init_sp_counts)]
-    init_anim = [
-        {"animal": obj, "datecounted": date.today()} for obj in exhibit_animals
-    ]
+    init_spec = get_init_spec_count_form(exhibit, exhibit_species, species_counts_today)
+    init_anim = get_init_anim_count_form(exhibit, exhibit_animals)
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         species_formset = SpeciesCountFormset(
-            request.POST, request.FILES, instance=exhibit, initial=init_spec
+            request.POST, initial=init_spec, prefix="species_formset"
         )
         # TODO: Need to test to make sure we are editing the right animal counts
         animals_formset = AnimalCountFormset(
-            request.POST, request.FILES, instance=exhibit, initial=init_anim
-        )
-
-        # needed in the case the form wasn't submitted properly and we have to re-render the form
-        formset_order = get_formset_order(
-            exhibit_species, exhibit_animals, species_formset, animals_formset
+            request.POST, initial=init_anim, prefix="animals_formset"
         )
 
         # check whether it's valid:
@@ -127,14 +127,22 @@ def count(request, exhibit_id):
             # redirect to a new URL:
             return HttpResponseRedirect("/")
 
-    # if a GET (or any other method) we'll create a blank form
-    else:
-        species_formset = SpeciesCountFormset(instance=exhibit, initial=init_spec)
-        animals_formset = AnimalCountFormset(instance=exhibit, initial=init_anim)
+        # needed in the case the form wasn't submitted properly and we have to re-render the form
         formset_order = get_formset_order(
             exhibit_species, exhibit_animals, species_formset, animals_formset
         )
-        # TODO: figure out why we have more forms than we need in species formset
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        species_formset = SpeciesCountFormset(
+            initial=init_spec, prefix="species_formset"
+        )
+        animals_formset = AnimalCountFormset(
+            initial=init_anim, prefix="animals_formset"
+        )
+        formset_order = get_formset_order(
+            exhibit_species, exhibit_animals, species_formset, animals_formset
+        )
 
     return render(
         request,

@@ -10,7 +10,9 @@
 
 <form action="/count/{{exhibit.id}}" method="post">
     {% csrf_token %}
-    {{species_formset.management_form}}
+    {{species_formset.as_p}}
+    {{animals_formset.as_p}}
+    {% comment %} {{species_formset.management_form}}
     {{animals_formset.management_form}}
     <table>
     <tr><td colspan="100%"><hr></td></tr>
@@ -28,7 +30,7 @@
         {% endfor %}
         <tr><td colspan="100%"><hr> </td></tr>
     {% endfor %}
-    </table>
+    </table> {% endcomment %}
     <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
 </form>
 

@@ -10,10 +10,10 @@ from .models import AnimalCount, SpeciesCount
 class AnimalCountForm(forms.ModelForm):
     class Meta:
         model = AnimalCount
-        fields = ["condition", "animal"]
+        fields = ["condition", "animal", "exhibit"]
 
         # hide animal form element
-        # widgets = {"animal": forms.HiddenInput()}
+        widgets = {"animal": forms.HiddenInput(), "exhibit": forms.HiddenInput()}
 
     SEEN = "SE"
     NEEDSATTENTION = "NA"
@@ -35,10 +35,10 @@ class SpeciesCountForm(forms.ModelForm):
         fields = ["count", "species", "exhibit"]
 
         # hide species/exhibit form elements
-        # widgets = {"species": forms.HiddenInput()}
+        widgets = {"species": forms.HiddenInput(), "exhibit": forms.HiddenInput()}
 
 
-class BaseAnimalCountFormset(forms.BaseInlineFormSet):
+class BaseAnimalCountFormset(forms.BaseFormSet):
     def clean(self):
         if any(self.errors):
             # Don't bother validating the formset unless each form is valid on its own
@@ -48,7 +48,7 @@ class BaseAnimalCountFormset(forms.BaseInlineFormSet):
             pass
 
 
-class BaseSpeciesCountFormset(forms.BaseInlineFormSet):
+class BaseSpeciesCountFormset(forms.BaseFormSet):
     def clean(self):
         if any(self.errors):
             # Don't bother validating the formset unless each form is valid on its own
