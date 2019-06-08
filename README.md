@@ -1,6 +1,10 @@
-# zootally
+# Zootable
 
-Django web app to tally zoo animals
+Web app to tally zoo animals
+
+## License
+
+This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0.html) license
 
 ## Deployment notes
 

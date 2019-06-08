@@ -1,12 +1,13 @@
+/* TODO: look into materialize css framework https://materializecss.com */
+
 /* give main content a little margin */
 
 main {
-  margin-left: 30px;
-  margin-top: 5px;
+  margin: 5px 0 5px 30px;
 }
 
 .mdl-mini-footer {
-  padding: 10px 5px;
+  padding: 5px 10px;
 }
 
 /* override style of footer taking more vertical space */
@@ -20,4 +21,38 @@ main {
 .mdl-mini-footer--link-list li,
 .mdl-mini-footer__link-list li {
   line-height: 36px;
+}
+
+form li {
+  list-style: none;
+}
+
+form ul {
+  display: inline-flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.right-align {
+  text-align: right;
+}
+
+/* for message list */
+ul.message {
+  padding: 0;
+  margin: 0;
+}
+
+ul.message li {
+  display: block;
+}
+
+/* form errors */
+
+.errorlist {
+  margin: 10px 0px;
+  padding: 12px;
+  color: #d8000c;
+  background-color: #ffd2d2;
 }

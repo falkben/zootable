@@ -4,25 +4,24 @@
 
 {% block content %}
 
-{% if user.is_authenticated %}
-  <h2>Hi {{ user.username }}</h2>
+{% if exhibits|length > 0 %}
 
-  <p>
-  <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'count' %}">
-  Count animals
-  </a>
-  </p>
+<h2>Exhibits</h2>
 
-  {% if user.is_superuser %}
-  <p>
-  <a class="mdl-button mdl-js-button mdl-button--raised mdl-button" href="{% url 'admin:index' %}">
-  Admin
+{% for exhibit in exhibits %}
+<p>
+  <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'count' exhibit.id %}">
+    {{exhibit}}
   </a>
-  </p>
-  {% endif %}
+</p>
+{% endfor %}
+
 {% else %}
-    {% include "partials/login_message.html" %}
-{% endif %}
-</ul>
+
+<div class="errorlist">
+No exhibits found. Contact an admin to have them add you to an exhibit
+</div>
+
+{% endif%}
 
 {% endblock %}

@@ -1,33 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}Tally animals{% endblock %}
+{% block title %}Count{% endblock %}
 
 {% block content %}
-<h2>Exhibits</h2>
-{% for exhibit in exhibits %}
-    <h3>{{exhibit}}</h3>
-    
-    {% if exhibit.species.all %}
-    <h4>
-    Species
-    </h4>
-    <ul>
-    {% for spec in exhibit.species.all %}
-        <li>{{spec.common_name}}</li>
+<h2>Exhibit: {{exhibit}}</h2>
+
+{% load index %}
+{% load range %}
+
+<form action="/count/{{exhibit.id}}" method="post">
+    {% csrf_token %}
+    {{species_formset.management_form}}
+    {{animals_formset.management_form}}
+    <table>
+    <tr><td colspan="100%"><hr></td></tr>
+    {% for spec_id, spec_dict in formset_order.items %}
+        <tr>
+        <td class="right-align"><b>{{spec_dict.species.common_name}} <em>({{spec_dict.species.latin_name}})</em></b></td>
+        <td>{{spec_dict.formset.as_ul}}</td>
+        </tr>
+
+        {% for anim, ff in spec_dict.animalformset_index %}
+            <tr>
+            <td class="right-align"><b>{{anim.name}} | {{anim.identifier}} | {{anim.sex}} ({{anim.accession_number}})</b></td>
+            <td>{{ff.as_ul}}</td>
+            </tr>
+        {% endfor %}
+        <tr><td colspan="100%"><hr> </td></tr>
     {% endfor %}
-    </ul>
-    {% endif %}
-    
-    {% if exhibit.animals.all %}
-    <h4>
-    Animals
-    </h4>
-    <ul>
-    {% for anim in exhibit.animals.all %}
-        <li>{{anim.name}}</li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-{% endfor %}
+    </table>
+    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+</form>
 
 {% endblock %}
