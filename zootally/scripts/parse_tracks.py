@@ -1,6 +1,8 @@
 """This script parses a tracks file and enters it into the database
 """
 
+# TODO: add genus for species
+
 import sys
 import os
 import django

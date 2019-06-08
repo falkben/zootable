@@ -15,10 +15,9 @@ class Exhibit(models.Model):
 
 
 class Species(models.Model):
+    # TODO: add genus name
     common_name = models.CharField(max_length=80)
     latin_name = models.CharField(max_length=80)
-
-    exhibits = models.ManyToManyField(Exhibit, related_name="species")
 
     def __str__(self):
         return self.common_name
@@ -30,7 +29,7 @@ class Species(models.Model):
 class AnimalSet(models.Model):
     name = models.CharField(max_length=40)
     active = models.BooleanField(default=True)
-    accession_number = models.PositiveSmallIntegerField(unique=True)
+    accession_number = models.PositiveIntegerField(unique=True)
 
     species = models.ForeignKey(Species, on_delete=models.CASCADE)
 
@@ -59,6 +58,10 @@ class Animal(AnimalSet):
 class Group(AnimalSet):
     """Same as an animal, just represents a group of them w/ no identifier
     """
+
+    population_male = models.PositiveSmallIntegerField(default=0)
+    population_female = models.PositiveSmallIntegerField(default=0)
+    population_unknown = models.PositiveSmallIntegerField(default=0)
 
     exhibit = models.ForeignKey(
         Exhibit, on_delete=models.SET_NULL, related_name="groups", null=True
@@ -101,7 +104,9 @@ class AnimalCount(Count):
 
 
 class GroupCount(Count):
-    count = models.PositiveSmallIntegerField(default=0)
+    count_male = models.PositiveSmallIntegerField(default=0)
+    count_female = models.PositiveSmallIntegerField(default=0)
+    count_unknown = models.PositiveSmallIntegerField(default=0)
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
@@ -116,5 +121,5 @@ class SpeciesCount(Count):
 
     def __str__(self):
         return "|".join(
-            (self.species.latin_name, str(self.datecounted), str(self.count))
+            (self.species.common_name, str(self.datecounted), str(self.count))
         )

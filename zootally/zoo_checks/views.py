@@ -15,7 +15,15 @@ from .forms import (
     BaseSpeciesCountFormset,
     SpeciesCountForm,
 )
-from .models import Animal, AnimalCount, Exhibit, Species, SpeciesCount
+from .models import (
+    Animal,
+    AnimalCount,
+    Exhibit,
+    Group,
+    GroupCount,
+    Species,
+    SpeciesCount,
+)
 
 
 @login_required
@@ -36,7 +44,7 @@ def get_formset_order(
     # to set the order
     formset_dict = {}
     anim_total = 0
-    for ind, spec in enumerate(exhibit_species):
+    for ind, spec in enumerate(exhibit_species.order_by("common_name")):
         spec_anim_list = exhibit_animals.filter(species=spec).order_by("name")
         spec_anim_index = list(range(anim_total, spec_anim_list.count() + anim_total))
         anim_total += spec_anim_list.count()
@@ -56,15 +64,16 @@ def get_formset_order(
 
 def get_init_spec_count_form(exhibit, exhibit_species, species_counts_today):
     # TODO: counts should default to maximum (across users) for the day
+    # TODO: eliminate the for loop and do this using database
+
+    # this loop is to create the list of counts for the species
     init_sp_counts = [0] * exhibit_species.count()
-    for i, sp in enumerate(exhibit_species):
+    for i, sp in enumerate(exhibit_species.order_by("common_name")):
         sp_count = species_counts_today.filter(species=sp)
         if sp_count.count() > 0:
             init_sp_counts[i] = sp_count.aggregate(Max("count"))["count__max"]
 
-    init_spec = [
-        {"species": obj} for obj in exhibit_species.all().order_by("common_name")
-    ]
+    init_spec = [{"species": obj} for obj in exhibit_species.order_by("common_name")]
     [init.update({"count": c}) for init, c in zip(init_spec, init_sp_counts)]
 
     return init_spec
@@ -72,10 +81,12 @@ def get_init_spec_count_form(exhibit, exhibit_species, species_counts_today):
 
 def get_init_anim_count_form(exhibit, exhibit_animals, animal_conditions_today):
     # TODO: condition should default to median? condition (across users) for the day
-    init_anim = [{"animal": obj} for obj in exhibit_animals]
+    init_anim = [
+        {"animal": obj} for obj in exhibit_animals.order_by("species__common_name")
+    ]
 
     anims_conds = []
-    for anim in exhibit_animals:
+    for anim in exhibit_animals.order_by("species__common_name", "name"):
         try:
             cond = animal_conditions_today.get(animal=anim).condition
         except ObjectDoesNotExist:
@@ -87,21 +98,31 @@ def get_init_anim_count_form(exhibit, exhibit_animals, animal_conditions_today):
     return init_anim
 
 
+def get_exhibit_species(exhibit_animals, exhibit_groups):
+    """Combines all the animal species and group species together
+    """
+
+    animal_species = Species.objects.filter(animal__in=exhibit_animals)
+    group_species = Species.objects.filter(group__in=exhibit_groups)
+
+    return animal_species | group_species
+
+
 @login_required
 def count(request, exhibit_id):
     exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
-    exhibit_species = exhibit.species.all()
-    exhibit_animals = exhibit.animals.all().order_by("species", "name")
-    species_counts_today = (
-        SpeciesCount.objects.filter(species__in=exhibit_species)
-        .filter(datecounted__gte=date.today())
-        .order_by("species")
-    )
-    animal_conditions_today = (
-        AnimalCount.objects.filter(animal__in=exhibit_animals)
-        .filter(datecounted__gte=date.today())
-        .order_by("species")
-    )
+
+    exhibit_animals = exhibit.animals.all()
+    exhibit_groups = exhibit.groups.all()
+
+    exhibit_species = get_exhibit_species(exhibit_animals, exhibit_groups).distinct()
+
+    species_counts_today = SpeciesCount.objects.filter(
+        species__in=exhibit_species
+    ).filter(datecounted__gte=date.today())
+    animal_conditions_today = AnimalCount.objects.filter(
+        animal__in=exhibit_animals
+    ).filter(datecounted__gte=date.today())
 
     SpeciesCountFormset = inlineformset_factory(
         Exhibit,
