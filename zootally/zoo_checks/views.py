@@ -98,14 +98,15 @@ def get_init_anim_count_form(exhibit, exhibit_animals, animal_conditions_today):
     return init_anim
 
 
-def get_exhibit_species(exhibit_animals, exhibit_groups):
+def get_exhibit_species(animals, groups):
     """Combines all the animal species and group species together
+    Given queryset of animals and groups returns a "distinct" queryset of species
     """
 
-    animal_species = Species.objects.filter(animal__in=exhibit_animals)
-    group_species = Species.objects.filter(group__in=exhibit_groups)
+    animal_species = Species.objects.filter(animal__in=animals)
+    group_species = Species.objects.filter(group__in=groups)
 
-    return animal_species | group_species
+    return (animal_species | group_species).distinct()
 
 
 @login_required
@@ -115,14 +116,16 @@ def count(request, exhibit_id):
     exhibit_animals = exhibit.animals.all()
     exhibit_groups = exhibit.groups.all()
 
-    exhibit_species = get_exhibit_species(exhibit_animals, exhibit_groups).distinct()
+    exhibit_species = get_exhibit_species(exhibit_animals, exhibit_groups).order_by(
+        "common_name"
+    )
 
     species_counts_today = SpeciesCount.objects.filter(
         species__in=exhibit_species
-    ).filter(datecounted__gte=date.today())
+    ).filter(datecounted=date.today())
     animal_conditions_today = AnimalCount.objects.filter(
         animal__in=exhibit_animals
-    ).filter(datecounted__gte=date.today())
+    ).filter(datecounted=date.today())
 
     SpeciesCountFormset = inlineformset_factory(
         Exhibit,
