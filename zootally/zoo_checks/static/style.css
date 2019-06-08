@@ -3,7 +3,7 @@
 /* give main content a little margin */
 
 main {
-  margin: 5px 0 5px 30px;
+  margin: 5px 0 5px 0;
 }
 
 .mdl-mini-footer {
@@ -55,4 +55,38 @@ ul.message li {
   padding: 12px;
   color: #d8000c;
   background-color: #ffd2d2;
+}
+
+input[type="submit"] {
+  position: fixed;
+  bottom: 10px;
+  right: 30px;
+}
+
+.narrow-count {
+  width: 4ch;
+}
+
+table {
+  border-spacing: 0;
+}
+
+tr:nth-child(even) {
+  background: #ccc;
+  /* background:  */
+}
+
+thead {
+  background: #444;
+  /* background: rgb(64, 88, 102); */
+  color: #eee;
+}
+
+input[type="number"] {
+  height: 30px;
+}
+
+input[type="number"]:hover::-webkit-inner-spin-button {
+  width: 14px;
+  height: 30px;
 }

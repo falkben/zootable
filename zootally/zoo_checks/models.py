@@ -2,32 +2,42 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class Exhibit(models.Model):
+class Enclosure(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
-    user = models.ManyToManyField(User)
+    users = models.ManyToManyField(User)
 
     def __str__(self):
         return self.name
+
+    def species(self):
+        """Combines exhibit's animals' species and groups' species together 
+        into a distinct queryset of species
+        """
+        animals = self.animals.all().order_by("species__common_name", "name")
+        groups = self.groups.all().order_by("species__common_name")
+        animal_species = Species.objects.filter(animal__in=animals)
+        group_species = Species.objects.filter(group__in=groups)
+
+        return (animal_species | group_species).distinct()
 
     class Meta:
         ordering = ["name"]
 
 
 class Species(models.Model):
-    # TODO: add genus name
     common_name = models.CharField(max_length=80)
-    latin_name = models.CharField(max_length=80)
+    species_name = models.CharField(max_length=80)
+    genus_name = models.CharField(max_length=80)
 
     def __str__(self):
-        return self.common_name
+        return ", ".join((self.genus_name, self.species_name))
 
     class Meta:
         ordering = ["common_name"]
 
 
 class AnimalSet(models.Model):
-    name = models.CharField(max_length=40)
     active = models.BooleanField(default=True)
     accession_number = models.PositiveIntegerField(unique=True)
 
@@ -35,10 +45,6 @@ class AnimalSet(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ["name"]
-
-    def __str__(self):
-        return " | ".join((self.name, str(self.accession_number)))
 
 
 class Animal(AnimalSet):
@@ -47,12 +53,21 @@ class Animal(AnimalSet):
 
     SEX = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
 
+    name = models.CharField(max_length=40)
     identifier = models.CharField(max_length=40)
     sex = models.CharField(max_length=1, choices=SEX, default="U")
 
-    exhibit = models.ForeignKey(
-        Exhibit, on_delete=models.SET_NULL, related_name="animals", null=True
+    enclosure = models.ForeignKey(
+        Enclosure, on_delete=models.SET_NULL, related_name="animals", null=True
     )
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return "|".join(
+            (self.name, self.identifier, self.sex, str(self.accession_number))
+        )
 
 
 class Group(AnimalSet):
@@ -63,16 +78,22 @@ class Group(AnimalSet):
     population_female = models.PositiveSmallIntegerField(default=0)
     population_unknown = models.PositiveSmallIntegerField(default=0)
 
-    exhibit = models.ForeignKey(
-        Exhibit, on_delete=models.SET_NULL, related_name="groups", null=True
+    enclosure = models.ForeignKey(
+        Enclosure, on_delete=models.SET_NULL, related_name="groups", null=True
     )
+
+    class Meta:
+        ordering = ["species__common_name"]
+
+    def __str__(self):
+        return "|".join((self.species.common_name, self.accession_number))
 
 
 class Count(models.Model):
-    datecounted = models.DateField(auto_now=True)
+    datecounted = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    exhibit = models.ForeignKey(Exhibit, on_delete=models.SET_NULL, null=True)
+    enclosure = models.ForeignKey(Enclosure, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         abstract = True
@@ -82,25 +103,24 @@ class Count(models.Model):
 class AnimalCount(Count):
     SEEN = "SE"
     NEEDSATTENTION = "NA"
+    # bright active responsive (the best)
     BAR = "BA"
-    MISSING = "MI"
 
-    CONDITIONS = [
-        ("", ""),
-        (SEEN, "seen"),
-        (NEEDSATTENTION, "Needs Attention"),
-        (BAR, "BAR (Sr. Avic.)"),
-        (MISSING, "Missing (Avic. only)"),
-    ]
+    CONDITIONS = [(BAR, "BAR"), (SEEN, "Seen"), (NEEDSATTENTION, "Attn")]
 
-    condition = models.CharField(
-        max_length=2, choices=CONDITIONS, default="", blank=True
-    )
+    condition = models.CharField(max_length=2, choices=CONDITIONS)
 
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "|".join((self.animal.name, str(self.datecounted), self.condition))
+        return "|".join(
+            (
+                self.animal.name,
+                self.user.username,
+                self.datecounted.strftime("%Y-%m-%d"),
+                self.condition,
+            )
+        )
 
 
 class GroupCount(Count):
@@ -111,7 +131,14 @@ class GroupCount(Count):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.count)
+        return "|".join(
+            (
+                self.group.species.common_name,
+                self.user.username,
+                self.datecounted.strftime("%Y-%m-%d"),
+                str(self.count),
+            )
+        )
 
 
 class SpeciesCount(Count):
@@ -121,5 +148,10 @@ class SpeciesCount(Count):
 
     def __str__(self):
         return "|".join(
-            (self.species.common_name, str(self.datecounted), str(self.count))
+            (
+                self.species.common_name,
+                self.user.username,
+                self.datecounted.strftime("%Y-%m-%d"),
+                str(self.count),
+            )
         )

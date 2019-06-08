@@ -28,5 +28,5 @@ urlpatterns = [
         name="account_management",
     ),
     path("", views.home, name="home"),
-    path("count/<int:exhibit_id>", views.count, name="count"),
+    path("count/<int:enclosure_id>", views.count, name="count"),
 ]

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -13,12 +13,13 @@ from .forms import (
     AnimalCountForm,
     BaseAnimalCountFormset,
     BaseSpeciesCountFormset,
+    GroupCountForm,
     SpeciesCountForm,
 )
 from .models import (
     Animal,
     AnimalCount,
-    Exhibit,
+    Enclosure,
     Group,
     GroupCount,
     Species,
@@ -29,87 +30,157 @@ from .models import (
 @login_required
 # TODO: logins may not be sufficient - user a part of a group?
 def home(request):
-    exhibits = Exhibit.objects.filter(user=request.user)
+    enclosures = Enclosure.objects.filter(users=request.user)
 
-    return render(request, "home.html", {"exhibits": exhibits})
+    return render(request, "home.html", {"enclosures": enclosures})
 
 
 def get_formset_order(
-    exhibit_species, exhibit_animals, species_formset, animals_formset
+    enclosure_species,
+    enclosure_groups,
+    enclosure_animals,
+    species_formset,
+    groups_formset,
+    animals_formset,
 ):
-    """
-    Creates an order to display the formsets that we can call in the template
+    """Creates an order to display the formsets
     """
 
     # to set the order
     formset_dict = {}
     anim_total = 0
-    for ind, spec in enumerate(exhibit_species):
-        # should be ordered by name here already, but just in case...
-        spec_anim_list = exhibit_animals.filter(species=spec).order_by("name")
-        spec_anim_index = list(range(anim_total, spec_anim_list.count() + anim_total))
-        anim_total += spec_anim_list.count()
-
-        species_formset.forms[ind].initial.update(species_formset.initial_extra[ind])
-
-        # store in dictionary, using id because that's known unique
+    group_count = 0
+    for ind, spec in enumerate(enclosure_species):
+        # TODO: separate spec/group/animals parts out into separate functions
+        # each species is it's own dict, using id because that's known unique
         formset_dict[spec.id] = {}
+
+        # apparently required because setting initial in inline_formset doesn't seem to do the trick
+        species_formset.forms[ind].initial.update(species_formset.initial_extra[ind])
         formset_dict[spec.id]["species"] = spec
         formset_dict[spec.id]["formset"] = species_formset[ind]
 
+        try:
+            spec_group = enclosure_groups.get(species=spec)
+            groups_formset.forms[group_count].initial.update(
+                groups_formset.initial_extra[group_count]
+            )
+            group_form = groups_formset[group_count]
+            group_count += 1
+        except ObjectDoesNotExist:
+            group_form = None
+        formset_dict[spec.id]["group_form"] = group_form
+
+        spec_anim_queryset = enclosure_animals.filter(species=spec)
+        # creating an index into the animals_formset
+        spec_anim_index = list(
+            range(anim_total, spec_anim_queryset.count() + anim_total)
+        )
         # this updates the animal formset with initial values
         [
             animals_formset[i].initial.update(animals_formset.initial_extra[i])
             for i in spec_anim_index
         ]
         formset_dict[spec.id]["animalformset_index"] = zip(
-            spec_anim_list, [animals_formset[i] for i in spec_anim_index]
+            spec_anim_queryset, [animals_formset[i] for i in spec_anim_index]
         )
+        # updating total animals
+        anim_total += spec_anim_queryset.count()
 
-    return formset_dict, species_formset, animals_formset
+    return formset_dict, species_formset, groups_formset, animals_formset
 
 
-def get_init_spec_count_form(exhibit, exhibit_species, species_counts_today):
+def species_day_counts(enclosure_species, day=date.today()):
+    day_counts = SpeciesCount.objects.filter(species__in=enclosure_species).filter(
+        datecounted__gte=day, datecounted__lt=day + timedelta(days=1)
+    )
+
+    return day_counts
+
+
+def get_init_spec_count_form(enclosure_species):
     # TODO: counts should default to maximum (across users) for the day
     # TODO: eliminate for loop
 
-    # this loop is to create the list of counts for the species *in order of exhibit_species*
-    init_sp_counts = [0] * exhibit_species.count()
-    # * note: this unpacks the queryset into a list and should be avoideds
-    for i, sp in enumerate(exhibit_species):
-        sp_count = species_counts_today.filter(species=sp)
-        if sp_count.count() > 0:
-            # should only be one... but in case there is more than one this takes the max
-            init_sp_counts[i] = sp_count.aggregate(Max("count"))["count__max"]
+    # make one database query to get the species counts on a given day
+    species_counts_today = species_day_counts(enclosure_species)
 
-    # sets the initial dict
-    init_spec = [
-        {"species": obj, "count": c} for obj, c in zip(exhibit_species, init_sp_counts)
-    ]
+    # * note: this unpacks the queryset into a list and should be avoided
+    init_spec = []
+    for sp in enclosure_species:
+        sp_count = 0
+        sp_count_query = species_counts_today.filter(species=sp)
+        if sp_count_query.count() > 0:
+            # in case there is more than one this takes the max
+            sp_count = sp_count_query.aggregate(Max("count"))["count__max"]
+        init_spec.append({"species": sp, "count": sp_count})
+
     return init_spec
 
 
-def get_init_anim_count_form(exhibit, exhibit_animals, animal_conditions_today):
+def groups_day_counts(groups, day=date.today()):
+    groups_counts = GroupCount.objects.filter(group__in=groups).filter(
+        datecounted__gte=day, datecounted__lt=day + timedelta(days=1)
+    )
+
+    return groups_counts
+
+
+def get_init_group_count_form(enclosure_groups):
+
+    # make one database query to get the species counts on a given day
+    groups_counts_today = groups_day_counts(enclosure_groups)
+
+    init_group = []
+    for group in enclosure_groups:
+        gp_count_query = groups_counts_today.filter(group=group)
+        m_count = f_count = u_count = 0
+        if gp_count_query.count() > 0:
+            # in case there is more than one this takes the max
+            m_count = gp_count_query.aggregate(Max("count_male"))["count_male__max"]
+            f_count = gp_count_query.aggregate(Max("count_female"))["count_female__max"]
+            u_count = gp_count_query.aggregate(Max("count_unknown"))[
+                "count_unknown__max"
+            ]
+        init_group.append(
+            {
+                "group": group,
+                "count_male": m_count,
+                "count_female": f_count,
+                "count_unknown": u_count,
+            }
+        )
+
+    return init_group
+
+
+def animal_day_conditions(animals, day=date.today()):
+    # TODO: this could be a custom queryset on AnimalCount
+    animals_conditions_today = AnimalCount.objects.filter(animal__in=animals).filter(
+        datecounted__gte=day, datecounted__lt=day + timedelta(days=1)
+    )
+
+    return animals_conditions_today
+
+
+def get_init_anim_count_form(enclosure_animals):
     # TODO: condition should default to median? condition (across users) for the day
-    init_anim = [{"animal": obj} for obj in exhibit_animals]
+
+    # make db query to get conditions for all the animals in enclosure
+    animals_conditions_today = animal_day_conditions(enclosure_animals)
+
+    init_anim = [{"animal": obj} for obj in enclosure_animals]
 
     anims_conds = []
-    for anim in exhibit_animals:
+    for anim in enclosure_animals:
         # * there can be more than one condition per animal
-        conds = animal_conditions_today.filter(animal=anim)
-        if conds.exists():
-            # getting the conditions
-            cond_vals = conds.values_list("condition", flat=True)
-            # creates a condition "order"
-            cv_order = [
-                AnimalCount.SEEN,
-                AnimalCount.NEEDSATTENTION,
-                AnimalCount.BAR,
-                AnimalCount.MISSING,
-            ]
-            # get's the "worst" condition (highest index in list)
-            cond = cv_order[max([cv_order.index(cv) for cv in cond_vals])]
-        else:
+        try:
+            cond = (
+                animals_conditions_today.filter(animal=anim)
+                .latest("datecounted")
+                .condition
+            )
+        except ObjectDoesNotExist:
             cond = ""
         anims_conds.append(cond)
 
@@ -118,125 +189,149 @@ def get_init_anim_count_form(exhibit, exhibit_animals, animal_conditions_today):
     return init_anim
 
 
-def get_exhibit_species(animals, groups):
-    """Combines all the animal species and group species together
-    Given queryset of animals and groups returns a "distinct" queryset of species
-    """
-
-    animal_species = Species.objects.filter(animal__in=animals)
-    group_species = Species.objects.filter(group__in=groups)
-
-    return (animal_species | group_species).distinct()
-
-
 @login_required
-def count(request, exhibit_id):
-    exhibit = get_object_or_404(Exhibit, pk=exhibit_id)
+def count(request, enclosure_id):
+    enclosure = get_object_or_404(Enclosure, pk=enclosure_id)
 
-    exhibit_animals = exhibit.animals.all().order_by("species__common_name", "name")
-    exhibit_groups = exhibit.groups.all().order_by("species__common_name", "name")
+    enclosure_animals = enclosure.animals.all().order_by("species__common_name", "name")
+    enclosure_groups = enclosure.groups.all().order_by("species__common_name")
 
-    exhibit_species = get_exhibit_species(exhibit_animals, exhibit_groups).order_by(
-        "common_name"
-    )
-
-    species_counts_today = SpeciesCount.objects.filter(
-        species__in=exhibit_species
-    ).filter(datecounted=date.today())
-    animal_conditions_today = AnimalCount.objects.filter(
-        animal__in=exhibit_animals
-    ).filter(datecounted=date.today())
+    enclosure_species = enclosure.species().order_by("common_name")
 
     SpeciesCountFormset = inlineformset_factory(
-        Exhibit,
+        Enclosure,
         SpeciesCount,
         form=SpeciesCountForm,
         # formset=BaseSpeciesCountFormset,
-        extra=exhibit_species.count(),
-        max_num=exhibit_species.count(),
+        extra=enclosure_species.count(),
+        max_num=enclosure_species.count(),
+        can_order=False,
+        can_delete=False,
+    )
+
+    GroupCountFormset = inlineformset_factory(
+        Enclosure,
+        GroupCount,
+        form=GroupCountForm,
+        # formset=BaseSpeciesCountFormset,
+        extra=enclosure_groups.count(),
+        max_num=enclosure_groups.count(),
         can_order=False,
         can_delete=False,
     )
 
     AnimalCountFormset = inlineformset_factory(
-        Exhibit,
+        Enclosure,
         AnimalCount,
         form=AnimalCountForm,
         # formset=BaseAnimalCountFormset,
-        extra=exhibit_animals.count(),
-        max_num=exhibit_animals.count(),
+        extra=enclosure_animals.count(),
+        max_num=enclosure_animals.count(),
         can_order=False,
         can_delete=False,
     )
 
     # TODO: initial values aren't being passed into the formset correctly by default, figure out how to do it without manually editing each form
-    init_spec = get_init_spec_count_form(exhibit, exhibit_species, species_counts_today)
-    init_anim = get_init_anim_count_form(
-        exhibit, exhibit_animals, animal_conditions_today
-    )
+    init_spec = get_init_spec_count_form(enclosure_species)
+    init_group = get_init_group_count_form(enclosure_groups)
+    init_anim = get_init_anim_count_form(enclosure_animals)
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         species_formset = SpeciesCountFormset(
-            request.POST, instance=exhibit, initial=init_spec, prefix="species_formset"
+            request.POST,
+            instance=enclosure,
+            initial=init_spec,
+            prefix="species_formset",
         )
-        # TODO: Need to test to make sure we are editing the right animal counts
+
+        groups_formset = GroupCountFormset(
+            request.POST,
+            instance=enclosure,
+            initial=init_group,
+            prefix="groups_formset",
+        )
+
+        # TODO: Test to make sure we are editing the correct animal counts
         animals_formset = AnimalCountFormset(
-            request.POST, instance=exhibit, initial=init_anim, prefix="animals_formset"
+            request.POST,
+            instance=enclosure,
+            initial=init_anim,
+            prefix="animals_formset",
         )
 
         # needed in the case the form wasn't submitted properly and we have to re-render the form
-        formset_order, species_formset, animals_formset = get_formset_order(
-            exhibit_species, exhibit_animals, species_formset, animals_formset
+        # and for setting initial values
+        formset_order, species_formset, groups_formset, animals_formset = get_formset_order(
+            enclosure_species,
+            enclosure_groups,
+            enclosure_animals,
+            species_formset,
+            groups_formset,
+            animals_formset,
         )
 
-        # ! a hack because empty permitted is occassionally set to False!
+        # ! hack because empty permitted is occassionally set to False!
         for form in animals_formset:
             form.empty_permitted = True
 
         # check whether it's valid:
-        if species_formset.is_valid() and animals_formset.is_valid():
+        if (
+            species_formset.is_valid()
+            and animals_formset.is_valid()
+            and groups_formset.is_valid()
+        ):
+
+            def save_form_obj(form):
+                # TODO: move this into model/(form?) and overwrite the save method
+                # TODO: save should be update_or_create w/ user and date (so each user has MAX 1 count/day/spec)
+                if form.has_changed():
+                    obj = form.save(commit=False)
+                    obj.user = request.user
+                    # force insert because otherwise it always updated
+                    obj.id = None
+                    obj.save()
+
             # process the data in form.cleaned_data as required
             for form in species_formset:
-                if form.has_changed():
-                    # TODO: move this into mmodel/(form?) and overwrite the save method
-                    spec = form.save(commit=False)
-                    spec.user = request.user
-
-                    # forcing a new object stored to database on each save because otherwise it always updated
-                    spec.id = None
-                    spec.save()
+                save_form_obj(form)
 
             for form in animals_formset:
-                if form.has_changed():
-                    anim = form.save(commit=False)
-                    anim.user = request.user
-                    # forcing a new object stored to database on each save because otherwise it always updated
-                    anim.id = None
-                    anim.save()
+                save_form_obj(form)
 
-            # redirect to a new URL:
+            for form in groups_formset:
+                save_form_obj(form)
+
             return HttpResponseRedirect("/")
 
     # if a GET (or any other method) we'll create a blank form
     else:
         species_formset = SpeciesCountFormset(
-            instance=exhibit, initial=init_spec, prefix="species_formset"
+            instance=enclosure, initial=init_spec, prefix="species_formset"
+        )
+        groups_formset = GroupCountFormset(
+            instance=enclosure, initial=init_group, prefix="groups_formset"
         )
         animals_formset = AnimalCountFormset(
-            instance=exhibit, initial=init_anim, prefix="animals_formset"
+            instance=enclosure, initial=init_anim, prefix="animals_formset"
         )
-        formset_order, species_formset, animals_formset = get_formset_order(
-            exhibit_species, exhibit_animals, species_formset, animals_formset
+        formset_order, species_formset, groups_formset, animals_formset = get_formset_order(
+            enclosure_species,
+            enclosure_groups,
+            enclosure_animals,
+            species_formset,
+            groups_formset,
+            animals_formset,
         )
 
     return render(
         request,
         "tally.html",
         {
-            "exhibit": exhibit,
+            "enclosure": enclosure,
             "species_formset": species_formset,
+            "groups_formset": groups_formset,
             "animals_formset": animals_formset,
             "formset_order": formset_order,
         },

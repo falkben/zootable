@@ -4,14 +4,14 @@
 
 {% block content %}
 
-{% if exhibits|length > 0 %}
+{% if enclosures|length > 0 %}
 
-<h2>Exhibits</h2>
+<h2>Enclosures</h2>
 
-{% for exhibit in exhibits %}
+{% for enclosure in enclosures %}
 <p>
-  <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'count' exhibit.id %}">
-    {{exhibit}}
+  <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'count' enclosure.id %}">
+    {{enclosure}}
   </a>
 </p>
 {% endfor %}
@@ -19,7 +19,7 @@
 {% else %}
 
 <div class="errorlist">
-No exhibits found. Contact an admin to have them add you to an exhibit
+No enclosures found. Contact an admin to have them add you to an enclosure
 </div>
 
 {% endif%}
