@@ -1,5 +1,3 @@
-from datetime import date, timedelta
-
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -8,6 +6,7 @@ from django.db.models import Max
 from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
 from .forms import (
     AnimalCountForm,
@@ -35,7 +34,7 @@ def home(request):
     return render(request, "home.html", {"enclosures": enclosures})
 
 
-def get_formset_order(
+def set_formset_order(
     enclosure_species,
     enclosure_groups,
     enclosure_animals,
@@ -66,10 +65,18 @@ def get_formset_order(
                 groups_formset.initial_extra[group_count]
             )
             group_form = groups_formset[group_count]
+            # ! hack: figure out how to override the form init function?
+            group_count_types = "male", "female", "unknown"
+            for gctype in group_count_types:
+                group_form.fields[f"count_{gctype}"].widget.attrs.update(
+                    {"max": eval(f"spec_group.population_{gctype}")}
+                )
             group_count += 1
         except ObjectDoesNotExist:
             group_form = None
+            spec_group = None
         formset_dict[spec.id]["group_form"] = group_form
+        formset_dict[spec.id]["group"] = spec_group
 
         spec_anim_queryset = enclosure_animals.filter(species=spec)
         # creating an index into the animals_formset
@@ -90,58 +97,22 @@ def get_formset_order(
     return formset_dict, species_formset, groups_formset, animals_formset
 
 
-def species_day_counts(enclosure_species, day=date.today()):
-    day_counts = SpeciesCount.objects.filter(species__in=enclosure_species).filter(
-        datecounted__gte=day, datecounted__lt=day + timedelta(days=1)
-    )
-
-    return day_counts
-
-
 def get_init_spec_count_form(enclosure_species):
     # TODO: counts should default to maximum (across users) for the day
     # TODO: eliminate for loop
 
-    # make one database query to get the species counts on a given day
-    species_counts_today = species_day_counts(enclosure_species)
-
     # * note: this unpacks the queryset into a list and should be avoided
     init_spec = []
     for sp in enclosure_species:
-        sp_count = 0
-        sp_count_query = species_counts_today.filter(species=sp)
-        if sp_count_query.count() > 0:
-            # in case there is more than one this takes the max
-            sp_count = sp_count_query.aggregate(Max("count"))["count__max"]
-        init_spec.append({"species": sp, "count": sp_count})
+        init_spec.append({"species": sp, "count": sp.current_count})
 
     return init_spec
 
 
-def groups_day_counts(groups, day=date.today()):
-    groups_counts = GroupCount.objects.filter(group__in=groups).filter(
-        datecounted__gte=day, datecounted__lt=day + timedelta(days=1)
-    )
-
-    return groups_counts
-
-
 def get_init_group_count_form(enclosure_groups):
-
-    # make one database query to get the species counts on a given day
-    groups_counts_today = groups_day_counts(enclosure_groups)
-
     init_group = []
     for group in enclosure_groups:
-        gp_count_query = groups_counts_today.filter(group=group)
-        m_count = f_count = u_count = 0
-        if gp_count_query.count() > 0:
-            # in case there is more than one this takes the max
-            m_count = gp_count_query.aggregate(Max("count_male"))["count_male__max"]
-            f_count = gp_count_query.aggregate(Max("count_female"))["count_female__max"]
-            u_count = gp_count_query.aggregate(Max("count_unknown"))[
-                "count_unknown__max"
-            ]
+        m_count, f_count, u_count = group.current_count
         init_group.append(
             {
                 "group": group,
@@ -154,37 +125,14 @@ def get_init_group_count_form(enclosure_groups):
     return init_group
 
 
-def animal_day_conditions(animals, day=date.today()):
-    # TODO: this could be a custom queryset on AnimalCount
-    animals_conditions_today = AnimalCount.objects.filter(animal__in=animals).filter(
-        datecounted__gte=day, datecounted__lt=day + timedelta(days=1)
-    )
-
-    return animals_conditions_today
-
-
 def get_init_anim_count_form(enclosure_animals):
     # TODO: condition should default to median? condition (across users) for the day
 
     # make db query to get conditions for all the animals in enclosure
-    animals_conditions_today = animal_day_conditions(enclosure_animals)
-
-    init_anim = [{"animal": obj} for obj in enclosure_animals]
-
-    anims_conds = []
-    for anim in enclosure_animals:
-        # * there can be more than one condition per animal
-        try:
-            cond = (
-                animals_conditions_today.filter(animal=anim)
-                .latest("datecounted")
-                .condition
-            )
-        except ObjectDoesNotExist:
-            cond = ""
-        anims_conds.append(cond)
-
-    [init.update({"condition": c}) for init, c in zip(init_anim, anims_conds)]
+    init_anim = [
+        {"animal": anim, "condition": anim.current_condition}
+        for anim in enclosure_animals
+    ]
 
     return init_anim
 
@@ -263,7 +211,7 @@ def count(request, enclosure_id):
 
         # needed in the case the form wasn't submitted properly and we have to re-render the form
         # and for setting initial values
-        formset_order, species_formset, groups_formset, animals_formset = get_formset_order(
+        formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
             enclosure_species,
             enclosure_groups,
             enclosure_animals,
@@ -316,7 +264,7 @@ def count(request, enclosure_id):
         animals_formset = AnimalCountFormset(
             instance=enclosure, initial=init_anim, prefix="animals_formset"
         )
-        formset_order, species_formset, groups_formset, animals_formset = get_formset_order(
+        formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
             enclosure_species,
             enclosure_groups,
             enclosure_animals,

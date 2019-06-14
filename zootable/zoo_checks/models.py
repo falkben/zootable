@@ -1,5 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+from django.utils import timezone
+
+from .helpers import today_time
 
 
 class Enclosure(models.Model):
@@ -36,6 +40,31 @@ class Species(models.Model):
     class Meta:
         ordering = ["common_name"]
 
+    def get_count_day(self, day=today_time()):
+        count = 0
+        day_counts = self.counts.filter(
+            datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
+        )
+        if day_counts.exists():
+            # in case there is more than one this takes the max
+            count = day_counts.aggregate(models.Max("count"))["count__max"]
+
+        return count
+
+    @property
+    def current_count(self):
+
+        return self.get_count_day()
+
+    @property
+    def prior_counts(self, prior_days=3):
+        counts = [0] * prior_days
+        for p in range(prior_days):
+            day = today_time() - timezone.timedelta(days=p + 1)
+            counts[p] = self.get_count_day(day)
+
+        return counts
+
 
 class AnimalSet(models.Model):
     active = models.BooleanField(default=True)
@@ -69,6 +98,35 @@ class Animal(AnimalSet):
             (self.name, self.identifier, self.sex, str(self.accession_number))
         )
 
+    @property
+    def current_condition(self):
+        try:
+            cond = self.conditions.latest("datecounted").condition
+        except ObjectDoesNotExist:
+            cond = ""
+        return cond
+
+    @property
+    def prior_conditions(self, prior_days=3):
+        """Given a set of animals, returns their counts from the prior N days
+        """
+        conds = [""] * prior_days
+        for p in range(prior_days):
+            day = today_time() - timezone.timedelta(days=p + 1)
+            try:
+                conds[p] = (
+                    self.conditions.filter(
+                        datecounted__gte=day,
+                        datecounted__lt=day + timezone.timedelta(days=1),
+                    )
+                    .latest("datecounted")
+                    .condition
+                )
+            except ObjectDoesNotExist:
+                pass
+
+        return conds
+
 
 class Group(AnimalSet):
     """Same as an animal, just represents a group of them w/ no identifier
@@ -87,6 +145,38 @@ class Group(AnimalSet):
 
     def __str__(self):
         return "|".join((self.species.common_name, self.accession_number))
+
+    def get_count_day(self, day=today_time()):
+        m_count = f_count = u_count = 0
+
+        day_counts = self.counts.filter(
+            datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
+        )
+        if day_counts.exists():
+            # in case there is more than one this takes the max
+            m_count = day_counts.aggregate(models.Max("count_male"))["count_male__max"]
+            f_count = day_counts.aggregate(models.Max("count_female"))[
+                "count_female__max"
+            ]
+            u_count = day_counts.aggregate(models.Max("count_unknown"))[
+                "count_unknown__max"
+            ]
+
+        return m_count, f_count, u_count
+
+    @property
+    def current_count(self):
+        m_count, f_count, u_count = self.get_count_day()
+        return m_count, f_count, u_count
+
+    @property
+    def prior_counts(self, prior_days=3):
+        counts = [0] * prior_days
+        for p in range(prior_days):
+            day = today_time() - timezone.timedelta(days=p + 1)
+            counts[p] = self.get_count_day(day)
+
+        return counts
 
 
 class Count(models.Model):
@@ -110,7 +200,9 @@ class AnimalCount(Count):
 
     condition = models.CharField(max_length=2, choices=CONDITIONS)
 
-    animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
+    animal = models.ForeignKey(
+        Animal, on_delete=models.CASCADE, related_name="conditions"
+    )
 
     def __str__(self):
         return "|".join(
@@ -128,7 +220,7 @@ class GroupCount(Count):
     count_female = models.PositiveSmallIntegerField(default=0)
     count_unknown = models.PositiveSmallIntegerField(default=0)
 
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="counts")
 
     def __str__(self):
         return "|".join(
@@ -144,7 +236,9 @@ class GroupCount(Count):
 class SpeciesCount(Count):
     count = models.PositiveSmallIntegerField(default=0)
 
-    species = models.ForeignKey(Species, on_delete=models.CASCADE)
+    species = models.ForeignKey(
+        Species, on_delete=models.CASCADE, related_name="counts"
+    )
 
     def __str__(self):
         return "|".join(

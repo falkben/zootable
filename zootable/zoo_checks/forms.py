@@ -34,10 +34,12 @@ class GroupCountForm(forms.ModelForm):
         model = GroupCount
         fields = ["count_male", "count_female", "count_unknown", "group", "enclosure"]
 
-        # hide species/enclosure form elements
+        # TODO: figure out how to add max value in widget attrs
         widgets = {
+            # hide species/enclosure form elements
             "group": forms.HiddenInput(),
             "enclosure": forms.HiddenInput(),
+            # make the input boxes smaller
             "count_male": forms.NumberInput(attrs={"class": "narrow-count"}),
             "count_female": forms.NumberInput(attrs={"class": "narrow-count"}),
             "count_unknown": forms.NumberInput(attrs={"class": "narrow-count"}),

@@ -1,0 +1,64 @@
+<td></td>
+<td>
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+{% if group.population_male == 0 %}
+<div style="display: none">
+{% endif %}
+<span class="fieldWrapper">
+    {{ form.count_male.errors }}
+    <b>M</b><em>({{group.population_male}})</em>: {{ form.count_male }}
+</span>
+{% if group.population_male == 0 %}
+</div>
+{% endif %}
+
+{% if group.population_female == 0 %}
+<div style="display: none">
+{% endif %}
+<span class="fieldWrapper">
+    {{ form.count_female.errors }}
+    <b>F</b><em>({{group.population_female}})</em>: {{ form.count_female }}
+</span>
+{% if group.population_female == 0 %}
+</div>
+{% endif %}
+
+
+{% if group.population_unknown == 0 %}
+<div style="display: none">
+{% endif %}
+<span class="fieldWrapper">
+    {{ form.count_unknown.errors }}
+    <b>U</b><em>({{group.population_unknown}})</em>: {{ form.count_unknown }}
+</span>
+{% if group.population_unknown == 0 %}
+</div>
+{% endif %}
+</td>
+
+{% for count in group.prior_counts %}
+<td>
+    {% if group.population_male > 0 %}
+        M
+    {% endif %}
+    {% if group.population_female > 0 %}
+        F
+    {% endif %}
+    {% if group.population_unknown > 0 %}
+        U
+    {% endif %}<br />
+
+    {% if group.population_male > 0 %}
+        {{count.0}}
+    {% endif %}
+    {% if group.population_female > 0 %}
+       {{count.1}}
+    {% endif %}
+    {% if group.population_unknown > 0 %}
+        {{count.2}}
+    {% endif %}
+</td>
+{% endfor %}

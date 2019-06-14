@@ -28,6 +28,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # DEBUG = True
 
 # ALLOWED_HOSTS = []
+
+# TIME_ZONE = "America/New_York"
+
 try:
     from .local_settings import *
 except ImportError:
@@ -113,8 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 

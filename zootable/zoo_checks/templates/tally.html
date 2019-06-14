@@ -5,9 +5,6 @@
 {% block content %}
 <h2>{{enclosure}}</h2>
 
-{% load index %}
-{% load range %}
-
 <form action="/count/{{enclosure.id}}" method="post">
     {% csrf_token %}
     {{species_formset.management_form}}
@@ -19,20 +16,23 @@
         <tbody>
         <thead class="species">
         <td><b>{{spec_dict.species.common_name}}</b><br/><em>({{spec_dict.species.genus_name}} {{spec_dict.species.species_name}})</em></td>
-        <td class="mdl-data-table__cell--non-numeric">{{spec_dict.formset.as_ul}}</td>
-        </thead>        
+        <td>{{spec_dict.formset.as_ul}}</td>
+        {% for daycount in spec_dict.species.prior_counts %}
+        <td>
+            {{daycount}}
+        </td>
+        {% endfor %}
+        </thead>
 
-        {% if spec_dict.group_form%}
+        {% if spec_dict.group_form %}
         <tr>
-            <td></td>
-            <td>{{spec_dict.group_form.as_ul}}</td>
+            {% include "group_form_snippet.html" with form=spec_dict.group_form group=spec_dict.group %}
         </tr>
         {% endif %}
         
         {% for anim, ff in spec_dict.animalformset_index %}
             <tr>
-            <td><b>{{anim.name}}</b> <em>({{anim.sex}})</em><br />{{anim.identifier}}<br />{{anim.accession_number}}</td>
-            <td>{{ff.as_ul}}</td>
+            {% include "animal_form_snippet.html" with form=ff %}
             </tr>
         {% endfor %}
         </tbody>

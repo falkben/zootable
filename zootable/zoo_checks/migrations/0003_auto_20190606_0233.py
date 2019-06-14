@@ -5,15 +5,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('zoo_checks', '0002_auto_20190602_1402'),
+        ("zoo_checks", "0002_auto_20190602_1402"),
     ]
 
     operations = [
-        migrations.RenameModel(
-            old_name='SpeciesExhibitCount',
-            new_name='SpeciesCount',
-        ),
+        migrations.RenameModel(old_name="SpeciesExhibitCount", new_name="SpeciesCount")
     ]

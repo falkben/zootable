@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-sys.path.append("zootally")
+sys.path.append("zootable")
 
 import django
 import pandas as pd
@@ -18,8 +18,8 @@ from zoo_checks.models import Animal, Enclosure, Group, Species, User
 # TODO: argparse so can call from command line
 
 
-# DATAFILE = "zootally/tracks_data/Australia.Exhibit.Bird.Inventory.xlsx"
-DATAFILE = "zootally/tracks_data/BTR.Inventory.xlsx"
+# DATAFILE = "zootable/tracks_data/Australia.Exhibit.Bird.Inventory.xlsx"
+DATAFILE = "zootable/tracks_data/BTR.Inventory.xlsx"
 
 
 def get_species_obj(row):
