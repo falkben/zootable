@@ -207,6 +207,7 @@ def count(request, enclosure_id):
             instance=enclosure,
             initial=init_anim,
             prefix="animals_formset",
+            form_kwargs={"is_staff": request.user.is_staff},
         )
 
         # needed in the case the form wasn't submitted properly and we have to re-render the form
@@ -262,7 +263,10 @@ def count(request, enclosure_id):
             instance=enclosure, initial=init_group, prefix="groups_formset"
         )
         animals_formset = AnimalCountFormset(
-            instance=enclosure, initial=init_anim, prefix="animals_formset"
+            instance=enclosure,
+            initial=init_anim,
+            prefix="animals_formset",
+            form_kwargs={"is_staff": request.user.is_staff},
         )
         formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
             enclosure_species,

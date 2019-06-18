@@ -206,15 +206,12 @@ class AnimalCount(Count):
     BAR = "BA"
     NOT_SEEN = ""
 
-    CONDITIONS = [
-        (BAR, "BAR"),
-        (SEEN, "Seen"),
-        (NEEDSATTENTION, "Attn"),
-        (NOT_SEEN, "Not Seen"),
-    ]
+    CONDITIONS = [(SEEN, "Seen"), (NEEDSATTENTION, "Attn"), (NOT_SEEN, "Not Seen")]
+
+    STAFF_CONDITIONS = [(BAR, "BAR")] + CONDITIONS
 
     condition = models.CharField(
-        max_length=2, choices=CONDITIONS, default="", null=True
+        max_length=2, choices=STAFF_CONDITIONS, default="", null=True
     )
 
     animal = models.ForeignKey(
