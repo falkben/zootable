@@ -11,6 +11,12 @@ class AnimalCountForm(forms.ModelForm):
         # hide animal form element
         widgets = {"animal": forms.HiddenInput(), "enclosure": forms.HiddenInput()}
 
+    def __init__(self, *args, **kwargs):
+        is_staff = kwargs.pop("is_staff", None)
+        super(AnimalCountForm, self).__init__(*args, **kwargs)
+        if is_staff:
+            self.fields["condition"].choices = AnimalCount.STAFF_CONDITIONS
+
     condition = forms.ChoiceField(
         choices=AnimalCount.CONDITIONS,
         widget=forms.RadioSelect,
@@ -49,7 +55,7 @@ class GroupCountForm(forms.ModelForm):
         }
 
 
-class BaseAnimalCountFormset(forms.BaseFormSet):
+class BaseAnimalCountFormset(forms.BaseInlineFormSet):
     def clean(self):
         if any(self.errors):
             # Don't bother validating the formset unless each form is valid on its own
@@ -59,7 +65,7 @@ class BaseAnimalCountFormset(forms.BaseFormSet):
             pass
 
 
-class BaseSpeciesCountFormset(forms.BaseFormSet):
+class BaseSpeciesCountFormset(forms.BaseInlineFormSet):
     def clean(self):
         if any(self.errors):
             # Don't bother validating the formset unless each form is valid on its own
