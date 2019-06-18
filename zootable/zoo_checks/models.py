@@ -41,13 +41,17 @@ class Species(models.Model):
         ordering = ["common_name"]
 
     def get_count_day(self, day=today_time()):
-        count = 0
-        day_counts = self.counts.filter(
-            datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-        )
-        if day_counts.exists():
-            # in case there is more than one this takes the max
-            count = day_counts.aggregate(models.Max("count"))["count__max"]
+        try:
+            count = (
+                self.counts.filter(
+                    datecounted__gte=day,
+                    datecounted__lt=day + timezone.timedelta(days=1),
+                )
+                .latest("datecounted")
+                .count
+            )
+        except ObjectDoesNotExist:
+            count = 0
 
         return count
 
@@ -98,13 +102,29 @@ class Animal(AnimalSet):
             (self.name, self.identifier, self.sex, str(self.accession_number))
         )
 
+    def count_on_day(self, day=today_time()):
+        try:
+            count = self.conditions.filter(
+                datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
+            ).latest("datecounted")
+        except ObjectDoesNotExist:
+            count = None
+
+        return count
+
+    def condition_on_day(self, day=today_time()):
+        count = self.count_on_day(day)
+        if count is not None:
+            cond = count.condition
+        else:
+            cond = ""
+
+        return cond
+
     @property
     def current_condition(self):
-        try:
-            cond = self.conditions.latest("datecounted").condition
-        except ObjectDoesNotExist:
-            cond = ""
-        return cond
+
+        return self.condition_on_day()
 
     @property
     def prior_conditions(self, prior_days=3):
@@ -113,17 +133,9 @@ class Animal(AnimalSet):
         conds = [""] * prior_days
         for p in range(prior_days):
             day = today_time() - timezone.timedelta(days=p + 1)
-            try:
-                conds[p] = (
-                    self.conditions.filter(
-                        datecounted__gte=day,
-                        datecounted__lt=day + timezone.timedelta(days=1),
-                    )
-                    .latest("datecounted")
-                    .condition
-                )
-            except ObjectDoesNotExist:
-                pass
+            count = self.count_on_day(day)
+            if count is not None:
+                conds[p] = count.get_condition_display()
 
         return conds
 
@@ -148,19 +160,16 @@ class Group(AnimalSet):
 
     def get_count_day(self, day=today_time()):
         m_count = f_count = u_count = 0
+        try:
+            count = self.counts.filter(
+                datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
+            ).latest("datecounted")
 
-        day_counts = self.counts.filter(
-            datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-        )
-        if day_counts.exists():
-            # in case there is more than one this takes the max
-            m_count = day_counts.aggregate(models.Max("count_male"))["count_male__max"]
-            f_count = day_counts.aggregate(models.Max("count_female"))[
-                "count_female__max"
-            ]
-            u_count = day_counts.aggregate(models.Max("count_unknown"))[
-                "count_unknown__max"
-            ]
+            m_count = count.count_male
+            f_count = count.count_female
+            u_count = count.count_unknown
+        except:
+            pass
 
         return m_count, f_count, u_count
 
@@ -195,10 +204,18 @@ class AnimalCount(Count):
     NEEDSATTENTION = "NA"
     # bright active responsive (the best)
     BAR = "BA"
+    NOT_SEEN = ""
 
-    CONDITIONS = [(BAR, "BAR"), (SEEN, "Seen"), (NEEDSATTENTION, "Attn")]
+    CONDITIONS = [
+        (BAR, "BAR"),
+        (SEEN, "Seen"),
+        (NEEDSATTENTION, "Attn"),
+        (NOT_SEEN, "Not Seen"),
+    ]
 
-    condition = models.CharField(max_length=2, choices=CONDITIONS)
+    condition = models.CharField(
+        max_length=2, choices=CONDITIONS, default="", null=True
+    )
 
     animal = models.ForeignKey(
         Animal, on_delete=models.CASCADE, related_name="conditions"
