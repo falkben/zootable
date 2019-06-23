@@ -1,13 +1,11 @@
 # Zootable
 
-Web app to tally zoo animals
+Web app to tally zoo animals. See [zootable.com](https://zootable.com) for information.
 
 ## License
 
 This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0.html) license
 
-## Deployment notes
+## Notes
 
-https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
-`python manage.py check --deploy`
+[Notes](NOTES.md)
