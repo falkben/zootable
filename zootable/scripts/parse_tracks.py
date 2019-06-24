@@ -1,6 +1,7 @@
 """This script parses a tracks file and enters it into the database
 """
 
+import argparse
 import os
 import re
 import sys
@@ -16,10 +17,6 @@ django.setup()
 from zoo_checks.models import Animal, Enclosure, Group, Species, User
 
 # TODO: argparse so can call from command line
-
-
-# DATAFILE = "zootable/tracks_data/Australia.Exhibit.Bird.Inventory.xlsx"
-DATAFILE = "zootable/tracks_data/BTR.Inventory.xlsx"
 
 
 def get_species_obj(row):
@@ -179,7 +176,11 @@ def create_animals(df):
 
 
 def main():
-    df = read_tracks(DATAFILE)
+    parser = argparse.ArgumentParser(description="Parse csv file for animals")
+    parser.add_argument("csvfile")
+    args = parser.parse_args()
+
+    df = read_tracks(args.csvfile)
     create_enclosures(df)
     create_species(df)
 
@@ -187,7 +188,7 @@ def main():
     create_animals(animals)
     create_groups(groups)
 
-    print(f"Processed, {DATAFILE}")
+    print(f"Processed {args.csvfile}")
 
 
 if __name__ == "__main__":

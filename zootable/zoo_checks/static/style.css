@@ -3,7 +3,7 @@
 /* give main content a little margin */
 
 main {
-  margin: 5px 0 5px 0;
+  margin: 5px;
 }
 
 .mdl-mini-footer {
@@ -89,4 +89,8 @@ input[type="number"] {
 input[type="number"]:hover::-webkit-inner-spin-button {
   width: 14px;
   height: 30px;
+}
+
+.edit {
+  height: 20px;
 }

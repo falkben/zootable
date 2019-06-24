@@ -1,0 +1,20 @@
+{% load static %}
+
+<thead class="species">
+<td>
+    <b>{{species.common_name}}</b><br/>
+    <em>({{species.genus_name}} {{species.species_name}})</em>
+</td>
+<td>
+    {{form.as_ul}}
+</td>
+
+{% for daycount in prior_counts %}
+<td>
+    {{daycount.count}}
+    <a href="{% url 'edit_species_count' species=species.common_name enclosure=enclosure.name year=daycount.day.year month=daycount.day.month day=daycount.day.day %}">
+    <img class="edit" src="{% static 'images/edit_light.svg' %}">
+    </a>
+</td>
+{% endfor %}
+</thead>

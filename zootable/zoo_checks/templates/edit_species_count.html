@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Species Count{% endblock %}
+
+{% block content %}
+
+<p><b>Enclosure:</b> {{enclosure}}
+<p><b>Species:</b> {{species.common_name}}<em>({{species.genus_name}} {{species.species_name}})</em></td>
+<p><b>Date:</b> {{dateday.date}}
+
+<form action="/edit_species_count/{{species.common_name}}/{{enclosure.name}}/{{dateday.year}}/{{dateday.month}}/{{dateday.day}}/" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+</form>
+
+<p><b>User:</b> {{count.user}}</p>
+
+{% endblock %}

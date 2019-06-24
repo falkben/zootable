@@ -1,20 +1,11 @@
-from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max
 from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import (
-    AnimalCountForm,
-    BaseAnimalCountFormset,
-    BaseSpeciesCountFormset,
-    GroupCountForm,
-    SpeciesCountForm,
-)
+from .forms import AnimalCountForm, GroupCountForm, SpeciesCountForm
 from .models import (
     Animal,
     AnimalCount,
@@ -35,6 +26,7 @@ def home(request):
 
 
 def set_formset_order(
+    enclosure,
     enclosure_species,
     enclosure_groups,
     enclosure_animals,
@@ -58,6 +50,7 @@ def set_formset_order(
         species_formset.forms[ind].initial.update(species_formset.initial_extra[ind])
         formset_dict[spec.id]["species"] = spec
         formset_dict[spec.id]["formset"] = species_formset[ind]
+        formset_dict[spec.id]["prior_counts"] = spec.prior_counts(enclosure)
 
         try:
             spec_group = enclosure_groups.get(species=spec)
@@ -97,14 +90,14 @@ def set_formset_order(
     return formset_dict, species_formset, groups_formset, animals_formset
 
 
-def get_init_spec_count_form(enclosure_species):
+def get_init_spec_count_form(enclosure, enclosure_species):
     # TODO: counts should default to maximum (across users) for the day
     # TODO: eliminate for loop
 
     # * note: this unpacks the queryset into a list and should be avoided
     init_spec = []
     for sp in enclosure_species:
-        init_spec.append({"species": sp, "count": sp.current_count})
+        init_spec.append({"species": sp, "count": sp.current_count(enclosure)["count"]})
 
     return init_spec
 
@@ -112,13 +105,13 @@ def get_init_spec_count_form(enclosure_species):
 def get_init_group_count_form(enclosure_groups):
     init_group = []
     for group in enclosure_groups:
-        m_count, f_count, u_count = group.current_count
+        group_count = group.current_count()
         init_group.append(
             {
                 "group": group,
-                "count_male": m_count,
-                "count_female": f_count,
-                "count_unknown": u_count,
+                "count_male": group_count["m_count"],
+                "count_female": group_count["f_count"],
+                "count_unknown": group_count["u_count"],
             }
         )
 
@@ -138,8 +131,8 @@ def get_init_anim_count_form(enclosure_animals):
 
 
 @login_required
-def count(request, enclosure_id):
-    enclosure = get_object_or_404(Enclosure, pk=enclosure_id)
+def count(request, enclosure_name):
+    enclosure = get_object_or_404(Enclosure, name=enclosure_name)
 
     enclosure_animals = enclosure.animals.all().order_by("species__common_name", "name")
     enclosure_groups = enclosure.groups.all().order_by("species__common_name")
@@ -180,7 +173,7 @@ def count(request, enclosure_id):
     )
 
     # TODO: initial values aren't being passed into the formset correctly by default, figure out how to do it without manually editing each form
-    init_spec = get_init_spec_count_form(enclosure_species)
+    init_spec = get_init_spec_count_form(enclosure, enclosure_species)
     init_group = get_init_group_count_form(enclosure_groups)
     init_anim = get_init_anim_count_form(enclosure_animals)
 
@@ -213,6 +206,7 @@ def count(request, enclosure_id):
         # needed in the case the form wasn't submitted properly and we have to re-render the form
         # and for setting initial values
         formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
+            enclosure,
             enclosure_species,
             enclosure_groups,
             enclosure_animals,
@@ -240,6 +234,7 @@ def count(request, enclosure_id):
                     obj.user = request.user
                     # force insert because otherwise it always updated
                     obj.id = None
+                    obj.datecounted = timezone.now()
                     obj.save()
 
             # process the data in form.cleaned_data as required
@@ -269,6 +264,7 @@ def count(request, enclosure_id):
             form_kwargs={"is_staff": request.user.is_staff},
         )
         formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
+            enclosure,
             enclosure_species,
             enclosure_groups,
             enclosure_animals,
@@ -286,5 +282,139 @@ def count(request, enclosure_id):
             "groups_formset": groups_formset,
             "animals_formset": animals_formset,
             "formset_order": formset_order,
+        },
+    )
+
+
+@login_required
+def edit_species_count(request, species, enclosure, year, month, day):
+    species = get_object_or_404(Species, common_name=species)
+    enclosure = get_object_or_404(Enclosure, name=enclosure)
+
+    dateday = timezone.make_aware(timezone.datetime(year, month, day))
+
+    count = species.get_count_day(enclosure, day=dateday)
+    init_form = {
+        "count": 0 if count is None else count.count,
+        "species": species,
+        "enclosure": enclosure,
+    }
+
+    if request.method == "POST":
+        form = SpeciesCountForm(request.POST, init_form)
+        if form.is_valid():
+            # save the data
+            if form.has_changed():
+                obj = form.save(commit=False)
+                obj.user = request.user
+                # force insert because otherwise it always updated
+                obj.id = None
+                obj.datecounted = (
+                    dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
+                )
+                obj.save()
+            return redirect("count", enclosure_name=enclosure.name)
+    else:
+        form = SpeciesCountForm(initial=init_form)
+
+    return render(
+        request,
+        "edit_species_count.html",
+        {
+            "form": form,
+            "count": count,
+            "species": species,
+            "enclosure": enclosure,
+            "dateday": dateday,
+        },
+    )
+
+
+@login_required
+def edit_group_count(request, group, year, month, day):
+    group = get_object_or_404(Group, accession_number=group)
+    enclosure = group.enclosure
+
+    dateday = timezone.make_aware(timezone.datetime(year, month, day))
+    count = group.get_count_day(day=dateday)
+    init_form = {
+        "count_male": 0 if count is None else count["m_count"],
+        "count_female": 0 if count is None else count["f_count"],
+        "count_unknown": 0 if count is None else count["u_count"],
+        "group": group,
+        "enclosure": enclosure,
+    }
+
+    if request.method == "POST":
+        form = GroupCountForm(request.POST, initial=init_form)
+        if form.is_valid():
+            # save the data
+            if form.has_changed():
+                obj = form.save(commit=False)
+                obj.user = request.user
+                # force insert because otherwise it always updated
+                obj.id = None
+                obj.datecounted = (
+                    dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
+                )
+                obj.save()
+            return redirect("count", enclosure_name=enclosure.name)
+    else:
+        form = GroupCountForm(initial=init_form)
+
+    return render(
+        request,
+        "edit_group_count.html",
+        {
+            "form": form,
+            "count": count,
+            "group": group,
+            "enclosure": enclosure,
+            "dateday": dateday,
+        },
+    )
+
+
+@login_required
+def edit_animal_count(request, animal, year, month, day):
+    animal = get_object_or_404(Animal, accession_number=animal)
+    enclosure = animal.enclosure
+
+    dateday = timezone.make_aware(timezone.datetime(year, month, day))
+    count = animal.count_on_day(day=dateday)
+    init_form = {
+        "condition": "" if count is None else count["condition"],
+        "animal": animal,
+        "enclosure": enclosure,
+    }
+
+    if request.method == "POST":
+        form = AnimalCountForm(
+            request.POST, initial=init_form, is_staff=request.user.is_staff
+        )
+        if form.is_valid():
+            # save the data
+            if form.has_changed():
+                obj = form.save(commit=False)
+                obj.user = request.user
+                # force insert because otherwise it always updated
+                obj.id = None
+                obj.datecounted = (
+                    dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
+                )
+                obj.save()
+            return redirect("count", enclosure_name=enclosure.name)
+    else:
+        form = AnimalCountForm(initial=init_form, is_staff=request.user.is_staff)
+
+    return render(
+        request,
+        "edit_animal_count.html",
+        {
+            "form": form,
+            "count": count,
+            "animal": animal,
+            "enclosure": enclosure,
+            "dateday": dateday,
         },
     )

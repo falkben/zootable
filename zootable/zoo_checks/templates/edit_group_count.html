@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Group Count{% endblock %}
+
+{% block content %}
+
+<p><b>Enclosure:</b> {{enclosure}}
+<p><b>Species:</b> {{group.species.common_name}}<em>({{group.species.genus_name}} {{group.species.species_name}})</em></td>
+<p><b>Group Accession Number:</b> {{group.accession_number}}</p>
+<p><b>Date:</b> {{dateday.date}}
+
+<p>
+<form action="/edit_group_count/{{group.accession_number}}/{{dateday.year}}/{{dateday.month}}/{{dateday.day}}/" method="post">
+    {% csrf_token %}
+
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    <span class="fieldWrapper">
+    {{ form.count_male.errors }}
+        <b>M</b><em>({{group.population_male}})</em>: {{ form.count_male }}
+    </span>
+
+    <span class="fieldWrapper">
+        {{ form.count_female.errors }}
+        <b>F</b><em>({{group.population_female}})</em>: {{ form.count_female }}
+    </span>
+
+    <span class="fieldWrapper">
+        {{ form.count_unknown.errors }}
+        <b>U</b><em>({{group.population_unknown}})</em>: {{ form.count_unknown }}
+    </span>
+
+    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+</form>
+</p>
+
+<p><b>User:</b> {{count.user}}</p>
+
+{% endblock %}

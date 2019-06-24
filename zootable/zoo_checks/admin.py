@@ -10,10 +10,23 @@ from zoo_checks.models import (
     SpeciesCount,
 )
 
+
+@admin.register(AnimalCount)
+class AnimalCountAdmin(admin.ModelAdmin):
+    readonly_fields = ("datecounted",)
+
+
+@admin.register(GroupCount)
+class GroupCountAdmin(admin.ModelAdmin):
+    readonly_fields = ("datecounted",)
+
+
+@admin.register(SpeciesCount)
+class SpeciesCountAdmin(admin.ModelAdmin):
+    readonly_fields = ("datecounted",)
+
+
 admin.site.register(Animal)
-admin.site.register(AnimalCount)
 admin.site.register(Group)
-admin.site.register(GroupCount)
 admin.site.register(Enclosure)
 admin.site.register(Species)
-admin.site.register(SpeciesCount)

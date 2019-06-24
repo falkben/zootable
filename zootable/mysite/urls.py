@@ -28,5 +28,20 @@ urlpatterns = [
         name="account_management",
     ),
     path("", views.home, name="home"),
-    path("count/<int:enclosure_id>", views.count, name="count"),
+    path("count/<enclosure_name>", views.count, name="count"),
+    path(
+        "edit_species_count/<species>/<enclosure>/<int:year>/<int:month>/<int:day>/",
+        views.edit_species_count,
+        name="edit_species_count",
+    ),
+    path(
+        "edit_group_count/<int:group>/<int:year>/<int:month>/<int:day>/",
+        views.edit_group_count,
+        name="edit_group_count",
+    ),
+    path(
+        "edit_animal_count/<int:animal>/<int:year>/<int:month>/<int:day>/",
+        views.edit_animal_count,
+        name="edit_animal_count",
+    ),
 ]
