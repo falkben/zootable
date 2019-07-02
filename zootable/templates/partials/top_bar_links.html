@@ -5,6 +5,9 @@
     <a class="mdl-navigation__link" href="{% url 'admin:index' %}">
         Admin
     </a>
+    <a class="mdl-navigation__link" href="{% url 'ingest_form' %}">
+        Upload
+    </a>
     {% endif %}
     <a class="mdl-navigation__link" href="{% url 'account_logout' %}">Logout</a>
 {% else %}

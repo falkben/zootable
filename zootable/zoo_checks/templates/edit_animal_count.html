@@ -12,7 +12,7 @@
 <p><b>Sex:</b> {{animal.sex}}</p>
 <p><b>Date:</b> {{dateday.date}}
 
-<form action="/edit_animal_count/{{animal.accession_number}}/{{dateday.year}}/{{dateday.month}}/{{dateday.day}}/" method="post">
+<form action="{% url 'edit_animal_count' animal.accession_number dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
 
     {{form.as_p}}

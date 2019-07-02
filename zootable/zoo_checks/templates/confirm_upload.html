@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm upload{% endblock %}
+
+{% block content %}
+
+<h2>Confirm upload</h2>
+
+{% for enc_change in changesets.enclosure %}
+<p>
+    Enclosure: {{enc_change.name}}
+<br />
+    Action: {{enc_change.action}}
+</p>
+{% endfor %}
+
+{% endblock %}

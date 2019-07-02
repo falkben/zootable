@@ -55,6 +55,12 @@ class GroupCountForm(forms.ModelForm):
         }
 
 
+class UploadFileForm(forms.Form):
+    file = forms.FileField()
+    # TODO: validate that it's an excel file
+    # TODO: validate the file is not too large?
+
+
 class BaseAnimalCountFormset(forms.BaseInlineFormSet):
     def clean(self):
         if any(self.errors):

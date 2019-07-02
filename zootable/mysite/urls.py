@@ -44,4 +44,6 @@ urlpatterns = [
         views.edit_animal_count,
         name="edit_animal_count",
     ),
+    path("upload", views.ingest_form, name="ingest_form"),
+    path("confirm_upload/", views.confirm_upload, name="confirm_upload"),
 ]

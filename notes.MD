@@ -10,6 +10,6 @@
 
 - Download data
 
-- `python scripts/parse_tracks.py`
+- `python scripts/parse_xlsx_data.py`
 
 - `python manage.py createsuperuser`

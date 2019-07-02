@@ -1,11 +1,12 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import AnimalCountForm, GroupCountForm, SpeciesCountForm
+from .forms import AnimalCountForm, GroupCountForm, SpeciesCountForm, UploadFileForm
+from .ingest import handle_ingest
 from .models import (
     Animal,
     AnimalCount,
@@ -418,3 +419,31 @@ def edit_animal_count(request, animal, year, month, day):
             "dateday": dateday,
         },
     )
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def ingest_form(request):
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            # where we compute changes
+            changesets = handle_ingest(request.FILES["file"])
+            request.session["changesets"] = changesets
+
+            # TODO: if no changesets, then we notify and redirect back to home
+
+            # redirect to a confirmation page
+            return redirect("confirm_upload")
+
+    else:
+        form = UploadFileForm()
+
+    return render(request, "upload_form.html", {"form": form})
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def confirm_upload(request):
+    changesets = request.session.pop("changesets")
+
+    return render(request, "confirm_upload.html", {"changesets": changesets})
+

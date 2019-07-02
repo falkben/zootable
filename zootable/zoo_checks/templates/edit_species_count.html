@@ -8,7 +8,7 @@
 <p><b>Species:</b> {{species.common_name}}<em>({{species.genus_name}} {{species.species_name}})</em></td>
 <p><b>Date:</b> {{dateday.date}}
 
-<form action="/edit_species_count/{{species.common_name}}/{{enclosure.name}}/{{dateday.year}}/{{dateday.month}}/{{dateday.day}}/" method="post">
+<form action="{% url 'edit_species_count' species.common_name enclosure.name dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
     {{ form.as_p }}
 

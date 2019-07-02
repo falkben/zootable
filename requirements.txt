@@ -1,4 +1,4 @@
 django==2.2.2
 django-allauth==0.39.1
-pandas # for data ingest
+pandas
 xlrd

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload{% endblock %}
+
+{% block content %}
+
+<h2>Upload</h2>
+
+<form action="{% url 'ingest_form' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{form.as_p}}
+
+    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Upload">
+</form>
+
+{% endblock %}

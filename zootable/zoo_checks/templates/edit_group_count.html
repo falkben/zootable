@@ -10,7 +10,7 @@
 <p><b>Date:</b> {{dateday.date}}
 
 <p>
-<form action="/edit_group_count/{{group.accession_number}}/{{dateday.year}}/{{dateday.month}}/{{dateday.day}}/" method="post">
+<form action="{% url 'edit_group_count' group.accession_number dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
 
     {% for hidden in form.hidden_fields %}

@@ -1,4 +1,4 @@
-"""This script parses a tracks file and enters it into the database
+"""This script parses an xlsx file and enters it into the database
 """
 
 import argparse
@@ -16,8 +16,6 @@ django.setup()
 
 from zoo_checks.models import Animal, Enclosure, Group, Species, User
 
-# TODO: argparse so can call from command line
-
 
 def get_species_obj(row):
     common_name = row["Common"]
@@ -34,8 +32,8 @@ def get_enclosure_obj(row):
     return Enclosure.objects.get(name=row["Enclosure"])
 
 
-def read_tracks(datafile):
-    """Reads a tracks datafile and returns a pandas dataframe
+def read_xlsx_data(datafile):
+    """Reads a xlsx datafile and returns a pandas dataframe
     """
     return pd.read_excel(datafile)
 
@@ -180,7 +178,7 @@ def main():
     parser.add_argument("csvfile")
     args = parser.parse_args()
 
-    df = read_tracks(args.csvfile)
+    df = read_xlsx_data(args.csvfile)
     create_enclosures(df)
     create_species(df)
 
