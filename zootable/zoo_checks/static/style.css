@@ -94,3 +94,22 @@ input[type="number"]:hover::-webkit-inner-spin-button {
 .edit {
   height: 20px;
 }
+
+.edit_group {
+  display: flex;
+  flex-direction: row;
+}
+
+.edit_group span {
+  text-align: center;
+  flex: auto;
+}
+
+.group_prior_counts {
+  display: flex;
+  flex-direction: row;
+}
+
+.group_prior_counts span {
+  flex: auto;
+}

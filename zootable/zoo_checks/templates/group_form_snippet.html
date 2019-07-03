@@ -6,28 +6,38 @@
     {{ hidden }}
 {% endfor %}
 
+<div class="edit_group">
 <span class="fieldWrapper">
     {{ form.count_male.errors }}
-    <b>M</b><em>({{group.population_male}})</em>: {{ form.count_male }}
+    <b>M</b><em>({{group.population_male}})</em><br />
+    {{ form.count_male }}
 </span>
 
 <span class="fieldWrapper">
     {{ form.count_female.errors }}
-    <b>F</b><em>({{group.population_female}})</em>: {{ form.count_female }}
+    <b>F</b><em>({{group.population_female}})</em><br />
+    {{ form.count_female }}
 </span>
 
 <span class="fieldWrapper">
     {{ form.count_unknown.errors }}
-    <b>U</b><em>({{group.population_unknown}})</em>: {{ form.count_unknown }}
+    <b>U</b><em>({{group.population_unknown}})</em><br />
+    {{ form.count_unknown }}
 </span>
+</div>
 </td>
 
 {% for count in group.prior_counts %}
 <td>
-    M.F.U<br />
-    {{count.m_count}}.{{count.f_count}}.{{count.u_count}}
-    <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
-    <img class="edit" src="{% static 'images/edit.svg' %}">
-    </a>
+    <div class="group_prior_counts">
+        <span>M<br />{{count.m_count}}</span>
+        <span>F<br />{{count.f_count}}</span>
+        <span>U<br />{{count.u_count}}</span>
+        <span>
+            <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
+            <img class="edit" src="{% static 'images/edit.svg' %}">
+            </a>
+        </span>
+    </div>
 </td>
 {% endfor %}
