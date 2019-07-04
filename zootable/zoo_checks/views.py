@@ -421,7 +421,7 @@ def edit_animal_count(request, animal, year, month, day):
     )
 
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser, redirect_field_name=None)
 def ingest_form(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
@@ -429,6 +429,7 @@ def ingest_form(request):
             # where we compute changes
             changesets = handle_ingest(request.FILES["file"])
             request.session["changesets"] = changesets
+            request.session["upload_file"] = str(request.FILES["file"])
 
             # TODO: if no changesets, then we notify and redirect back to home
 
@@ -441,9 +442,14 @@ def ingest_form(request):
     return render(request, "upload_form.html", {"form": form})
 
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser, redirect_field_name=None)
 def confirm_upload(request):
     changesets = request.session.pop("changesets")
+    upload_file = request.session.pop("upload_file")
 
-    return render(request, "confirm_upload.html", {"changesets": changesets})
+    return render(
+        request,
+        "confirm_upload.html",
+        {"changesets": changesets, "upload_file": upload_file},
+    )
 

@@ -18,12 +18,8 @@ from zoo_checks.models import Animal, Enclosure, Group, Species, User
 
 
 def get_species_obj(row):
-    common_name = row["Common"]
-    species_name = row["Species"]
-    genus_name = row["GSS"]
-    return Species.objects.get(
-        common_name=common_name, genus_name=genus_name, species_name=species_name
-    )
+    # common names are unique
+    return Species.objects.get(common_name=row["Common"])
 
 
 def get_enclosure_obj(row):
@@ -50,13 +46,25 @@ def create_enclosures(df):
 def create_species(df):
     """Create any species that exist in the pandas dataframe but not in the database
     """
-    df_species = df.drop_duplicates(subset=["Common", "GSS", "Species"])
+    df_species = df.drop_duplicates(
+        subset=["Common", "GSS", "Species", "Class", "Order", "Family"]
+    )
     for index, row in df_species.iterrows():
         common_name = row["Common"]
         genus_name = row["GSS"]
         species_name = row["Species"]
-        Species.objects.get_or_create(
-            common_name=common_name, genus_name=genus_name, species_name=species_name
+        class_name = row["Class"]
+        order_name = row["Order"]
+        family_name = row["Family"]
+        Species.objects.update_or_create(
+            common_name=common_name,
+            defaults={
+                "genus_name": genus_name,
+                "species_name": species_name,
+                "class_name": class_name,
+                "order_name": order_name,
+                "family_name": family_name,
+            },
         )
 
 

@@ -30,9 +30,12 @@ class Enclosure(models.Model):
 
 
 class Species(models.Model):
-    common_name = models.CharField(max_length=80, unique=True)
-    species_name = models.CharField(max_length=80)
-    genus_name = models.CharField(max_length=80)
+    common_name = models.CharField(max_length=50, unique=True)
+    species_name = models.CharField(max_length=50)
+    genus_name = models.CharField(max_length=50)
+    class_name = models.CharField(max_length=50)
+    order_name = models.CharField(max_length=50)
+    family_name = models.CharField(max_length=50)
 
     def __str__(self):
         return ", ".join((self.genus_name, self.species_name))
@@ -54,7 +57,6 @@ class Species(models.Model):
         return count
 
     def current_count(self, enclosure):
-
         count = self.get_count_day(enclosure)
 
         if count is None:

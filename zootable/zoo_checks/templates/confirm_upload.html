@@ -6,12 +6,35 @@
 
 <h2>Confirm upload</h2>
 
-{% for enc_change in changesets.enclosure %}
 <p>
-    Enclosure: {{enc_change.name}}
+<b>File</b>: {{upload_file}}
+</p>
+
+<h3>Enclosures modified</h3>
+{% for change in changesets.enclosure %}
+<p>
+    Enclosure: {{change.name}}
 <br />
-    Action: {{enc_change.action}}
+    Action: {{change.action}}
 </p>
 {% endfor %}
+
+<h3>Species modified</h3>
+{% for change in changesets.species %}
+<p>
+<b>Species:</b> {{change.common_name}}<em>({{change.genus_name}} {{change.species_name}})</em></td>    
+<br />
+    Action: {{change.action}}
+</p>
+{% endfor %}
+
+<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'home' %}">
+Cancel
+</a>
+
+<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'home' %}">
+Confirm
+</a>
+
 
 {% endblock %}
