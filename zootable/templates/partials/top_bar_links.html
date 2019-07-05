@@ -1,16 +1,16 @@
 {% if user.is_authenticated %}
-    <li><a class="mdl-navigation__link" href="{% url 'home' %}">Home</a>
-    <li><a class="mdl-navigation__link" href="{% url 'account_management' %}">Profile</a>
+    <li><a href="{% url 'home' %}">Home</a>
+    <li><a href="{% url 'account_management' %}">Profile</a>
     {% if user.is_superuser %}
-    <li><a class="mdl-navigation__link" href="{% url 'admin:index' %}">
+    <li><a href="{% url 'admin:index' %}">
         Admin
     </a>
-    <li><a class="mdl-navigation__link" href="{% url 'ingest_form' %}">
+    <li><a href="{% url 'ingest_form' %}">
         Upload
     </a>
     {% endif %}
-    <li><a class="mdl-navigation__link" href="{% url 'account_logout' %}">Logout</a>
+    <li><a href="{% url 'account_logout' %}">Logout</a>
 {% else %}
-    <li><a class="mdl-navigation__link" href="{% url 'account_login' %}">Login</a>
-    <li><a class="mdl-navigation__link" href="{% url 'account_signup' %}">Sign up</a>
+    <li><a href="{% url 'account_login' %}">Login</a>
+    <li><a href="{% url 'account_signup' %}">Sign up</a>
 {% endif %}

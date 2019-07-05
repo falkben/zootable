@@ -7,23 +7,6 @@ main {
   margin: 5px;
 }
 
-.mdl-mini-footer {
-  padding: 5px 10px;
-}
-
-/* override style of footer taking more vertical space */
-
-.mdl-logo {
-  float: left;
-  margin-bottom: 0;
-  margin-right: 16px;
-}
-
-.mdl-mini-footer--link-list li,
-.mdl-mini-footer__link-list li {
-  line-height: 36px;
-}
-
 form li {
   list-style: none;
 }
@@ -64,7 +47,7 @@ input[type="submit"] {
   right: 30px;
 }
 
-.narrow-count {
+table.responsive-table .narrow-count {
   width: 4ch;
 }
 

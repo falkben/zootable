@@ -11,7 +11,7 @@
     {{animals_formset.management_form}}
     {{groups_formset.management_form}}
 
-    <table class="mdl-data-table">
+    <table class="responsive-table">
     {% for spec_dict in formset_order.values %}
         <tbody>
         {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts %}
@@ -30,7 +30,11 @@
         </tbody>
     {% endfor %}
     </table>
-    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+
+    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+        <i class="material-icons right">send</i>
+    </button>
+
 </form>
 
 {% endblock %}
