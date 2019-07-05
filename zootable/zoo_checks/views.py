@@ -438,8 +438,8 @@ def ingest_form(request):
 
     else:
         form = UploadFileForm()
-        del request.session["changesets"]
-        del request.session["upload_file"]
+        request.session.pop("changesets", None)
+        request.session.pop("upload_file", None)
 
     return render(request, "upload_form.html", {"form": form})
 
