@@ -1,7 +1,8 @@
-/* TODO: look into materialize css framework https://materializecss.com */
+html {
+  font-family: "Roboto", sans-serif;
+}
 
 /* give main content a little margin */
-
 main {
   margin: 5px;
 }
