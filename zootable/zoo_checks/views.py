@@ -438,14 +438,16 @@ def ingest_form(request):
 
     else:
         form = UploadFileForm()
+        del request.session["changesets"]
+        del request.session["upload_file"]
 
     return render(request, "upload_form.html", {"form": form})
 
 
 @user_passes_test(lambda u: u.is_superuser, redirect_field_name=None)
 def confirm_upload(request):
-    changesets = request.session.pop("changesets")
-    upload_file = request.session.pop("upload_file")
+    changesets = request.session.get("changesets")
+    upload_file = request.session.get("upload_file")
 
     return render(
         request,
