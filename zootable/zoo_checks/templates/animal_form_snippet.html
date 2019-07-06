@@ -1,8 +1,12 @@
-{% load static %}
-
 <td><b>{{anim.name}}</b> <em>({{anim.sex}})</em><br />{{anim.identifier}}<br />{{anim.accession_number}}</td>
 <td>
-{{ form.as_ul }}
+
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+{% include "condition_form_snippet.html"  with field=form.condition %}
+
 </td>
 {% for pcond in anim.prior_conditions %}
 <td>
@@ -12,7 +16,7 @@
         Not Seen
     {% endif %}
     <a href="{% url 'edit_animal_count' animal=anim.accession_number year=pcond.day.year month=pcond.day.month day=pcond.day.day %}">
-    <img class="edit" src="{% static 'images/edit.svg' %}">
+    <i class="material-icons tiny-small">edit</i>
     </a>
 </td>
 {% endfor %}

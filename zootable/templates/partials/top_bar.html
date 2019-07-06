@@ -1,20 +1,15 @@
-<header class="mdl-layout__header">
-  <div class="mdl-layout-icon"></div>
-  <div class="mdl-layout__header-row">
-    <span class="mdl-layout__title">
-    Zootable
-    </span>
-    <div class="mdl-layout-spacer"></div>
-    <nav class="mdl-navigation mdl-layout--large-screen-only">
+<div class="navbar-fixed">
+  <nav>
+  <div class="nav-wrapper container">
+    <a href="{% url 'home' %}" class="brand-logo">Zootable</a>
+    <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    <ul id="nav-mobile" class="right hide-on-med-and-down">
       {% include "partials/top_bar_links.html" %}
-    </nav>
+    </ul>
   </div>
-</header>
-<div class="mdl-layout__drawer">
-  <span class="mdl-layout__title">
-    Zootable
-  </span>
-  <nav class="mdl-navigation">
-  {% include "partials/top_bar_links.html" %}
   </nav>
+
+  <ul class="sidenav" id="mobile-demo">
+    {% include "partials/top_bar_links.html" %}
+  </ul>
 </div>

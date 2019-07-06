@@ -1,0 +1,117 @@
+html {
+  font-family: "Roboto", sans-serif;
+}
+
+/* for message list */
+ul.message {
+  padding: 0;
+  margin: 0;
+}
+
+ul.message li {
+  display: block;
+}
+
+/* form errors */
+.errorlist {
+  margin: 10px 0px;
+  padding: 12px;
+  color: #d8000c;
+  background-color: #ffd2d2;
+}
+
+/* format of tally table */
+
+thead {
+  background: #444;
+  color: #eee;
+}
+
+td,
+th {
+  line-height: 1rem;
+  border-radius: 0;
+}
+
+/* form stuff */
+table.striped input.narrow-count,
+form p > input#id_count.narrow-count,
+form span > input#id_count_male.narrow-count,
+form span > input#id_count_female.narrow-count,
+form span > input#id_count_unknown.narrow-count {
+  width: 4ch;
+}
+
+table.striped .narrow-count {
+  border-bottom: 0;
+}
+
+table.striped thead .narrow-count {
+  color: #eee;
+}
+
+table form p {
+  margin: 0;
+}
+
+/* form ul {
+  display: inline-flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+} */
+
+/* input[type="number"] {
+  height: 30px;
+} */
+
+/* input[type="number"]:hover::-webkit-inner-spin-button {
+  width: 14px;
+  height: 30px;
+} */
+
+/* edit pages */
+
+.tiny-small {
+  font-size: 1.3rem;
+  /* color: #222; */
+}
+
+.edit {
+  height: 20px;
+}
+
+.edit_group {
+  display: flex;
+  flex-direction: row;
+}
+
+.edit_group span {
+  text-align: center;
+  flex: auto;
+}
+
+.group_prior_counts {
+  display: flex;
+  flex-direction: row;
+}
+
+.group_prior_counts span {
+  flex: auto;
+}
+
+.condition-radio {
+  display: flex;
+  flex-direction: column;
+}
+
+.condition-radio span {
+  flex: auto;
+}
+
+/* media queries */
+@media only screen and (min-width: 1150px) {
+  .condition-radio {
+    flex-direction: row;
+  }
+}
