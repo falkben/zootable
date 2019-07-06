@@ -19,11 +19,14 @@
 
 <form action="{% url 'edit_species_count' species.common_name enclosure.name dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
+
     {{ form.as_p }}
 
+    <p>
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
         <i class="material-icons right">send</i>
     </button>
+    </p>
 </form>
 
 {% endblock %}

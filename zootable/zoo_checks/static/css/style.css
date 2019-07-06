@@ -34,9 +34,15 @@ th {
 }
 
 /* form stuff */
+table.striped input.narrow-count,
+form p > input#id_count.narrow-count,
+form span > input#id_count_male.narrow-count,
+form span > input#id_count_female.narrow-count,
+form span > input#id_count_unknown.narrow-count {
+  width: 4ch;
+}
 
 table.striped .narrow-count {
-  width: 4ch;
   border-bottom: 0;
 }
 
@@ -44,7 +50,7 @@ table.striped thead .narrow-count {
   color: #eee;
 }
 
-form p {
+table form p {
   margin: 0;
 }
 
@@ -92,4 +98,20 @@ form p {
 
 .group_prior_counts span {
   flex: auto;
+}
+
+.condition-radio {
+  display: flex;
+  flex-direction: column;
+}
+
+.condition-radio span {
+  flex: auto;
+}
+
+/* media queries */
+@media only screen and (min-width: 1150px) {
+  .condition-radio {
+    flex-direction: row;
+  }
 }
