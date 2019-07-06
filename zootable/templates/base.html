@@ -11,20 +11,20 @@
 </head>
 
 <body>
-    {% include "partials/top_bar.html" %}
-    <main >
-      {% if messages %}
-        <ul class="message">
-            {% for message in messages %}
-              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-      {% endif %}
+  {% include "partials/top_bar.html" %}
+  <div class="container">
+    {% if messages %}
+      <ul class="message">
+          {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}
+      </ul>
+    {% endif %}
 
-      {% block content %}
-      {% endblock %}
-      </div>
-    </main>
+    {% block content %}
+    {% endblock %}
+    </div>
+  </div>
   <script type="text/javascript" src="{% static 'js/materialize.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/init.js' %}"></script>
 </body>

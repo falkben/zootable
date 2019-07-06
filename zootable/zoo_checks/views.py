@@ -106,13 +106,13 @@ def get_init_spec_count_form(enclosure, enclosure_species):
 def get_init_group_count_form(enclosure_groups):
     init_group = []
     for group in enclosure_groups:
-        group_count = group.current_count()
+        count = group.current_count()
         init_group.append(
             {
                 "group": group,
-                "count_male": group_count["m_count"],
-                "count_female": group_count["f_count"],
-                "count_unknown": group_count["u_count"],
+                "count_male": 0 if count is None else count.count_male,
+                "count_female": 0 if count is None else count.count_female,
+                "count_unknown": 0 if count is None else count.count_unknown,
             }
         )
 
@@ -339,9 +339,9 @@ def edit_group_count(request, group, year, month, day):
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
     count = group.get_count_day(day=dateday)
     init_form = {
-        "count_male": 0 if count is None else count["m_count"],
-        "count_female": 0 if count is None else count["f_count"],
-        "count_unknown": 0 if count is None else count["u_count"],
+        "count_male": 0 if count is None else count.count_male,
+        "count_female": 0 if count is None else count.count_female,
+        "count_unknown": 0 if count is None else count.count_unknown,
         "group": group,
         "enclosure": enclosure,
     }

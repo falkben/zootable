@@ -164,19 +164,14 @@ class Group(AnimalSet):
         return "|".join((self.species.common_name, str(self.accession_number)))
 
     def get_count_day(self, day=today_time()):
-        m_count = f_count = u_count = 0
         try:
             count = self.counts.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
             ).latest("datecounted", "id")
 
-            m_count = count.count_male
-            f_count = count.count_female
-            u_count = count.count_unknown
-        except Exception:
-            pass
-
-        return {"m_count": m_count, "f_count": f_count, "u_count": u_count, "day": day}
+            return count
+        except ObjectDoesNotExist:
+            return None
 
     def current_count(self):
         return self.get_count_day()
@@ -185,7 +180,7 @@ class Group(AnimalSet):
         counts = [0] * prior_days
         for p in range(prior_days):
             day = today_time() - timezone.timedelta(days=p + 1)
-            counts[p] = self.get_count_day(day)
+            counts[p] = {"count": self.get_count_day(day), "day": day}
 
         return counts
 

@@ -1,5 +1,4 @@
 {% if user.is_authenticated %}
-    <li><a href="{% url 'home' %}">Home</a>
     <li><a href="{% url 'account_management' %}">Profile</a>
     {% if user.is_superuser %}
     <li><a href="{% url 'admin:index' %}">
