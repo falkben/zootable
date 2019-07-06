@@ -33,6 +33,9 @@ thead {
 table.striped .narrow-count {
   width: 4ch;
   border-bottom: 0;
+}
+
+table.striped thead .narrow-count {
   color: #eee;
 }
 

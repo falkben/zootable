@@ -384,7 +384,7 @@ def edit_animal_count(request, animal, year, month, day):
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
     count = animal.count_on_day(day=dateday)
     init_form = {
-        "condition": "" if count is None else count["condition"],
+        "condition": "" if count is None else count.condition,
         "animal": animal,
         "enclosure": enclosure,
     }
