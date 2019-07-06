@@ -24,8 +24,13 @@ ul.message li {
 
 thead {
   background: #444;
-  /* background: rgb(64, 88, 102); */
   color: #eee;
+}
+
+td,
+th {
+  line-height: 1rem;
+  border-radius: 0;
 }
 
 /* form stuff */

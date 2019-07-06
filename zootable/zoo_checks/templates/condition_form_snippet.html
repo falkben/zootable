@@ -1,0 +1,12 @@
+<span class="fieldWrapper">
+    {% for radio in field %}
+        <label>
+            {{radio.tag}}
+            <span>{{ radio.choice_label }}</span>
+        </label>
+    {% endfor %}
+
+    {% for error in field.errors %}
+        <span class="help-block {{ form.error_css_class }}">{{ error }}</span>
+    {% endfor %}
+</span>

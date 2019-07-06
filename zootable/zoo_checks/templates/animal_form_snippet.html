@@ -1,8 +1,12 @@
-{% load static %}
-
 <td><b>{{anim.name}}</b> <em>({{anim.sex}})</em><br />{{anim.identifier}}<br />{{anim.accession_number}}</td>
 <td>
-{{ form.as_p }}
+
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+{% include "condition_form_snippet.html"  with field=form.condition %}
+
 </td>
 {% for pcond in anim.prior_conditions %}
 <td>

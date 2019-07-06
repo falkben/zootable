@@ -115,7 +115,7 @@ class Animal(AnimalSet):
         try:
             count = self.conditions.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-            ).latest("datecounted")
+            ).latest("datecounted", "id")
         except ObjectDoesNotExist:
             count = None
 

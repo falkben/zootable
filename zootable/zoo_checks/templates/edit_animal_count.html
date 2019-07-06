@@ -24,7 +24,13 @@
 <form action="{% url 'edit_animal_count' animal.accession_number dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
 
-    {{form.as_p}}
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    <p>
+    {% include "condition_form_snippet.html" with field=form.condition %}
+    </p>
     
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
         <i class="material-icons right">send</i>
