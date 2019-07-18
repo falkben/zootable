@@ -10,101 +10,193 @@ def read_xlsx_data(datafile):
     return pd.read_excel(datafile)
 
 
+def create_enclosures(df):
+    """Given data in a pandas dataframe, create any missing enclosures
+    """
+    enclosures = set(df["Enclosure"])
+    for enclosure in enclosures:
+        encl, _ = Enclosure.objects.get_or_create(name=enclosure)
+        encl.users.add(*list(User.objects.filter(is_superuser=True)))
+
+
+def create_species(df):
+    """Create any species that exist in the pandas dataframe but not in the database
+    """
+    df_species = df.drop_duplicates(
+        subset=["Common", "GSS", "Species", "Class", "Order", "Family"]
+    )
+    for index, row in df_species.iterrows():
+        common_name = row["Common"]
+        genus_name = row["GSS"]
+        species_name = row["Species"]
+        class_name = row["Class"]
+        order_name = row["Order"]
+        family_name = row["Family"]
+        Species.objects.update_or_create(
+            common_name=common_name,
+            defaults={
+                "genus_name": genus_name,
+                "species_name": species_name,
+                "class_name": class_name,
+                "order_name": order_name,
+                "family_name": family_name,
+            },
+        )
+
+
+def get_animal_identifier(identifiers):
+    """Returns any identifiers joined into a single string, comma separated
+    Name and identifier stored in the same col. and can be any order
+    """
+    if pd.isna(identifiers):
+        return ""
+    # finds any sections of text following "Tag/Band:" optionally followed by a comma
+    tag_band = r"Tag/Band:([\w\s\d#]*)[,]?"
+    mm = re.findall(tag_band, identifiers)
+    tag = ",".join(mm)
+    return tag
+
+
+def get_sex(row):
+    # start with sex being unknown
+    sex = "U"
+    # use sex column as primary
+    if not pd.isna(row["Sex"]):
+        # sets sex to either M/F/U
+        sex = row["Sex"]
+    # use population values as secondary if available
+    else:
+        if row["Population _Male"] == 1:
+            sex = "M"
+        if row["Population _Female"] == 1:
+            sex = "F"
+    return sex
+
+
+def create_groups(df):
+    """Creates groups
+    """
+    # col names for groups:
+    # active, accession_number, species, population_male, population_female, population_unknown, enclosure
+    for index, row in df.iterrows():
+        active, accession_number, species, enclosure = get_animal_set_info(row)
+        population_male = row["Population _Male"]
+        population_female = row["Population _Female"]
+        population_unknown = row["Population _Unknown"]
+
+        # * This overrides anything in the database for this accession number
+        Group.objects.update_or_create(
+            accession_number=accession_number,
+            defaults={
+                "active": active,
+                "enclosure": enclosure,
+                "species": species,
+                "population_male": population_male,
+                "population_female": population_female,
+                "population_unknown": population_unknown,
+            },
+        )
+
+
+def create_animals(df):
+    """Creates animals (individuals)
+    """
+    for index, row in df.iterrows():
+        # zootable animal col names:
+        # name, active, accession, species, identifier, enclosure, sex
+        active, accession_number, species, enclosure = get_animal_set_info(row)
+        identifier = get_animal_identifier(row["Identifiers"])
+        name = get_animal_name(row["Identifiers"])
+        sex = get_sex(row)
+
+        # * This overrides anything in the database for this accession number
+        Animal.objects.update_or_create(
+            accession_number=accession_number,
+            defaults={
+                "name": name,
+                "identifier": identifier,
+                "active": active,
+                "sex": sex,
+                "enclosure": enclosure,
+                "species": species,
+            },
+        )
+
+
 def create_changeset_action(action, **kwargs):
     changeset = {"action": action}
     changeset.update(kwargs)
     return changeset
 
 
-def get_enclosure_changeset(df):
-    """Outputs list of dictionaries
-    Each dictionary is an enclosure to add or remove
-    containing name of enclosure and action to take
+def get_animal_name(identifiers):
+    """Returns the name of the animal, if mult. comma separated
+    Name and identifier stored in same
     """
-    # returns a set of enclosure names
-    upload_enclosures = set(df["Enclosure"])
-
-    # enclosure names are a unique field
-    db_enclosure_names = set(Enclosure.objects.values_list("name", flat=True))
-
-    add_enclosures = upload_enclosures - db_enclosure_names
-    rem_enclosures = db_enclosure_names - upload_enclosures
-
-    changeset = []
-
-    for add_enc in add_enclosures:
-        changeset.append(create_changeset_action("add", name=add_enc))
-    for rem_enc in rem_enclosures:
-        changeset.append(create_changeset_action("rem", name=rem_enc))
-
-    return changeset
+    if pd.isna(identifiers):
+        return ""
+    # finds any sections of text following "Internal House Name:"
+    intern_name = r"Internal House Name:([\w|\s\d#]*)[,]?"
+    mm = re.findall(intern_name, identifiers)
+    name = ",".join(mm)
+    return name
 
 
-def get_species_changeset(df):
-    """Outputs list of dictionaries
-    Each dictionary is an species to add or remove
+def get_species_obj(row):
+    # common names are unique
+    return Species.objects.get(common_name=row["Common"])
+
+
+def get_enclosure_obj(row):
+    """Returns an Enclosure object from database given its name
+    """
+    return Enclosure.objects.get(name=row["Enclosure"])
+
+
+def get_animal_set_info(row):
+    """returns data common to all animal_sets
+    """
+    active = True
+    accession_number = row["Accession"]
+    species = get_species_obj(row)
+    enclosure = get_enclosure_obj(row)
+    return active, accession_number, species, enclosure
+
+
+def find_animals_groups(df):
+    """given a dataframe, return animals and groups dataframes based on population of each row (> 1 == group)
+    """
+    pop_sums = df[
+        ["Population _Male", "Population _Female", "Population _Unknown"]
+    ].sum(axis=1)
+    groups = df[pop_sums > 1]
+    animals = df[pop_sums == 1]
+    return animals, groups
+
+
+def get_animal_changeset(animals):
+    """Iterate over every animal
+    For each animal, determine if any of its attributes changed
+    Record changes as a changeset for that animal
     """
 
-    # returns dataframe with species specific data
-    df_species = df.drop_duplicates(
-        subset=["Common", "GSS", "Species", "Class", "Order", "Family"]
-    )
-    upload_obj_names = set(df_species["Common"])
-
-    db_obj_names = set(Species.objects.values_list("common_name", flat=True))
-
-    add_objs = upload_obj_names - db_obj_names
-    rem_objs = db_obj_names - upload_obj_names
-
-    changeset = []
-
-    for obj_name in add_objs:
-        spec_row = df_species.loc[df_species["Common"] == obj_name]
-        changeset.append(
-            create_changeset_action(
-                "add",
-                common_name=spec_row["Common"].values[0],
-                species_name=spec_row["Species"].values[0],
-                genus_name=spec_row["GSS"].values[0],
-                class_name=spec_row["Class"].values[0],
-                order_name=spec_row["Order"].values[0],
-                family_name=spec_row["Family"].values[0],
-            )
-        )
-    for obj_name in rem_objs:
-        spec_data = Species.objects.get(common_name=obj_name)
-        changeset.append(
-            create_changeset_action(
-                "rem",
-                common_name=spec_data.common_name,
-                species_name=spec_data.species_name,
-                genus_name=spec_data.genus_name,
-                class_name=spec_data.class_name,
-                order_name=spec_data.order_name,
-                family_name=spec_data.family_name,
-            )
-        )
-
-    return changeset
-
-
-def get_animal_changeset(df):
     pass
 
 
-def get_group_changeset(df):
+def get_group_changeset(groups):
+    """Iterate over every group
+    For each animal, determine if any of its attributes changed
+    Record changes as a changeset for that animal
+    """
     pass
 
 
 def get_changesets(df):
-    enclosure_changeset = get_enclosure_changeset(df)
+    animals, groups = find_animals_groups(df)
+    animal_changeset = get_animal_changeset(animals)
+    group_changeset = get_group_changeset(groups)
 
-    species_changeset = get_species_changeset(df)
-
-    # animal_changeset = get_animal_changeset(df)
-    # group_changeset = get_group_changeset(df)
-
-    changesets = {"enclosure": enclosure_changeset, "species": species_changeset}
+    changesets = {"animals": animal_changeset, "groups": group_changeset}
 
     return changesets
 

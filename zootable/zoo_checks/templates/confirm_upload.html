@@ -11,20 +11,17 @@
 </p>
 
 <h3>Enclosures modified</h3>
-{% for change in changesets.enclosure %}
+{% for enclosure in changesets.enclosures %}
 <p>
-    Enclosure: {{change.name}}
-<br />
-    Action: {{change.action}}
-</p>
+    Enclosure: {{enclosure}}
 {% endfor %}
 
-<h3>Species modified</h3>
-{% for change in changesets.species %}
+<h4>Species modified</h4>
+{% for sp in changesets.species %}
 <p>
-<b>Species:</b> {{change.common_name}}<em>({{change.genus_name}} {{change.species_name}})</em></td>    
+<b>Species:</b> {{sp.common_name}}<em>({{sp.genus_name}} {{sp.species_name}})</em></td>    
 <br />
-    Action: {{change.action}}
+    Action: {{sp.action}}
 </p>
 {% endfor %}
 
