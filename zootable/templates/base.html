@@ -15,11 +15,11 @@
   {% include "partials/top_bar.html" %}
   <div class="container">
     {% if messages %}
-      <ul class="message">
-          {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-          {% endfor %}
-      </ul>
+      {% for message in messages %}
+        <div class="msg msg-{% if message.tags %}{{ message.tags }}{% endif %} z-depth-3">
+          {{ message }}
+        </div>
+      {% endfor %}
     {% endif %}
 
     {% block content %}

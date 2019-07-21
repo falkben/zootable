@@ -1,4 +1,7 @@
+-e .
 django==2.2.3
 django-allauth==0.39.1
 pandas==0.24.2
 xlrd==1.2.0
+pytest
+pytest-django

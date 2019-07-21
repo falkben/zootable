@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import inlineformset_factory
 from django.http import HttpResponseRedirect
@@ -343,7 +344,12 @@ def ingest_form(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             # where we compute changes
-            changesets = handle_ingest(request.FILES["file"])
+            try:
+                changesets = handle_ingest(request.FILES["file"])
+            except Exception as e:
+                messages.error(request, e)
+                return redirect("ingest_form")
+
             request.session["changesets"] = changesets
             request.session["upload_file"] = str(request.FILES["file"])
 

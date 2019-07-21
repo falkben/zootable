@@ -3,13 +3,41 @@ html {
 }
 
 /* for message list */
-ul.message {
-  padding: 0;
-  margin: 0;
+.msg {
+  border: 1px solid;
+  padding: 10px;
+  margin: 20px;
+  color: grey;
+}
+.msg-error {
+  /* rouge */
+  border-color: #d32f2f;
+  background-color: #ef5350;
+  color: white;
+}
+.msg-alert {
+  /* orange */
+  border-color: #ef6c00;
+  background-color: #ff9800;
+  color: white;
 }
 
-ul.message li {
-  display: block;
+.msg-info {
+  border-color: #0288d1;
+  background-color: #29b6f6;
+  color: white;
+}
+
+.msg-success {
+  border-color: #a5d6a7;
+  background-color: #a5d6a7;
+  color: black;
+}
+
+.msg-.debug {
+  border-color: #0288d1;
+  background-color: #29b6f6;
+  color: white;
 }
 
 /* form errors */
@@ -107,6 +135,19 @@ table form p {
 
 .condition-radio span {
   flex: auto;
+}
+
+.flex-items {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.flex-items span {
+  width: max-content;
+  /* flex: auto; */
+  margin: 3px;
+  font-style: italic;
 }
 
 /* media queries */

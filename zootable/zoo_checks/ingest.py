@@ -7,7 +7,35 @@ from zoo_checks.models import Animal, Enclosure, Group, Species, User
 def read_xlsx_data(datafile):
     """Reads a xlsx datafile and returns a pandas dataframe
     """
-    return pd.read_excel(datafile)
+    #! needs tests
+    try:
+        df = pd.read_excel(datafile)
+        req_cols = [
+            "Enclosure",
+            "Accession",
+            "Common",
+            "Class",
+            "Order",
+            "Family",
+            "GSS",
+            "Species",
+            "Sex",
+            "Identifiers",
+            "Population _Male",
+            "Population _Female",
+            "Population _Unknown",
+        ]
+        df_col_names = list(df.columns)
+
+        # ensure # of rows > 0
+        if not df.shape[0] > 0:
+            raise TypeError("No data found in file")
+
+        if not all([col in df_col_names for col in req_cols]):
+            raise TypeError("Not all columns found in file")
+
+    except Exception as e:
+        raise e
 
 
 def create_enclosures(df):
@@ -123,12 +151,6 @@ def create_animals(df):
         )
 
 
-def create_changeset_action(action, **kwargs):
-    changeset = {"action": action}
-    changeset.update(kwargs)
-    return changeset
-
-
 def get_animal_name(identifiers):
     """Returns the name of the animal, if mult. comma separated
     Name and identifier stored in same
@@ -174,6 +196,12 @@ def find_animals_groups(df):
     return animals, groups
 
 
+def create_changeset_action(action, **kwargs):
+    changeset = {"action": action}
+    changeset.update(kwargs)
+    return changeset
+
+
 def get_animal_changeset(animals):
     """Iterate over every animal
     For each animal, determine if any of its attributes changed
@@ -192,6 +220,8 @@ def get_group_changeset(groups):
 
 
 def get_changesets(df):
+    # get the set of enclosures that the user loaded -- that data is expected to be complete
+
     animals, groups = find_animals_groups(df)
     animal_changeset = get_animal_changeset(animals)
     group_changeset = get_group_changeset(groups)

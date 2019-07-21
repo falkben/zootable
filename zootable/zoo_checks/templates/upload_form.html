@@ -9,6 +9,29 @@
 <form action="{% url 'ingest_form' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
+    <ul class="collection with-header">
+      <li class="collection-header"><h4>Upload data from xlsx file</h4>
+      <li class="collection-item">The data is expected to be complete for each enclosure the file contains
+      <li class="collection-item">Missing groups/individuals within an enclosure will be treated as "inactive" and will no longer be shown on any count forms
+      <li class="collection-item">The following columns are expected
+      
+      <p class="flex-items">
+        <span>Enclosure</span>
+        <span>Accession</span>
+        <span>Common</span>
+        <span>Class</span>
+        <span>Order</span>
+        <span>Family</span>
+        <span>GSS</span>
+        <span>Species</span>
+        <span>Sex</span>
+        <span>Identifiers</span>
+        <span>Population _Male</span>
+        <span>Population _Female</span>
+        <span>Population _Unknown</span>
+      </p>
+    </ul>
+
     <div class="file-field input-field">
       <div class="btn">
         <span>File</span>
