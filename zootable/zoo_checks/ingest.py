@@ -4,38 +4,44 @@ import pandas as pd
 from zoo_checks.models import Animal, Enclosure, Group, Species, User
 
 
+def validate(df):
+    """xlsx file needs certain columns, can't be empty
+    """
+    
+    req_cols = [
+        "Enclosure",
+        "Accession",
+        "Common",
+        "Class",
+        "Order",
+        "Family",
+        "GSS",
+        "Species",
+        "Sex",
+        "Identifiers",
+        "Population _Male",
+        "Population _Female",
+        "Population _Unknown",
+    ]
+    df_col_names = list(df.columns)
+
+    # ensure # of rows > 0
+    if not df.shape[0] > 0:
+        raise TypeError("No data found in file")
+
+    if not all([col in df_col_names for col in req_cols]):
+        raise TypeError("Not all columns found in file")
+
+
 def read_xlsx_data(datafile):
     """Reads a xlsx datafile and returns a pandas dataframe
     """
-    #! needs tests
     try:
         df = pd.read_excel(datafile)
-        req_cols = [
-            "Enclosure",
-            "Accession",
-            "Common",
-            "Class",
-            "Order",
-            "Family",
-            "GSS",
-            "Species",
-            "Sex",
-            "Identifiers",
-            "Population _Male",
-            "Population _Female",
-            "Population _Unknown",
-        ]
-        df_col_names = list(df.columns)
-
-        # ensure # of rows > 0
-        if not df.shape[0] > 0:
-            raise TypeError("No data found in file")
-
-        if not all([col in df_col_names for col in req_cols]):
-            raise TypeError("Not all columns found in file")
-
+        validate(df)
     except Exception as e:
         raise e
+    return df
 
 
 def create_enclosures(df):
