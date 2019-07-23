@@ -11,3 +11,13 @@ def test_read_xlsx_data():
 
     df = read_xlsx_data("zootable/test_data/example.xlsx")
     assert df.shape[0] == 2
+
+
+def test_get_changesets():
+    # test empty df -- raises an error
+
+    # test df has all the same data as in database
+
+    # test removes from enclosure as adds
+
+    pass

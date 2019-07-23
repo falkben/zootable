@@ -238,79 +238,62 @@ def get_deleted_objs(df, modeltype):
     all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects)
     for obj in all_objs:
         if obj.accession_number not in upload_accession_numbers:
-            changesets.append(create_changeset_action("del", object=obj))
+            changesets.append(
+                create_changeset_action(
+                    "del",
+                    object_kwargs={"Accession": obj.accession_number},
+                    enclosure=obj.enclosure.id,
+                )
+            )
 
     return changesets
 
 
-def get_animal_changeset(df):
-    """Iterate over every animal
-    For each animal, determine if any of its attributes changed
-    Record changes as a changeset for that animal
+def get_modeltype_changeset(df, modeltype):
+    """Generic way to get list of changesets
+    Iterate over every object
+    For each object, determine if any of its attributes changed
+    Record changes as a changeset for that object
     """
 
     add_update_changesets = []
 
     for index, row in df.iterrows():
-        attributes = get_animal_attributes(row)
-
         try:
-            Animal.objects.get(accession_number=attributes["accession_number"])
+            modeltype.objects.get(accession_number=row["Accession"])
             # if this doesn't fail, we have an update
             add_update_changesets.append(
-                create_changeset_action("update", object=attributes)
+                create_changeset_action(
+                    "update", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
+                )
             )
         except ObjectDoesNotExist:
-            # animal is an addition
+            # an addition
             add_update_changesets.append(
-                create_changeset_action("add", object=attributes)
+                create_changeset_action(
+                    "add", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
+                )
             )
 
-    del_changesets = get_deleted_objs(df, Animal)
-
-    changesets = add_update_changesets + del_changesets
-
-    return changesets
-
-
-def get_group_changeset(df):
-    """Iterate over every group
-    For each animal, determine if any of its attributes changed
-    Record changes as a changeset for that animal
-    """
-    add_update_changesets = []
-
-    for index, row in df.iterrows():
-        attributes = get_group_attributes(row)
-
-        try:
-            Group.objects.get(accession_number=attributes["accession_number"])
-            # if this doesn't fail, we have an update
-            add_update_changesets.append(
-                create_changeset_action("update", object=attributes)
-            )
-        except ObjectDoesNotExist:
-            # animal is an addition
-            add_update_changesets.append(
-                create_changeset_action("add", object=attributes)
-            )
-
-    del_changesets = get_deleted_objs(df, Group)
-
-    changesets = add_update_changesets + del_changesets
-
-    return changesets
+    return add_update_changesets
 
 
 def get_changesets(df):
     # get the set of enclosures that the user loaded -- that data is expected to be complete
     enclosures_uploaded = get_enclosures(df)
 
-    animals, groups = find_animals_groups(df)
-    animal_changeset = get_animal_changeset(animals)
-    group_changeset = get_group_changeset(groups)
+    del_anim_changesets = get_deleted_objs(df, Animal)
+    del_group_changesets = get_deleted_objs(df, Group)
 
-    changesets = {"animals": animal_changeset, "groups": group_changeset}
+    animals, groups = find_animals_groups(df)
+    animal_changeset = get_modeltype_changeset(animals, Animal)
+    group_changeset = get_modeltype_changeset(groups, Group)
+
+    changesets = {
+        "animals": animal_changeset + del_anim_changesets,
+        "groups": group_changeset + del_group_changesets,
+        "enclosures": list(enclosures_uploaded),
+    }
 
     return changesets
 

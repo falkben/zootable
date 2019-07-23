@@ -12,17 +12,20 @@
 
 <h3>Enclosures modified</h3>
 {% for enclosure in changesets.enclosures %}
-<p>
-    Enclosure: {{enclosure}}
+    <p>Enclosure: {{enclosure}}</p>
 {% endfor %}
 
-<h4>Species modified</h4>
-{% for sp in changesets.species %}
-<p>
-<b>Species:</b> {{sp.common_name}}<em>({{sp.genus_name}} {{sp.species_name}})</em></td>    
-<br />
-    Action: {{sp.action}}
-</p>
+<h4>Animals modified</h4>
+{% for anim_change in changesets.animals %}
+    <p>
+    Action: {{anim_change.action}}<br />
+    Accession number: {{anim_change.object_kwargs}}
+    </p>
+{% endfor %}
+
+<h4>Groups modified</h4>
+{% for group_change in changesets.groups %}
+    <p>{{group_change.object_kwargs}}</p>
 {% endfor %}
 
 <a class="waves-effect waves-light btn" href="{% url 'home' %}">
