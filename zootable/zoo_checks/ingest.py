@@ -2,6 +2,7 @@ import re
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
 
 from zoo_checks.models import Animal, Enclosure, Group, Species, User
 
@@ -238,11 +239,11 @@ def get_deleted_objs(df, modeltype):
     all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects)
     for obj in all_objs:
         if obj.accession_number not in upload_accession_numbers:
+            obj_attrs = model_to_dict(obj)
+            obj_attrs.pop("id")
             changesets.append(
                 create_changeset_action(
-                    "del",
-                    object_kwargs={"Accession": obj.accession_number},
-                    enclosure=obj.enclosure.id,
+                    "del", object_kwargs=obj_attrs, enclosure=obj.enclosure.id
                 )
             )
 
