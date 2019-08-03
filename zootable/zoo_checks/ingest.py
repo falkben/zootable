@@ -66,7 +66,7 @@ def create_species(df):
     df_species = df.drop_duplicates(
         subset=["Common", "GSS", "Species", "Class", "Order", "Family"]
     )
-    for index, row in df_species.iterrows():
+    for _, row in df_species.iterrows():
         common_name = row["Common"]
         genus_name = row["GSS"]
         species_name = row["Species"]
@@ -138,7 +138,7 @@ def create_groups(df):
     """
     # col names for groups:
     # active, accession_number, species, population_male, population_female, population_unknown, enclosure
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         attributes = get_group_attributes(row)
 
         # * This overrides anything in the database for this accession number
@@ -171,7 +171,7 @@ def get_animal_attributes(row):
 def create_animals(df):
     """Creates animals (individuals)
     """
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         attributes = get_animal_attributes(row)
 
         # * This overrides anything in the database for this accession number
@@ -239,7 +239,7 @@ def get_deleted_objs(df, modeltype):
     all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects)
     for obj in all_objs:
         if obj.accession_number not in upload_accession_numbers:
-            obj_attrs = model_to_dict(obj)
+            obj_attrs = obj.to_dict()
             obj_attrs.pop("id")
             changesets.append(
                 create_changeset_action(
@@ -259,7 +259,7 @@ def get_modeltype_changeset(df, modeltype):
 
     add_update_changesets = []
 
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         try:
             modeltype.objects.get(accession_number=row["Accession"])
             # if this doesn't fail, we have an update

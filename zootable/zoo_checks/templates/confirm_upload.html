@@ -16,24 +16,16 @@
 {% endfor %}
 
 <h4>Animals</h4>
-{% for anim_change in changesets.animals %}
-    <p>
-    <b>Action:</b> {{anim_change.action}}<br />
-    {% for key, value in anim_change.object_kwargs.items %}
-        <b>{{key}}:</b> {{value}}<br />
-    {% endfor %}
-    </p>
-{% endfor %}
+
+{% regroup changesets.animals by action as animal_changeset_list %}
+
+{% include "changeset_table_partial.html" with changeset_list=animal_changeset_list %}
 
 <h4>Groups</h4>
-{% for change in changesets.groups %}
-    <p>
-    <b>Action:</b> {{change.action}}<br />
-    {% for key, value in change.object_kwargs.items %}
-        <b>{{key}}:</b> {{value}}<br />
-    {% endfor %}
-    </p>
-{% endfor %}
+
+{% regroup changesets.groups by action as group_changeset_list %}
+
+{% include "changeset_table_partial.html" with changeset_list=group_changeset_list %}
 
 <a class="waves-effect waves-light btn" href="{% url 'home' %}">
 Cancel

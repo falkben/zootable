@@ -1,0 +1,38 @@
+
+{% for change in changeset_list %}
+    <div>
+    <table class="striped">
+    {% for change in change.list %}
+        {% if forloop.first %}    
+            <thead>
+            <tr>
+            <td>Action</td>
+            {% for key in change.object_kwargs.keys %}
+                <td>{{key}}</td>
+            {% endfor %}
+            </tr>
+            </thead>
+
+            <tbody>
+        {% endif %}
+        
+        <tr>
+        
+        <td>
+        {% if change.action == "add" %}
+            <i class="tiny material-icons">add_box</i>
+        {% else %}
+            <i class="tiny material-icons">delete</i>
+        {% endif %}
+        </td>
+        
+        {% for value in change.object_kwargs.values %}
+            <td>{{value}}</td>
+        {% endfor %}
+        
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+{% endfor %}

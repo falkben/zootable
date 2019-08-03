@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -87,6 +89,26 @@ class AnimalSet(models.Model):
 
     class Meta:
         abstract = True
+
+    def to_dict(self, fields=None, exclude=None):
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            if not getattr(f, "editable", False):
+                continue
+            if fields and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+
+            if f.is_relation:
+                data[f.name] = str(
+                    f.related_model.objects.get(pk=f.value_from_object(self))
+                )
+
+            else:
+                data[f.name] = f.value_from_object(self)
+        return data
 
 
 class Animal(AnimalSet):
