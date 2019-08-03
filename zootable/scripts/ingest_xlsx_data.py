@@ -1,4 +1,6 @@
 """This script parses an xlsx file and enters it into the database
+Callable:
+python ingest_xlsx_data.py YOURFILE.xlsx
 """
 
 import argparse
