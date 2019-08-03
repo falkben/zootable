@@ -10,19 +10,29 @@
 <b>File</b>: {{upload_file}}
 </p>
 
-<h3>Enclosures modified</h3>
+<h3>Enclosures</h3>
 {% for enclosure in changesets.enclosures %}
-<p>
-    Enclosure: {{enclosure}}
+    <p><b>Name:</b> {{enclosure}}</p>
 {% endfor %}
 
-<h4>Species modified</h4>
-{% for sp in changesets.species %}
-<p>
-<b>Species:</b> {{sp.common_name}}<em>({{sp.genus_name}} {{sp.species_name}})</em></td>    
-<br />
-    Action: {{sp.action}}
-</p>
+<h4>Animals</h4>
+{% for anim_change in changesets.animals %}
+    <p>
+    <b>Action:</b> {{anim_change.action}}<br />
+    {% for key, value in anim_change.object_kwargs.items %}
+        <b>{{key}}:</b> {{value}}<br />
+    {% endfor %}
+    </p>
+{% endfor %}
+
+<h4>Groups</h4>
+{% for change in changesets.groups %}
+    <p>
+    <b>Action:</b> {{change.action}}<br />
+    {% for key, value in change.object_kwargs.items %}
+        <b>{{key}}:</b> {{value}}<br />
+    {% endfor %}
+    </p>
 {% endfor %}
 
 <a class="waves-effect waves-light btn" href="{% url 'home' %}">

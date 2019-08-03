@@ -1,47 +1,60 @@
 import re
+
 import pandas as pd
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
 
 from zoo_checks.models import Animal, Enclosure, Group, Species, User
+
+
+def validate(df):
+    """xlsx file needs certain columns, can't be empty
+    """
+
+    req_cols = [
+        "Enclosure",
+        "Accession",
+        "Common",
+        "Class",
+        "Order",
+        "Family",
+        "GSS",
+        "Species",
+        "Sex",
+        "Identifiers",
+        "Population _Male",
+        "Population _Female",
+        "Population _Unknown",
+    ]
+    df_col_names = list(df.columns)
+
+    # ensure # of rows > 0
+    if not df.shape[0] > 0:
+        raise TypeError("No data found in file")
+
+    if not all([col in df_col_names for col in req_cols]):
+        raise TypeError("Not all columns found in file")
 
 
 def read_xlsx_data(datafile):
     """Reads a xlsx datafile and returns a pandas dataframe
     """
-    #! needs tests
     try:
         df = pd.read_excel(datafile)
-        req_cols = [
-            "Enclosure",
-            "Accession",
-            "Common",
-            "Class",
-            "Order",
-            "Family",
-            "GSS",
-            "Species",
-            "Sex",
-            "Identifiers",
-            "Population _Male",
-            "Population _Female",
-            "Population _Unknown",
-        ]
-        df_col_names = list(df.columns)
-
-        # ensure # of rows > 0
-        if not df.shape[0] > 0:
-            raise TypeError("No data found in file")
-
-        if not all([col in df_col_names for col in req_cols]):
-            raise TypeError("Not all columns found in file")
-
+        validate(df)
     except Exception as e:
         raise e
+    return df
+
+
+def get_enclosures(df):
+    return set(df["Enclosure"])
 
 
 def create_enclosures(df):
     """Given data in a pandas dataframe, create any missing enclosures
     """
-    enclosures = set(df["Enclosure"])
+    enclosures = get_enclosures(df)
     for enclosure in enclosures:
         encl, _ = Enclosure.objects.get_or_create(name=enclosure)
         encl.users.add(*list(User.objects.filter(is_superuser=True)))
@@ -101,53 +114,69 @@ def get_sex(row):
     return sex
 
 
+def get_group_attributes(row):
+    active, accession_number, species, enclosure = get_animal_set_info(row)
+    population_male = row["Population _Male"]
+    population_female = row["Population _Female"]
+    population_unknown = row["Population _Unknown"]
+
+    attributes = {
+        "accession_number": accession_number,
+        "active": active,
+        "enclosure": enclosure,
+        "species": species,
+        "population_male": population_male,
+        "population_female": population_female,
+        "population_unknown": population_unknown,
+    }
+
+    return attributes
+
+
 def create_groups(df):
     """Creates groups
     """
     # col names for groups:
     # active, accession_number, species, population_male, population_female, population_unknown, enclosure
     for index, row in df.iterrows():
-        active, accession_number, species, enclosure = get_animal_set_info(row)
-        population_male = row["Population _Male"]
-        population_female = row["Population _Female"]
-        population_unknown = row["Population _Unknown"]
+        attributes = get_group_attributes(row)
 
         # * This overrides anything in the database for this accession number
         Group.objects.update_or_create(
-            accession_number=accession_number,
-            defaults={
-                "active": active,
-                "enclosure": enclosure,
-                "species": species,
-                "population_male": population_male,
-                "population_female": population_female,
-                "population_unknown": population_unknown,
-            },
+            accession_number=attributes.pop["accession_number"], defaults=attributes
         )
+
+
+def get_animal_attributes(row):
+    # zootable animal col names:
+    # name, active, accession, species, identifier, enclosure, sex
+    active, accession_number, species, enclosure = get_animal_set_info(row)
+    identifier = get_animal_identifier(row["Identifiers"])
+    name = get_animal_name(row["Identifiers"])
+    sex = get_sex(row)
+
+    attributes = {
+        "accession_number": accession_number,
+        "name": name,
+        "identifier": identifier,
+        "active": active,
+        "sex": sex,
+        "enclosure": enclosure,
+        "species": species,
+    }
+
+    return attributes
 
 
 def create_animals(df):
     """Creates animals (individuals)
     """
     for index, row in df.iterrows():
-        # zootable animal col names:
-        # name, active, accession, species, identifier, enclosure, sex
-        active, accession_number, species, enclosure = get_animal_set_info(row)
-        identifier = get_animal_identifier(row["Identifiers"])
-        name = get_animal_name(row["Identifiers"])
-        sex = get_sex(row)
+        attributes = get_animal_attributes(row)
 
         # * This overrides anything in the database for this accession number
         Animal.objects.update_or_create(
-            accession_number=accession_number,
-            defaults={
-                "name": name,
-                "identifier": identifier,
-                "active": active,
-                "sex": sex,
-                "enclosure": enclosure,
-                "species": species,
-            },
+            accession_number=attributes.pop("accession_number"), defaults=attributes
         )
 
 
@@ -202,31 +231,70 @@ def create_changeset_action(action, **kwargs):
     return changeset
 
 
-def get_animal_changeset(animals):
-    """Iterate over every animal
-    For each animal, determine if any of its attributes changed
-    Record changes as a changeset for that animal
+def get_deleted_objs(df, modeltype):
+    changesets = []
+
+    upload_accession_numbers = set(df["Accession"])
+    enclosure_objects = Enclosure.objects.filter(name__in=get_enclosures(df))
+    all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects)
+    for obj in all_objs:
+        if obj.accession_number not in upload_accession_numbers:
+            obj_attrs = model_to_dict(obj)
+            obj_attrs.pop("id")
+            changesets.append(
+                create_changeset_action(
+                    "del", object_kwargs=obj_attrs, enclosure=obj.enclosure.id
+                )
+            )
+
+    return changesets
+
+
+def get_modeltype_changeset(df, modeltype):
+    """Generic way to get list of changesets
+    Iterate over every object
+    For each object, determine if any of its attributes changed
+    Record changes as a changeset for that object
     """
 
-    pass
+    add_update_changesets = []
 
+    for index, row in df.iterrows():
+        try:
+            modeltype.objects.get(accession_number=row["Accession"])
+            # if this doesn't fail, we have an update
+            add_update_changesets.append(
+                create_changeset_action(
+                    "update", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
+                )
+            )
+        except ObjectDoesNotExist:
+            # an addition
+            add_update_changesets.append(
+                create_changeset_action(
+                    "add", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
+                )
+            )
 
-def get_group_changeset(groups):
-    """Iterate over every group
-    For each animal, determine if any of its attributes changed
-    Record changes as a changeset for that animal
-    """
-    pass
+    return add_update_changesets
 
 
 def get_changesets(df):
     # get the set of enclosures that the user loaded -- that data is expected to be complete
+    enclosures_uploaded = get_enclosures(df)
+
+    del_anim_changesets = get_deleted_objs(df, Animal)
+    del_group_changesets = get_deleted_objs(df, Group)
 
     animals, groups = find_animals_groups(df)
-    animal_changeset = get_animal_changeset(animals)
-    group_changeset = get_group_changeset(groups)
+    animal_changeset = get_modeltype_changeset(animals, Animal)
+    group_changeset = get_modeltype_changeset(groups, Group)
 
-    changesets = {"animals": animal_changeset, "groups": group_changeset}
+    changesets = {
+        "animals": animal_changeset + del_anim_changesets,
+        "groups": group_changeset + del_group_changesets,
+        "enclosures": list(enclosures_uploaded),
+    }
 
     return changesets
 

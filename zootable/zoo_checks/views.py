@@ -353,8 +353,6 @@ def ingest_form(request):
             request.session["changesets"] = changesets
             request.session["upload_file"] = str(request.FILES["file"])
 
-            # TODO: if no changesets, then we notify and redirect back to home
-
             # redirect to a confirmation page
             return redirect("confirm_upload")
 
