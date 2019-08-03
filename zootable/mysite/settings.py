@@ -31,11 +31,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # TIME_ZONE = "America/New_York"
 
+
+SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+ALLOWED_HOSTS = []
+TIME_ZONE = "America/New_York"
+
 try:
     from .local_settings import *
 except ImportError:
-    pass
-
+    pass  # fallback to env var
 
 # Application definition
 
