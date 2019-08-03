@@ -1,5 +1,7 @@
 # Zootable
 
+[![Build Status](https://travis-ci.org/falkben/zootable.svg?branch=master)](https://travis-ci.org/falkben/zootable)
+
 Web app to tally zoo animals
 
 ## License
