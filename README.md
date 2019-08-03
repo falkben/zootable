@@ -25,3 +25,7 @@ This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0
 - https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
   `python manage.py check --deploy`
+
+## Test
+
+`pytest zootable`

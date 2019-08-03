@@ -1,14 +1,14 @@
 import pytest
 from xlrd import XLRDError
 
-from .ingest import (
+from zoo_checks.ingest import (
     read_xlsx_data,
-    create_enclosures,
-    create_species,
-    find_animals_groups,
-    create_animals,
-    create_groups,
-    get_changesets,
+    # create_enclosures,
+    # create_species,
+    # find_animals_groups,
+    # create_animals,
+    # create_groups,
+    # get_changesets,
 )
 
 
