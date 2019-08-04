@@ -27,6 +27,7 @@
 
 {% include "changeset_table_partial.html" with changeset_list=group_changeset_list %}
 
+<p>
 <a class="waves-effect waves-light btn" href="{% url 'home' %}">
 Cancel
 </a>
@@ -34,6 +35,6 @@ Cancel
 <a class="waves-effect waves-light btn" href="{% url 'home' %}">
 Confirm
 </a>
-
+</p>
 
 {% endblock %}

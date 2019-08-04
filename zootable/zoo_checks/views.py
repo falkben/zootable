@@ -369,6 +369,8 @@ def confirm_upload(request):
     changesets = request.session.get("changesets")
     upload_file = request.session.get("upload_file")
 
+    # TODO: convert to a form w/ checkboxes for each change
+
     return render(
         request,
         "confirm_upload.html",
