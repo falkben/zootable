@@ -162,6 +162,9 @@ def count(request, enclosure_name):
 
             return HttpResponseRedirect("/")
 
+        else:
+            messages.error(request, "There was an error processing the form")
+
     # if a GET (or any other method) we'll create a blank form
     else:
         species_formset = SpeciesCountFormset(

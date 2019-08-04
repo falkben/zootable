@@ -245,6 +245,7 @@ class AnimalCount(Count):
     def __str__(self):
         return "|".join(
             (
+                str(self.animal.accession_number),
                 self.animal.name,
                 self.user.username,
                 timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
