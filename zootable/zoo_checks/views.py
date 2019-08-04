@@ -84,7 +84,8 @@ def count(request, enclosure_name):
         can_delete=False,
     )
 
-    # TODO: initial values aren't being passed into the formset correctly by default, figure out how to do it without manually editing each form
+    # * initial values aren't being passed into the formset correctly by default
+    # TODO: figure out how to do it without manually editing each form
     init_spec = get_init_spec_count_form(enclosure, enclosure_species)
     init_group = get_init_group_count_form(enclosure_groups)
     init_anim = get_init_anim_count_form(enclosure_animals)

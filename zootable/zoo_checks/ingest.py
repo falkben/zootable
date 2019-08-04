@@ -330,12 +330,12 @@ def ingest_changesets(changesets):
     anim_add_dict = [
         value["object_kwargs"]
         for value in changesets.get("animals")
-        if value["action"] == "add"
+        if value["action"] in ("add", "update")
     ]
     grp_add_dict = [
         value["object_kwargs"]
         for value in changesets.get("groups")
-        if value["action"] == "add"
+        if value["action"] == ("add", "update")
     ]
 
     add_dict = anim_add_dict + grp_add_dict
