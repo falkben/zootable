@@ -10,31 +10,27 @@
 <b>File</b>: {{upload_file}}
 </p>
 
-<h3>Enclosures</h3>
-{% for enclosure in changesets.enclosures %}
-    <p><b>Name:</b> {{enclosure}}</p>
-{% endfor %}
+<h3>Animals</h3>
 
-<h4>Animals</h4>
+{% regroup changesets.animals by enclosure as animal_enclosure_changeset_list %}
+{% include "changeset_table_partial.html" with obj_enclosure_changeset_list=animal_enclosure_changeset_list %}
 
-{% regroup changesets.animals by action as animal_changeset_list %}
+<h3>Groups</h3>
 
-{% include "changeset_table_partial.html" with changeset_list=animal_changeset_list %}
+{% regroup changesets.groups by enclosure as group_enclosure_changeset_list %}
+{% include "changeset_table_partial.html" with obj_enclosure_changeset_list=group_enclosure_changeset_list %}
 
-<h4>Groups</h4>
+<form action="{% url 'confirm_upload' %}" method="post">
+    {% csrf_token %}
+    <p>
+    <a class="waves-effect waves-light btn" href="{% url 'home' %}">
+    Cancel
+    </a>
 
-{% regroup changesets.groups by action as group_changeset_list %}
-
-{% include "changeset_table_partial.html" with changeset_list=group_changeset_list %}
-
-<p>
-<a class="waves-effect waves-light btn" href="{% url 'home' %}">
-Cancel
-</a>
-
-<a class="waves-effect waves-light btn" href="{% url 'home' %}">
-Confirm
-</a>
-</p>
+    <button class="waves-effect waves-light btn" type="submit" name="action">
+        Confirm
+    </button>
+    </p>
+</form>
 
 {% endblock %}

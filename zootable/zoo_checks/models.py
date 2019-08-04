@@ -20,8 +20,12 @@ class Enclosure(models.Model):
         """Combines exhibit's animals' species and groups' species together 
         into a distinct queryset of species
         """
-        animals = self.animals.all().order_by("species__common_name", "name")
-        groups = self.groups.all().order_by("species__common_name")
+        animals = (
+            self.animals.all()
+            .filter(active=True)
+            .order_by("species__common_name", "name")
+        )
+        groups = self.groups.all().filter(active=True).order_by("species__common_name")
         animal_species = Species.objects.filter(animal__in=animals)
         group_species = Species.objects.filter(group__in=groups)
 
@@ -101,13 +105,14 @@ class AnimalSet(models.Model):
             if exclude and f.name in exclude:
                 continue
 
+            # the change from model_to_dict(obj):
             if f.is_relation:
                 data[f.name] = str(
                     f.related_model.objects.get(pk=f.value_from_object(self))
                 )
-
             else:
                 data[f.name] = f.value_from_object(self)
+
         return data
 
 

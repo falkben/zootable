@@ -28,9 +28,27 @@
 {% for count in group.prior_counts %}
 <td>
     <div class="group_prior_counts">
-        <span>M<br />{{ count.count.count_male|default:"0" }}</span>
-        <span>F<br />{{ count.count.count.female|default:"0" }}</span>
-        <span>U<br />{{ count.count.count_unknown|default:"0" }}</span>
+        <span>M<br />
+            {% if count.count %}
+            {{count.count.count_male}}
+            {% else %}
+            0
+            {% endif %}
+        </span>
+        <span>F<br />
+            {% if count.count %}
+            {{count.count.count_female}}
+            {% else %}
+            0
+            {% endif %}
+        </span>
+        <span>U<br />
+            {% if count.count %}
+            {{count.count.count_unknown}}
+            {% else %}
+            0
+            {% endif %}
+        </span>
         <span>
             <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
             <i class="material-icons tiny-small">edit</i>

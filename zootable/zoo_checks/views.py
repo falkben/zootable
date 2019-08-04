@@ -12,7 +12,7 @@ from .helpers import (
     get_init_spec_count_form,
     set_formset_order,
 )
-from .ingest import handle_ingest
+from .ingest import handle_upload, ingest_changesets
 from .models import (
     Animal,
     AnimalCount,
@@ -40,8 +40,14 @@ def count(request, enclosure_name):
     if request.user not in enclosure.users.all():
         return redirect("home")
 
-    enclosure_animals = enclosure.animals.all().order_by("species__common_name", "name")
-    enclosure_groups = enclosure.groups.all().order_by("species__common_name")
+    enclosure_animals = (
+        enclosure.animals.all()
+        .filter(active=True)
+        .order_by("species__common_name", "name")
+    )
+    enclosure_groups = (
+        enclosure.groups.all().filter(active=True).order_by("species__common_name")
+    )
 
     enclosure_species = enclosure.species().order_by("common_name")
 
@@ -345,7 +351,7 @@ def ingest_form(request):
         if form.is_valid():
             # where we compute changes
             try:
-                changesets = handle_ingest(request.FILES["file"])
+                changesets = handle_upload(request.FILES["file"])
             except Exception as e:
                 messages.error(request, e)
                 return redirect("ingest_form")
@@ -369,10 +375,31 @@ def confirm_upload(request):
     changesets = request.session.get("changesets")
     upload_file = request.session.get("upload_file")
 
-    # TODO: convert to a form w/ checkboxes for each change
+    if upload_file is None or changesets is None:
+        return redirect("ingest_form")
+
+    # TODO: create a form w/ checkboxes for each change
+    if request.method == "POST":
+        # user clicked submit button on confirm_upload
+
+        # call functions in ingest.py to save the changes
+        try:
+            ingest_changesets(changesets)
+        except Exception as e:
+            messages.error(request, e)
+            return redirect("ingest_form")
+
+        # clearing the changesets
+        request.session.pop("changesets", None)
+        request.session.pop("upload_file", None)
+
+        messages.info(request, "Saved")
+
+        return redirect("home")
 
     return render(
         request,
         "confirm_upload.html",
         {"changesets": changesets, "upload_file": upload_file},
     )
+

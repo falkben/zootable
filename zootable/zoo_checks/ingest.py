@@ -2,7 +2,6 @@ import re
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms.models import model_to_dict
 
 from zoo_checks.models import Animal, Enclosure, Group, Species, User
 
@@ -56,8 +55,12 @@ def create_enclosures(df):
     """
     enclosures = get_enclosures(df)
     for enclosure in enclosures:
-        encl, _ = Enclosure.objects.get_or_create(name=enclosure)
-        encl.users.add(*list(User.objects.filter(is_superuser=True)))
+        create_enclosure_name(enclosure)
+
+
+def create_enclosure_name(enclosure_name):
+    encl, _ = Enclosure.objects.get_or_create(name=enclosure_name)
+    encl.users.add(*list(User.objects.filter(is_superuser=True)))
 
 
 def create_species(df):
@@ -143,7 +146,7 @@ def create_groups(df):
 
         # * This overrides anything in the database for this accession number
         Group.objects.update_or_create(
-            accession_number=attributes.pop["accession_number"], defaults=attributes
+            accession_number=attributes.pop("accession_number"), defaults=attributes
         )
 
 
@@ -178,6 +181,14 @@ def create_animals(df):
         Animal.objects.update_or_create(
             accession_number=attributes.pop("accession_number"), defaults=attributes
         )
+
+
+def change_obj_active_state(model, accession_number, active_state):
+    """Marks an animal/group active/inactive
+    """
+    obj = model.objects.get(accession_number=accession_number)
+    obj.active = active_state
+    obj.save()
 
 
 def get_animal_name(identifiers):
@@ -231,19 +242,19 @@ def create_changeset_action(action, **kwargs):
     return changeset
 
 
-def get_deleted_objs(df, modeltype):
+def get_objs_to_delete(df, modeltype):
     changesets = []
 
     upload_accession_numbers = set(df["Accession"])
     enclosure_objects = Enclosure.objects.filter(name__in=get_enclosures(df))
-    all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects)
+    all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects, active=True)
     for obj in all_objs:
         if obj.accession_number not in upload_accession_numbers:
             obj_attrs = obj.to_dict()
             obj_attrs.pop("id")
             changesets.append(
                 create_changeset_action(
-                    "del", object_kwargs=obj_attrs, enclosure=obj.enclosure.id
+                    "del", object_kwargs=obj_attrs, enclosure=obj.enclosure.name
                 )
             )
 
@@ -283,8 +294,8 @@ def get_changesets(df):
     # get the set of enclosures that the user loaded -- that data is expected to be complete
     enclosures_uploaded = get_enclosures(df)
 
-    del_anim_changesets = get_deleted_objs(df, Animal)
-    del_group_changesets = get_deleted_objs(df, Group)
+    del_anim_changesets = get_objs_to_delete(df, Animal)
+    del_group_changesets = get_objs_to_delete(df, Group)
 
     animals, groups = find_animals_groups(df)
     animal_changeset = get_modeltype_changeset(animals, Animal)
@@ -299,7 +310,7 @@ def get_changesets(df):
     return changesets
 
 
-def handle_ingest(f):
+def handle_upload(f):
     """Input: an xlsx file containing data to ingest
     Returns: changeset
     """
@@ -308,3 +319,51 @@ def handle_ingest(f):
     changeset = get_changesets(df)
 
     return changeset
+
+
+def ingest_changesets(changesets):
+    # create new enclosures
+    for enc_name in changesets.get("enclosures"):
+        create_enclosure_name(enc_name)
+
+    # create new species
+    anim_add_dict = [
+        value["object_kwargs"]
+        for value in changesets.get("animals")
+        if value["action"] == "add"
+    ]
+    grp_add_dict = [
+        value["object_kwargs"]
+        for value in changesets.get("groups")
+        if value["action"] == "add"
+    ]
+
+    add_dict = anim_add_dict + grp_add_dict
+    add_df = pd.DataFrame(add_dict)
+    create_species(add_df)
+
+    # create new animals
+    anim_add_df = pd.DataFrame(anim_add_dict)
+    create_animals(anim_add_df)
+
+    # create new groups
+    grp_add_df = pd.DataFrame(grp_add_dict)
+    create_groups(grp_add_df)
+
+    # make inactive animals
+    inactive_animals = [
+        value["object_kwargs"]
+        for value in changesets.get("animals")
+        if value["action"] == "del"
+    ]
+    for obj in inactive_animals:
+        change_obj_active_state(Animal, obj["accession_number"], False)
+
+    # make inactive groups
+    inactive_groups = [
+        value["object_kwargs"]
+        for value in changesets.get("groups")
+        if value["action"] == "del"
+    ]
+    for obj in inactive_groups:
+        change_obj_active_state(Group, obj["accession_number"], False)
