@@ -18,7 +18,7 @@ def test_read_xlsx_data():
     pytest.raises(XLRDError, read_xlsx_data, "zootable/test_data/malformed.xlsx")
 
     df = read_xlsx_data("zootable/test_data/example.xlsx")
-    assert df.shape[0] == 4
+    assert df.shape[0] == 5
 
 
 def test_create_enclosures():
