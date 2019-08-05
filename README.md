@@ -8,21 +8,25 @@ Web app to tally zoo animals
 
 This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0.html) license
 
-## Deployment notes
+## Run
 
-- Create `.local_settings`
+- Install `pip install -r requirements.txt`
+
+- Create `zootable/mysite/local_settings.py`
 
   - SECRET_KEY
   - DEBUG
   - ALLOWED_HOSTS
 
-- `python manage.py migrate`
+- From zootable/: `python manage.py migrate`
+
+- `python manage.py createsuperuser`
 
 - Download data
 
-- `python scripts/ingest_xlsx_data.py DATA.xlsx`
+- From ./: `python scripts/ingest_xlsx_data.py DATA.xlsx`
 
-- `python manage.py createsuperuser`
+## Deployment check
 
 - https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
