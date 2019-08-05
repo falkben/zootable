@@ -10,7 +10,7 @@
 
 {% for enclosure in enclosures %}
 <p>
-  <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" href="{% url 'count' enclosure.name %}">
+  <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.name %}">
     {{enclosure}}
   </a>
 </p>

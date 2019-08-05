@@ -5,15 +5,14 @@
 {% block content %}
 <h2>{{enclosure}}</h2>
 
-<form action="/count/{{enclosure.name}}" method="post">
+<form action="{% url 'count' enclosure.name %}" method="post">
     {% csrf_token %}
     {{species_formset.management_form}}
     {{animals_formset.management_form}}
     {{groups_formset.management_form}}
 
-    <table class="mdl-data-table">
     {% for spec_dict in formset_order.values %}
-        <tbody>
+    <table class="striped">
         {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts %}
 
         {% if spec_dict.group_form %}
@@ -27,10 +26,14 @@
             {% include "animal_form_snippet.html" with form=ff %}
             </tr>
         {% endfor %}
-        </tbody>
-    {% endfor %}
     </table>
-    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+    {% endfor %}
+
+    <div class="fixed-action-btn">
+        <button class="btn-floating btn-large waves-effect waves-light red" type="submit" name="action">
+            <i class="material-icons">send</i>
+        </button>
+    </div>
 </form>
 
 {% endblock %}

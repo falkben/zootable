@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload{% endblock %}
+
+{% block content %}
+
+<h2>Upload</h2>
+
+<form action="{% url 'ingest_form' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <h4>Upload data from xlsx file</h4>
+    <ul class="browser-default">
+      <li>For each enclosure in the file, the data is expected to be complete
+      <li>Missing groups/individuals for any included enclosures will be treated as "inactive" and will not show on count forms
+      <li>The following columns should exist:
+        <div class="flex-items">
+          <span>Enclosure</span>
+          <span>Accession</span>
+          <span>Common</span>
+          <span>Class</span>
+          <span>Order</span>
+          <span>Family</span>
+          <span>GSS</span>
+          <span>Species</span>
+          <span>Sex</span>
+          <span>Identifiers</span>
+          <span>Population _Male</span>
+          <span>Population _Female</span>
+          <span>Population _Unknown</span>
+        </div>
+    </ul>
+
+    <div class="file-field input-field">
+      <div class="btn">
+        <span>File</span>
+        <input type="file" name="file" required="" id="id_file">
+      </div>
+      <div class="file-path-wrapper">
+        <input class="file-path validate" type="text">
+      </div>
+    </div>
+
+    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+        <i class="material-icons right">send</i>
+    </button>
+</form>
+
+{% endblock %}

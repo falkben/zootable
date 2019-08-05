@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -18,8 +20,12 @@ class Enclosure(models.Model):
         """Combines exhibit's animals' species and groups' species together 
         into a distinct queryset of species
         """
-        animals = self.animals.all().order_by("species__common_name", "name")
-        groups = self.groups.all().order_by("species__common_name")
+        animals = (
+            self.animals.all()
+            .filter(active=True)
+            .order_by("species__common_name", "name")
+        )
+        groups = self.groups.all().filter(active=True).order_by("species__common_name")
         animal_species = Species.objects.filter(animal__in=animals)
         group_species = Species.objects.filter(group__in=groups)
 
@@ -30,9 +36,12 @@ class Enclosure(models.Model):
 
 
 class Species(models.Model):
-    common_name = models.CharField(max_length=80, unique=True)
-    species_name = models.CharField(max_length=80)
-    genus_name = models.CharField(max_length=80)
+    common_name = models.CharField(max_length=50, unique=True)
+    species_name = models.CharField(max_length=50)
+    genus_name = models.CharField(max_length=50)
+    class_name = models.CharField(max_length=50)
+    order_name = models.CharField(max_length=50)
+    family_name = models.CharField(max_length=50)
 
     def __str__(self):
         return ", ".join((self.genus_name, self.species_name))
@@ -54,7 +63,6 @@ class Species(models.Model):
         return count
 
     def current_count(self, enclosure):
-
         count = self.get_count_day(enclosure)
 
         if count is None:
@@ -86,6 +94,27 @@ class AnimalSet(models.Model):
     class Meta:
         abstract = True
 
+    def to_dict(self, fields=None, exclude=None):
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            if not getattr(f, "editable", False):
+                continue
+            if fields and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+
+            # the change from model_to_dict(obj):
+            if f.is_relation:
+                data[f.name] = str(
+                    f.related_model.objects.get(pk=f.value_from_object(self))
+                )
+            else:
+                data[f.name] = f.value_from_object(self)
+
+        return data
+
 
 class Animal(AnimalSet):
     """An AnimalSet of 1
@@ -113,7 +142,7 @@ class Animal(AnimalSet):
         try:
             count = self.conditions.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-            ).latest("datecounted")
+            ).latest("datecounted", "id")
         except ObjectDoesNotExist:
             count = None
 
@@ -162,19 +191,14 @@ class Group(AnimalSet):
         return "|".join((self.species.common_name, str(self.accession_number)))
 
     def get_count_day(self, day=today_time()):
-        m_count = f_count = u_count = 0
         try:
             count = self.counts.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
             ).latest("datecounted", "id")
 
-            m_count = count.count_male
-            f_count = count.count_female
-            u_count = count.count_unknown
-        except Exception:
-            pass
-
-        return {"m_count": m_count, "f_count": f_count, "u_count": u_count, "day": day}
+            return count
+        except ObjectDoesNotExist:
+            return None
 
     def current_count(self):
         return self.get_count_day()
@@ -183,7 +207,7 @@ class Group(AnimalSet):
         counts = [0] * prior_days
         for p in range(prior_days):
             day = today_time() - timezone.timedelta(days=p + 1)
-            counts[p] = self.get_count_day(day)
+            counts[p] = {"count": self.get_count_day(day), "day": day}
 
         return counts
 
@@ -221,6 +245,7 @@ class AnimalCount(Count):
     def __str__(self):
         return "|".join(
             (
+                str(self.animal.accession_number),
                 self.animal.name,
                 self.user.username,
                 timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm changes{% endblock %}
+
+{% block content %}
+
+<h2>Confirm changes</h2>
+
+<p>
+<b>File</b>: {{upload_file}}
+</p>
+
+<h3>Animals</h3>
+
+{% regroup changesets.animals by enclosure as animal_enclosure_changeset_list %}
+{% include "changeset_table_partial.html" with obj_enclosure_changeset_list=animal_enclosure_changeset_list %}
+
+<h3>Groups</h3>
+
+{% regroup changesets.groups by enclosure as group_enclosure_changeset_list %}
+{% include "changeset_table_partial.html" with obj_enclosure_changeset_list=group_enclosure_changeset_list %}
+
+<form action="{% url 'confirm_upload' %}" method="post">
+    {% csrf_token %}
+    <p>
+    <a class="waves-effect waves-light btn" href="{% url 'home' %}">
+    Cancel
+    </a>
+
+    <button class="waves-effect waves-light btn" type="submit" name="action">
+        Confirm
+    </button>
+    </p>
+</form>
+
+{% endblock %}

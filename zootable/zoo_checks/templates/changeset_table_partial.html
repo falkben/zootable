@@ -1,0 +1,43 @@
+
+{% for enc_changeset_list in obj_enclosure_changeset_list %}
+    {% regroup enc_changeset_list.list by action as obj_enc_changeset_list %}
+    {% for change in obj_enc_changeset_list %}
+        <div>
+        <table class="striped">
+        {% for change in change.list %}
+            {% if forloop.first %}    
+                <thead>
+                <tr>
+                <td>Action</td>
+                {% for key in change.object_kwargs.keys %}
+                    <td>{{key}}</td>
+                {% endfor %}
+                </tr>
+                </thead>
+
+                <tbody>
+            {% endif %}
+            
+            <tr>
+            
+            <td>
+            {% if change.action == "add" %}
+                <i class="small material-icons">add_box</i>
+            {% elif change.action == "update" %}
+                <i class="small material-icons">edit</i>
+            {% elif change.action == "del" %}
+                <i class="small material-icons">delete</i>
+            {% endif %}
+            </td>
+            
+            {% for value in change.object_kwargs.values %}
+                <td>{{value}}</td>
+            {% endfor %}
+            
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+        </div>
+    {% endfor %}
+{% endfor %}
