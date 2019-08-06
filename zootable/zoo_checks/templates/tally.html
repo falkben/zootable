@@ -13,7 +13,7 @@
 
     {% for spec_dict in formset_order.values %}
     <table class="striped">
-        {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts %}
+        {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_form %}
 
         {% if spec_dict.group_form %}
         <tr>

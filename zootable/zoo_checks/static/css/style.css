@@ -78,7 +78,12 @@ table.striped thead .narrow-count {
   color: #eee;
 }
 
-table form p {
+form table p {
+  margin: 0;
+  text-align: right;
+}
+
+form table p > input[type="number"]:not(.browser-default) {
   margin: 0;
 }
 
