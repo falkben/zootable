@@ -16,7 +16,7 @@
         {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_form %}
 
         {% if spec_dict.group_form %}
-        <tr>
+        <tr class="red lighten-5">
             {% include "group_form_snippet.html" with form=spec_dict.group_form group=spec_dict.group %}
         </tr>
         {% endif %}
