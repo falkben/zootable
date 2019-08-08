@@ -11,8 +11,9 @@
     {{animals_formset.management_form}}
     {{groups_formset.management_form}}
 
-    {% for spec_dict in formset_order.values %}
     <table class="striped">
+    <tbody>
+    {% for spec_dict in formset_order.values %}
         {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_form %}
 
         {% if spec_dict.group_form %}
@@ -26,8 +27,9 @@
             {% include "animal_form_snippet.html" with form=ff %}
             </tr>
         {% endfor %}
-    </table>
     {% endfor %}
+    </tbody>
+    </table>
 
     <div class="fixed-action-btn">
         <button class="btn-floating btn-large waves-effect waves-light red" type="submit" name="action">

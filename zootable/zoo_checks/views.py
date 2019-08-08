@@ -129,8 +129,9 @@ def count(request, enclosure_name):
         )
 
         # ! hack because empty permitted is occassionally set to False!
-        for form in animals_formset:
-            form.empty_permitted = True
+        for formset in (animals_formset, groups_formset, species_formset):
+            for form in formset:
+                form.empty_permitted = True
 
         # check whether it's valid:
         if (
@@ -406,4 +407,3 @@ def confirm_upload(request):
         "confirm_upload.html",
         {"changesets": changesets, "upload_file": upload_file},
     )
-
