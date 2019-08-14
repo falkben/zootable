@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Group Count{% endblock %}
+
+{% block content %}
+
+<h2>Edit Group Count</h2>
+
+<p><b>Enclosure:</b> {{enclosure}}
+<p><b>Species:</b> {{group.species.common_name}}<em>({{group.species.genus_name}} {{group.species.species_name}})</em></td>
+<p><b>Group Accession Number:</b> {{group.accession_number}}</p>
+<p><b>Date:</b> {{dateday.date}}</p>
+<p><b>User:</b>
+{% if count.user %}
+    {{count.user}}
+{% else %}
+    None
+{% endif %}
+</p>
+
+<p>
+<form action="{% url 'edit_group_count' group.accession_number dateday.year dateday.month dateday.day %}" method="post">
+    {% csrf_token %}
+
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    <span class="fieldWrapper">
+    {{ form.count_male.errors }}
+        <b>M</b><em>({{group.population_male}})</em>: {{ form.count_male }}
+    </span>
+
+    <span class="fieldWrapper">
+        {{ form.count_female.errors }}
+        <b>F</b><em>({{group.population_female}})</em>: {{ form.count_female }}
+    </span>
+
+    <span class="fieldWrapper">
+        {{ form.count_unknown.errors }}
+        <b>U</b><em>({{group.population_unknown}})</em>: {{ form.count_unknown }}
+    </span>
+
+    <p>
+    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+        <i class="material-icons right">send</i>
+    </button>
+    </p>
+</form>
+</p>
+
+
+{% endblock %}

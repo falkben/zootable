@@ -5,27 +5,19 @@
 {% block content %}
 <h2>{{enclosure}}</h2>
 
-<form action="/count/{{enclosure.id}}" method="post">
+<form action="{% url 'count' enclosure.name %}" method="post">
     {% csrf_token %}
     {{species_formset.management_form}}
     {{animals_formset.management_form}}
     {{groups_formset.management_form}}
 
-    <table class="mdl-data-table">
+    <table class="striped">
+    <tbody>
     {% for spec_dict in formset_order.values %}
-        <tbody>
-        <thead class="species">
-        <td><b>{{spec_dict.species.common_name}}</b><br/><em>({{spec_dict.species.genus_name}} {{spec_dict.species.species_name}})</em></td>
-        <td>{{spec_dict.formset.as_ul}}</td>
-        {% for daycount in spec_dict.species.prior_counts %}
-        <td>
-            {{daycount}}
-        </td>
-        {% endfor %}
-        </thead>
+        {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_form %}
 
         {% if spec_dict.group_form %}
-        <tr>
+        <tr class="red lighten-5">
             {% include "group_form_snippet.html" with form=spec_dict.group_form group=spec_dict.group %}
         </tr>
         {% endif %}
@@ -35,10 +27,15 @@
             {% include "animal_form_snippet.html" with form=ff %}
             </tr>
         {% endfor %}
-        </tbody>
     {% endfor %}
+    </tbody>
     </table>
-    <input class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" type="submit" value="Submit">
+
+    <div class="fixed-action-btn">
+        <button class="btn-floating btn-large waves-effect waves-light red" type="submit" name="action">
+            <i class="material-icons">send</i>
+        </button>
+    </div>
 </form>
 
 {% endblock %}

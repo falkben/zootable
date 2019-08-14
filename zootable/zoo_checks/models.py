@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -18,8 +20,12 @@ class Enclosure(models.Model):
         """Combines exhibit's animals' species and groups' species together 
         into a distinct queryset of species
         """
-        animals = self.animals.all().order_by("species__common_name", "name")
-        groups = self.groups.all().order_by("species__common_name")
+        animals = (
+            self.animals.all()
+            .filter(active=True)
+            .order_by("species__common_name", "name")
+        )
+        groups = self.groups.all().filter(active=True).order_by("species__common_name")
         animal_species = Species.objects.filter(animal__in=animals)
         group_species = Species.objects.filter(group__in=groups)
 
@@ -30,42 +36,51 @@ class Enclosure(models.Model):
 
 
 class Species(models.Model):
-    common_name = models.CharField(max_length=80)
-    species_name = models.CharField(max_length=80)
-    genus_name = models.CharField(max_length=80)
+    common_name = models.CharField(max_length=50, unique=True)
+    species_name = models.CharField(max_length=50)
+    genus_name = models.CharField(max_length=50)
+    class_name = models.CharField(max_length=50)
+    order_name = models.CharField(max_length=50)
+    family_name = models.CharField(max_length=50)
 
     def __str__(self):
         return ", ".join((self.genus_name, self.species_name))
 
     class Meta:
         ordering = ["common_name"]
+        verbose_name_plural = "species"
 
-    def get_count_day(self, day=today_time()):
+    def get_count_day(self, enclosure, day=today_time()):
         try:
-            count = (
-                self.counts.filter(
-                    datecounted__gte=day,
-                    datecounted__lt=day + timezone.timedelta(days=1),
-                )
-                .latest("datecounted")
-                .count
-            )
+            count = self.counts.filter(
+                datecounted__gte=day,
+                datecounted__lt=day + timezone.timedelta(days=1),
+                enclosure=enclosure,
+            ).latest("datecounted", "id")
         except ObjectDoesNotExist:
-            count = 0
+            count = None
 
         return count
 
-    @property
-    def current_count(self):
+    def current_count(self, enclosure):
+        count = self.get_count_day(enclosure)
 
-        return self.get_count_day()
+        if count is None:
+            count = {"count": 0, "day": today_time()}
+        else:
+            count = {"count": count.count, "day": today_time()}
+        return count
 
-    @property
-    def prior_counts(self, prior_days=3):
+    def prior_counts(self, enclosure, prior_days=3):
         counts = [0] * prior_days
         for p in range(prior_days):
             day = today_time() - timezone.timedelta(days=p + 1)
-            counts[p] = self.get_count_day(day)
+            count = self.get_count_day(enclosure, day)
+            if count is None:
+                count = {"count": 0, "day": day}
+            else:
+                count = {"count": count.count, "day": day}
+            counts[p] = count
 
         return counts
 
@@ -78,6 +93,27 @@ class AnimalSet(models.Model):
 
     class Meta:
         abstract = True
+
+    def to_dict(self, fields=None, exclude=None):
+        opts = self._meta
+        data = {}
+        for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
+            if not getattr(f, "editable", False):
+                continue
+            if fields and f.name not in fields:
+                continue
+            if exclude and f.name in exclude:
+                continue
+
+            # the change from model_to_dict(obj):
+            if f.is_relation:
+                data[f.name] = str(
+                    f.related_model.objects.get(pk=f.value_from_object(self))
+                )
+            else:
+                data[f.name] = f.value_from_object(self)
+
+        return data
 
 
 class Animal(AnimalSet):
@@ -106,7 +142,7 @@ class Animal(AnimalSet):
         try:
             count = self.conditions.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-            ).latest("datecounted")
+            ).latest("datecounted", "id")
         except ObjectDoesNotExist:
             count = None
 
@@ -114,19 +150,16 @@ class Animal(AnimalSet):
 
     def condition_on_day(self, day=today_time()):
         count = self.count_on_day(day)
-        if count is not None:
-            cond = count.condition
-        else:
-            cond = ""
-
-        return cond
+        return count
 
     @property
     def current_condition(self):
+        count = self.condition_on_day()
+        if count is not None:
+            return count.condition
+        else:
+            return ""
 
-        return self.condition_on_day()
-
-    @property
     def prior_conditions(self, prior_days=3):
         """Given a set of animals, returns their counts from the prior N days
         """
@@ -134,8 +167,7 @@ class Animal(AnimalSet):
         for p in range(prior_days):
             day = today_time() - timezone.timedelta(days=p + 1)
             count = self.count_on_day(day)
-            if count is not None:
-                conds[p] = count.get_condition_display()
+            conds[p] = {"count": count, "day": day}
 
         return conds
 
@@ -156,40 +188,32 @@ class Group(AnimalSet):
         ordering = ["species__common_name"]
 
     def __str__(self):
-        return "|".join((self.species.common_name, self.accession_number))
+        return "|".join((self.species.common_name, str(self.accession_number)))
 
     def get_count_day(self, day=today_time()):
-        m_count = f_count = u_count = 0
         try:
             count = self.counts.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-            ).latest("datecounted")
+            ).latest("datecounted", "id")
 
-            m_count = count.count_male
-            f_count = count.count_female
-            u_count = count.count_unknown
-        except:
-            pass
+            return count
+        except ObjectDoesNotExist:
+            return None
 
-        return m_count, f_count, u_count
-
-    @property
     def current_count(self):
-        m_count, f_count, u_count = self.get_count_day()
-        return m_count, f_count, u_count
+        return self.get_count_day()
 
-    @property
     def prior_counts(self, prior_days=3):
         counts = [0] * prior_days
         for p in range(prior_days):
             day = today_time() - timezone.timedelta(days=p + 1)
-            counts[p] = self.get_count_day(day)
+            counts[p] = {"count": self.get_count_day(day), "day": day}
 
         return counts
 
 
 class Count(models.Model):
-    datecounted = models.DateTimeField(auto_now=True)
+    datecounted = models.DateTimeField(default=timezone.now)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     enclosure = models.ForeignKey(Enclosure, on_delete=models.SET_NULL, null=True)
@@ -221,9 +245,10 @@ class AnimalCount(Count):
     def __str__(self):
         return "|".join(
             (
+                str(self.animal.accession_number),
                 self.animal.name,
                 self.user.username,
-                self.datecounted.strftime("%Y-%m-%d"),
+                timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
                 self.condition,
             )
         )
@@ -241,8 +266,14 @@ class GroupCount(Count):
             (
                 self.group.species.common_name,
                 self.user.username,
-                self.datecounted.strftime("%Y-%m-%d"),
-                str(self.count),
+                timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
+                ".".join(
+                    (
+                        str(self.count_male),
+                        str(self.count_female),
+                        str(self.count_unknown),
+                    )
+                ),
             )
         )
 
@@ -259,7 +290,7 @@ class SpeciesCount(Count):
             (
                 self.species.common_name,
                 self.user.username,
-                self.datecounted.strftime("%Y-%m-%d"),
+                timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
                 str(self.count),
             )
         )

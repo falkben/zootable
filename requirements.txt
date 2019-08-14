@@ -1,5 +1,8 @@
-django==2.2.2
+-e .
+django==2.2.4
 django-allauth==0.39.1
 gunicorn==19.9.0
-pandas==0.24.2 # for data ingest
 xlrd==1.2.0
+pandas==0.25.0
+pytest
+pytest-django

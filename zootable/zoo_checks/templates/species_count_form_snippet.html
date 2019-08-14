@@ -1,0 +1,28 @@
+<tr class="species">
+<td>
+    <b>{{species.common_name}}</b><br/>
+    <em>({{species.genus_name}} {{species.species_name}})</em>
+</td>
+<td>
+    {% if not group_form %}
+        {{form.as_p}}
+    {% else %}
+        <div style="display:none">
+        {{form.as_p}}
+        </div>
+    {% endif %}
+</td>
+
+{% for daycount in prior_counts %}
+<td>
+    {% if not group_form %}
+    <p>
+        {{daycount.count}}
+        <a href="{% url 'edit_species_count' species=species.common_name enclosure=enclosure.name year=daycount.day.year month=daycount.day.month day=daycount.day.day %}">
+        <i class="tiny-small material-icons">edit</i>
+        </a>
+    </p>
+    {% endif %}
+</td>
+{% endfor %}
+</tr>
