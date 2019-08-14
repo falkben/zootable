@@ -35,10 +35,11 @@ def set_formset_order(
         # TODO: separate spec/group/animals parts out into separate functions
         # each species is it's own dict, using id because that's known unique
         formset_dict[spec.id] = {}
+        formset_dict[spec.id]["species"] = spec
 
+        # NOTE: We could avoid the following when there's group's for that species since they are hidden
         # apparently required because setting initial in inline_formset doesn't seem to do the trick
         species_formset.forms[ind].initial.update(species_formset.initial_extra[ind])
-        formset_dict[spec.id]["species"] = spec
         formset_dict[spec.id]["formset"] = species_formset[ind]
         formset_dict[spec.id]["prior_counts"] = spec.prior_counts(enclosure)
 

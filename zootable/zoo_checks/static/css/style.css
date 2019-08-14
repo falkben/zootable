@@ -50,7 +50,7 @@ html {
 
 /* format of tally table */
 
-thead {
+table.striped > tbody > tr.species {
   background: #444;
   color: #eee;
 }
@@ -74,11 +74,20 @@ table.striped .narrow-count {
   border-bottom: 0;
 }
 
+table.striped tbody tr.species input {
+  color: white;
+}
+
 table.striped thead .narrow-count {
   color: #eee;
 }
 
-table form p {
+form table p {
+  margin: 0;
+  text-align: right;
+}
+
+form table p > input[type="number"]:not(.browser-default) {
   margin: 0;
 }
 
