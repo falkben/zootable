@@ -1,4 +1,4 @@
--e .
+# -e .
 django==2.2.4
 django-allauth==0.39.1
 gunicorn==19.9.0

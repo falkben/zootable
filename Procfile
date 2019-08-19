@@ -1,1 +1,1 @@
-web: gunicorn zootable.wsgi
+web: gunicorn mysite.wsgi
