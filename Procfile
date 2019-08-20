@@ -1,1 +1,1 @@
-web: gunicorn zootable.mysite.wsgi --log-file -
+web: gunicorn --pythonpath zootable mysite.wsgi --log-file -
