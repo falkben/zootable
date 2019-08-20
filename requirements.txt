@@ -1,9 +1,8 @@
-# -e .
 django==2.2.4
 django-allauth==0.39.1
 gunicorn==19.9.0
 pandas==0.25.0
 xlrd==1.2.0
-pytest
-pytest-django
-django_heroku
+pytest==5.0.1
+pytest-django==3.5.1
+django_heroku==0.3.1
