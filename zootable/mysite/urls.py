@@ -30,7 +30,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("count/<enclosure_name>", views.count, name="count"),
     path(
-        "edit_species_count/<species>/<enclosure>/<int:year>/<int:month>/<int:day>/",
+        "edit_species_count/<int:species>/<enclosure>/<int:year>/<int:month>/<int:day>/",
         views.edit_species_count,
         name="edit_species_count",
     ),
