@@ -18,7 +18,7 @@
     {% if not group_form %}
     <p>
         {{daycount.count}}
-        <a href="{% url 'edit_species_count' species=species.common_name enclosure=enclosure.name year=daycount.day.year month=daycount.day.month day=daycount.day.day %}">
+        <a href="{% url 'edit_species_count' species=species.id enclosure=enclosure.name year=daycount.day.year month=daycount.day.month day=daycount.day.day %}">
         <i class="tiny-small material-icons">edit</i>
         </a>
     </p>
