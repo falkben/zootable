@@ -5,11 +5,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
 
+from django_extensions.db.fields import AutoSlugField
+
 from .helpers import today_time
 
 
 class Enclosure(models.Model):
     name = models.CharField(max_length=50, unique=True)
+
+    slug = AutoSlugField(null=True, default=None, populate_from="name", unique=True)
 
     users = models.ManyToManyField(User)
 
@@ -42,6 +46,13 @@ class Species(models.Model):
     class_name = models.CharField(max_length=50)
     order_name = models.CharField(max_length=50)
     family_name = models.CharField(max_length=50)
+
+    slug = AutoSlugField(
+        null=True,
+        default=None,
+        populate_from=["common_name", "species_name"],
+        unique=True,
+    )
 
     def __str__(self):
         return ", ".join((self.genus_name, self.species_name))
@@ -126,6 +137,10 @@ class Animal(AnimalSet):
     identifier = models.CharField(max_length=40)
     sex = models.CharField(max_length=1, choices=SEX, default="U")
 
+    slug = AutoSlugField(
+        null=True, default=None, populate_from=["accession_number"], unique=True
+    )
+
     enclosure = models.ForeignKey(
         Enclosure, on_delete=models.SET_NULL, related_name="animals", null=True
     )
@@ -179,6 +194,10 @@ class Group(AnimalSet):
     population_male = models.PositiveSmallIntegerField(default=0)
     population_female = models.PositiveSmallIntegerField(default=0)
     population_unknown = models.PositiveSmallIntegerField(default=0)
+
+    slug = AutoSlugField(
+        null=True, default=None, populate_from="accession_number", unique=True
+    )
 
     enclosure = models.ForeignKey(
         Enclosure, on_delete=models.SET_NULL, related_name="groups", null=True

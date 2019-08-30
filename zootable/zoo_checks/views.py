@@ -33,8 +33,8 @@ def home(request):
 
 
 @login_required
-def count(request, enclosure_name):
-    enclosure = get_object_or_404(Enclosure, name=enclosure_name)
+def count(request, enclosure_slug):
+    enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
     # if the user cannot edit the enclosure, redirect to home
     if request.user not in enclosure.users.all():
@@ -204,9 +204,9 @@ def count(request, enclosure_name):
 
 
 @login_required
-def edit_species_count(request, species, enclosure, year, month, day):
-    species = get_object_or_404(Species, id=species)
-    enclosure = get_object_or_404(Enclosure, name=enclosure)
+def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
+    species = get_object_or_404(Species, slug=species_slug)
+    enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
     # if the user cannot edit the enclosure, redirect to home
     if request.user not in enclosure.users.all():

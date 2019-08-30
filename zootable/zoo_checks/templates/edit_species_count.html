@@ -17,7 +17,7 @@
 {% endif %}
 </p>
 
-<form action="{% url 'edit_species_count' species.id enclosure.name dateday.year dateday.month dateday.day %}" method="post">
+<form action="{% url 'edit_species_count' species.slug enclosure.slug dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
 
     {{ form.as_p }}
