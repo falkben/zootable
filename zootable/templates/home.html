@@ -10,7 +10,7 @@
 
 {% for enclosure in enclosures %}
 <p>
-  <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.name %}">
+  <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.slug %}">
     {{enclosure}}
   </a>
 </p>

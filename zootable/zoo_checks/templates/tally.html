@@ -5,7 +5,7 @@
 {% block content %}
 <h2>{{enclosure}}</h2>
 
-<form action="{% url 'count' enclosure.name %}" method="post">
+<form action="{% url 'count' enclosure.slug %}" method="post">
     {% csrf_token %}
     {{species_formset.management_form}}
     {{animals_formset.management_form}}
