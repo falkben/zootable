@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import inlineformset_factory
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -116,23 +115,6 @@ def count(request, enclosure_slug):
             form_kwargs={"is_staff": request.user.is_staff},
         )
 
-        # needed in the case the form wasn't submitted properly and we have to re-render the form
-        # and for setting initial values
-        formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
-            enclosure,
-            enclosure_species,
-            enclosure_groups,
-            enclosure_animals,
-            species_formset,
-            groups_formset,
-            animals_formset,
-        )
-
-        # ! hack because empty permitted is occassionally set to False!
-        for formset in (animals_formset, groups_formset, species_formset):
-            for form in formset:
-                form.empty_permitted = True
-
         # check whether it's valid:
         if (
             species_formset.is_valid()
@@ -140,30 +122,36 @@ def count(request, enclosure_slug):
             and groups_formset.is_valid()
         ):
 
-            def save_form_obj(form):
+            def save_form_in_formset(form):
                 # TODO: move this into model/(form?) and overwrite the save method
                 # TODO: save should be update_or_create w/ user and date (so each user has MAX 1 count/day/spec)
                 if form.has_changed():
-                    obj = form.save(commit=False)
-                    obj.user = request.user
+                    form_obj = form.save(commit=False)
+                    form_obj.user = request.user
                     # force insert because otherwise it always updated
-                    obj.id = None
-                    obj.datecounted = timezone.now()
-                    obj.save()
+                    form_obj.id = None
+                    form_obj.datecounted = timezone.now()
+                    form_obj.save()
 
             # process the data in form.cleaned_data as required
-            for form in species_formset:
-                save_form_obj(form)
+            for formset in (species_formset, animals_formset, groups_formset):
+                for form in formset:
+                    save_form_in_formset(form)
 
-            for form in animals_formset:
-                save_form_obj(form)
-
-            for form in groups_formset:
-                save_form_obj(form)
-
-            return HttpResponseRedirect("/")
+            messages.success(request, "Saved")
+            return redirect("count", enclosure_slug=enclosure.slug)
 
         else:
+            formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
+                enclosure,
+                enclosure_species,
+                enclosure_groups,
+                enclosure_animals,
+                species_formset,
+                groups_formset,
+                animals_formset,
+            )
+
             messages.error(request, "There was an error processing the form")
 
     # if a GET (or any other method) we'll create a blank form
@@ -398,7 +386,7 @@ def confirm_upload(request):
         request.session.pop("changesets", None)
         request.session.pop("upload_file", None)
 
-        messages.info(request, "Saved")
+        messages.success(request, "Saved")
 
         return redirect("home")
 
