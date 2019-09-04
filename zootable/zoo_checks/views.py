@@ -234,7 +234,7 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
                 obj.save()
-            return redirect("count", enclosure_name=enclosure.name)
+            return redirect("count", enclosure_slug=enclosure.slug)
     else:
         form = SpeciesCountForm(initial=init_form)
 
@@ -283,7 +283,7 @@ def edit_group_count(request, group, year, month, day):
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
                 obj.save()
-            return redirect("count", enclosure_name=enclosure.name)
+            return redirect("count", enclosure_slug=enclosure.slug)
     else:
         form = GroupCountForm(initial=init_form)
 
@@ -332,7 +332,7 @@ def edit_animal_count(request, animal, year, month, day):
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
                 obj.save()
-            return redirect("count", enclosure_name=enclosure.name)
+            return redirect("count", enclosure_slug=enclosure.slug)
     else:
         form = AnimalCountForm(initial=init_form, is_staff=request.user.is_staff)
 
