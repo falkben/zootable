@@ -13,7 +13,9 @@
     {% if pcond.count %}
         {{pcond.count.get_condition_display}}
     {% else %}
-        Not Seen
+        <span class="grey-text text-lighten-1">
+            Not entered
+        </span>
     {% endif %}
     <a href="{% url 'edit_animal_count' animal=anim.accession_number year=pcond.day.year month=pcond.day.month day=pcond.day.day %}">
     <i class="material-icons tiny-small">edit</i>

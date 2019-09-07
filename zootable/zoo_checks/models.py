@@ -247,15 +247,13 @@ class AnimalCount(Count):
     NEEDSATTENTION = "NA"
     # bright active responsive (the best)
     BAR = "BA"
-    NOT_SEEN = ""
+    NOT_SEEN = "NS"
 
     CONDITIONS = [(SEEN, "Seen"), (NEEDSATTENTION, "Attn"), (NOT_SEEN, "Not Seen")]
 
     STAFF_CONDITIONS = [(BAR, "BAR")] + CONDITIONS
 
-    condition = models.CharField(
-        max_length=2, choices=STAFF_CONDITIONS, default="", null=True
-    )
+    condition = models.CharField(max_length=2, choices=STAFF_CONDITIONS, null=True)
 
     animal = models.ForeignKey(
         Animal, on_delete=models.CASCADE, related_name="conditions"
