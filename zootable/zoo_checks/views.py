@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.forms import inlineformset_factory
+from django.forms import formset_factory
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -50,35 +50,11 @@ def count(request, enclosure_slug):
 
     enclosure_species = enclosure.species().order_by("common_name")
 
-    SpeciesCountFormset = inlineformset_factory(
-        Enclosure,
-        SpeciesCount,
-        form=SpeciesCountForm,
-        # formset=BaseSpeciesCountFormset,
-        extra=enclosure_species.count(),
-        can_order=False,
-        can_delete=False,
-    )
+    SpeciesCountFormset = formset_factory(SpeciesCountForm, extra=0)
 
-    GroupCountFormset = inlineformset_factory(
-        Enclosure,
-        GroupCount,
-        form=GroupCountForm,
-        # formset=BaseGroupCountFormset,
-        extra=enclosure_groups.count(),
-        can_order=False,
-        can_delete=False,
-    )
+    GroupCountFormset = formset_factory(GroupCountForm, extra=0)
 
-    AnimalCountFormset = inlineformset_factory(
-        Enclosure,
-        AnimalCount,
-        form=AnimalCountForm,
-        # formset=BaseAnimalCountFormset,
-        extra=enclosure_animals.count(),
-        can_order=False,
-        can_delete=False,
-    )
+    AnimalCountFormset = formset_factory(AnimalCountForm, extra=0)
 
     init_spec = get_init_spec_count_form(enclosure, enclosure_species)
     init_group = get_init_group_count_form(enclosure_groups)
@@ -88,23 +64,16 @@ def count(request, enclosure_slug):
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         species_formset = SpeciesCountFormset(
-            request.POST,
-            instance=enclosure,
-            initial=init_spec,
-            prefix="species_formset",
+            request.POST, initial=init_spec, prefix="species_formset"
         )
 
         groups_formset = GroupCountFormset(
-            request.POST,
-            instance=enclosure,
-            initial=init_group,
-            prefix="groups_formset",
+            request.POST, initial=init_group, prefix="groups_formset"
         )
 
         # TODO: Test to make sure we are editing the correct animal counts
         animals_formset = AnimalCountFormset(
             request.POST,
-            instance=enclosure,
             initial=init_anim,
             prefix="animals_formset",
             form_kwargs={"is_staff": request.user.is_staff},
@@ -152,13 +121,10 @@ def count(request, enclosure_slug):
     # if a GET (or any other method) we'll create a blank form
     else:
         species_formset = SpeciesCountFormset(
-            instance=enclosure, initial=init_spec, prefix="species_formset"
+            initial=init_spec, prefix="species_formset"
         )
-        groups_formset = GroupCountFormset(
-            instance=enclosure, initial=init_group, prefix="groups_formset"
-        )
+        groups_formset = GroupCountFormset(initial=init_group, prefix="groups_formset")
         animals_formset = AnimalCountFormset(
-            instance=enclosure,
             initial=init_anim,
             prefix="animals_formset",
             form_kwargs={"is_staff": request.user.is_staff},
