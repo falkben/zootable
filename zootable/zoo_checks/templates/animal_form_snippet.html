@@ -10,7 +10,7 @@
 </td>
 {% for pcond in anim.prior_conditions %}
 <td>
-    {% if pcond.count %}
+    {% if pcond.count and pcond.count.get_condition_display != "" %}
         {{pcond.count.get_condition_display}}
     {% else %}
         <span class="grey-text text-lighten-1">
