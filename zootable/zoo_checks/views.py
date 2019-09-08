@@ -56,7 +56,6 @@ def count(request, enclosure_slug):
         form=SpeciesCountForm,
         # formset=BaseSpeciesCountFormset,
         extra=enclosure_species.count(),
-        max_num=enclosure_species.count(),
         can_order=False,
         can_delete=False,
     )
@@ -65,9 +64,8 @@ def count(request, enclosure_slug):
         Enclosure,
         GroupCount,
         form=GroupCountForm,
-        # formset=BaseSpeciesCountFormset,
+        # formset=BaseGroupCountFormset,
         extra=enclosure_groups.count(),
-        max_num=enclosure_groups.count(),
         can_order=False,
         can_delete=False,
     )
@@ -78,13 +76,10 @@ def count(request, enclosure_slug):
         form=AnimalCountForm,
         # formset=BaseAnimalCountFormset,
         extra=enclosure_animals.count(),
-        max_num=enclosure_animals.count(),
         can_order=False,
         can_delete=False,
     )
 
-    # * initial values aren't being passed into the formset correctly by default
-    # TODO: figure out how to do it without manually editing each form
     init_spec = get_init_spec_count_form(enclosure, enclosure_species)
     init_group = get_init_group_count_form(enclosure_groups)
     init_anim = get_init_anim_count_form(enclosure_animals)
