@@ -38,27 +38,17 @@ def set_formset_order(
         formset_dict[spec.id]["species"] = spec
 
         # NOTE: We could avoid the following when there's group's for that species since they are hidden
-        # apparently required because setting initial in inline_formset doesn't seem to do the trick
-        species_formset.forms[ind].initial.update(species_formset.initial_extra[ind])
         formset_dict[spec.id]["formset"] = species_formset[ind]
         formset_dict[spec.id]["prior_counts"] = spec.prior_counts(enclosure)
 
         try:
             spec_group = enclosure_groups.get(species=spec)
-            groups_formset.forms[group_count].initial.update(
-                groups_formset.initial_extra[group_count]
-            )
             group_form = groups_formset[group_count]
-            # ! hack: figure out how to override the form init function?
-            group_count_types = "male", "female", "unknown"
-            for gctype in group_count_types:
-                group_form.fields[f"count_{gctype}"].widget.attrs.update(
-                    {"max": eval(f"spec_group.population_{gctype}")}
-                )
             group_count += 1
         except ObjectDoesNotExist:
             group_form = None
             spec_group = None
+
         formset_dict[spec.id]["group_form"] = group_form
         formset_dict[spec.id]["group"] = spec_group
 
@@ -67,11 +57,6 @@ def set_formset_order(
         spec_anim_index = list(
             range(anim_total, spec_anim_queryset.count() + anim_total)
         )
-        # this updates the animal formset with initial values
-        [
-            animals_formset[i].initial.update(animals_formset.initial_extra[i])
-            for i in spec_anim_index
-        ]
         formset_dict[spec.id]["animalformset_index"] = zip(
             spec_anim_queryset, [animals_formset[i] for i in spec_anim_index]
         )
@@ -88,7 +73,13 @@ def get_init_spec_count_form(enclosure, enclosure_species):
     # * note: this unpacks the queryset into a list and should be avoided
     init_spec = []
     for sp in enclosure_species:
-        init_spec.append({"species": sp, "count": sp.current_count(enclosure)["count"]})
+        init_spec.append(
+            {
+                "species": sp,
+                "count": sp.current_count(enclosure)["count"],
+                "enclosure": enclosure,
+            }
+        )
 
     return init_spec
 
@@ -103,6 +94,7 @@ def get_init_group_count_form(enclosure_groups):
                 "count_male": 0 if count is None else count.count_male,
                 "count_female": 0 if count is None else count.count_female,
                 "count_unknown": 0 if count is None else count.count_unknown,
+                "enclosure": group.enclosure,
             }
         )
 
@@ -114,7 +106,11 @@ def get_init_anim_count_form(enclosure_animals):
 
     # make db query to get conditions for all the animals in enclosure
     init_anim = [
-        {"animal": anim, "condition": anim.current_condition}
+        {
+            "animal": anim,
+            "condition": anim.current_condition,
+            "enclosure": anim.enclosure,
+        }
         for anim in enclosure_animals
     ]
 

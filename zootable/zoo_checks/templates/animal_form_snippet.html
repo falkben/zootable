@@ -10,10 +10,12 @@
 </td>
 {% for pcond in anim.prior_conditions %}
 <td>
-    {% if pcond.count %}
+    {% if pcond.count and pcond.count.get_condition_display != "" %}
         {{pcond.count.get_condition_display}}
     {% else %}
-        Not Seen
+        <span class="grey-text text-lighten-1">
+            Not entered
+        </span>
     {% endif %}
     <a href="{% url 'edit_animal_count' animal=anim.accession_number year=pcond.day.year month=pcond.day.month day=pcond.day.day %}">
     <i class="material-icons tiny-small">edit</i>

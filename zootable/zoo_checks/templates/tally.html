@@ -5,6 +5,10 @@
 {% block content %}
 <h2>{{enclosure}}</h2>
 
+{{species_formset.non_form_errors}}
+{{animals_formset.non_form_errors}}
+{{groups_formset.non_form_errors}}
+
 <form action="{% url 'count' enclosure.slug %}" method="post">
     {% csrf_token %}
     {{species_formset.management_form}}
