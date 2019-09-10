@@ -70,6 +70,11 @@ form span > input#id_count_unknown.narrow-count {
   width: 4ch;
 }
 
+[type="radio"]:not(:checked) + span,
+[type="radio"]:checked + span {
+  padding-left: 25px;
+}
+
 table.striped .narrow-count {
   border-bottom: 0;
 }
