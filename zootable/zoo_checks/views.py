@@ -12,15 +12,7 @@ from .helpers import (
     set_formset_order,
 )
 from .ingest import handle_upload, ingest_changesets
-from .models import (
-    Animal,
-    AnimalCount,
-    Enclosure,
-    Group,
-    GroupCount,
-    Species,
-    SpeciesCount,
-)
+from .models import Animal, Enclosure, Group, Species
 
 
 @login_required
@@ -90,12 +82,12 @@ def count(request, enclosure_slug):
                 # TODO: move this into model/(form?) and overwrite the save method
                 # TODO: save should be update_or_create w/ user and date (so each user has MAX 1 count/day/spec)
                 if form.has_changed():
-                    form_obj = form.save(commit=False)
-                    form_obj.user = request.user
+                    instance = form.save(commit=False)
+                    instance.user = request.user
                     # force insert because otherwise it always updated
-                    form_obj.id = None
-                    form_obj.datecounted = timezone.now()
-                    form_obj.save()
+                    instance.id = None
+                    instance.datecounted = timezone.now()
+                    instance.save()
 
             # process the data in form.cleaned_data as required
             for formset in (species_formset, animals_formset, groups_formset):
