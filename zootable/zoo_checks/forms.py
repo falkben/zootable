@@ -22,6 +22,7 @@ class AnimalCountForm(forms.ModelForm):
         widget=forms.RadioSelect,
         label="",
         required=False,
+        show_hidden_initial=True,
     )
 
 
@@ -31,11 +32,14 @@ class SpeciesCountForm(forms.ModelForm):
         fields = ["count", "species", "enclosure"]
 
         # hide species/enclosure form elements
-        widgets = {
-            "species": forms.HiddenInput(),
-            "enclosure": forms.HiddenInput(),
-            "count": forms.NumberInput(attrs={"class": "narrow-count"}),
-        }
+        widgets = {"species": forms.HiddenInput(), "enclosure": forms.HiddenInput()}
+
+    count = forms.IntegerField(
+        max_value=None,
+        min_value=0,
+        show_hidden_initial=True,
+        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+    )
 
 
 class GroupCountForm(forms.ModelForm):
@@ -48,11 +52,26 @@ class GroupCountForm(forms.ModelForm):
             # hide species/enclosure form elements
             "group": forms.HiddenInput(),
             "enclosure": forms.HiddenInput(),
-            # make the input boxes smaller
-            "count_male": forms.NumberInput(attrs={"class": "narrow-count"}),
-            "count_female": forms.NumberInput(attrs={"class": "narrow-count"}),
-            "count_unknown": forms.NumberInput(attrs={"class": "narrow-count"}),
         }
+
+    count_male = forms.IntegerField(
+        max_value=None,
+        min_value=0,
+        show_hidden_initial=True,
+        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+    )
+    count_female = forms.IntegerField(
+        max_value=None,
+        min_value=0,
+        show_hidden_initial=True,
+        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+    )
+    count_unknown = forms.IntegerField(
+        max_value=None,
+        min_value=0,
+        show_hidden_initial=True,
+        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+    )
 
 
 class UploadFileForm(forms.Form):
