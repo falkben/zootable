@@ -96,6 +96,42 @@ form table p > input[type="number"]:not(.browser-default) {
   margin: 0;
 }
 
+/* BAR  blue darken-2*/
+label [type="radio"][value="BA"]:checked + span::after {
+  background-color: #1976d2;
+  border: 2px solid #1976d2;
+}
+label [type="radio"][value="BA"]:checked + span {
+  color: #1976d2;
+}
+
+/* Seen teal lighten-1 */
+label [type="radio"][value="SE"]:checked + span::after {
+  background-color: #26a69a;
+  border: 2px solid #26a69a;
+}
+label [type="radio"][value="SE"]:checked + span {
+  color: #26a69a;
+}
+
+/* Needs Attention red darken-2 */
+label [type="radio"][value="NA"]:checked + span::after {
+  background-color: #d32f2f !important;
+  border: 2px solid #d32f2f !important;
+}
+label [type="radio"][value="NA"]:checked + span {
+  color: #d32f2f;
+}
+
+/* Not seen orange darken-2 */
+label [type="radio"][value="NS"]:checked + span::after {
+  background-color: #f57c00 !important;
+  border: 2px solid #f57c00 !important;
+}
+label [type="radio"][value="NS"]:checked + span {
+  color: #f57c00;
+}
+
 /* form ul {
   display: inline-flex;
   list-style: none;
