@@ -37,20 +37,27 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = ''
-
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-
 # ALLOWED_HOSTS = []
-
 # TIME_ZONE = "America/New_York"
-
+# SECURE_SSL_REDIRECT = False
+# SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False
 
 SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com"]
 TIME_ZONE = "America/New_York"
+
+# security options suggested from `python manage.py check --deploy`
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
 
 try:
     from .local_settings import *
