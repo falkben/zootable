@@ -89,7 +89,11 @@ table.striped thead .narrow-count {
 
 form table p {
   margin: 0;
-  text-align: right;
+  text-align: center;
+}
+
+form table thead tr th:nth-child(n + 2) {
+  text-align: center;
 }
 
 form table p > input[type="number"]:not(.browser-default) {

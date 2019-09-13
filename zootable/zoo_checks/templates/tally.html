@@ -3,6 +3,9 @@
 {% block title %}Count{% endblock %}
 
 {% block content %}
+
+{% load template_tags %}
+
 <h2>{{enclosure}}</h2>
 
 {{species_formset.non_form_errors}}
@@ -16,12 +19,22 @@
     {{groups_formset.management_form}}
 
     <table class="striped">
+    <thead>
+        <tr class="blue-grey lighten-4">
+            <th>Name</th>
+            <th>Today's Count</th>
+            {% for i in -1|range:"-4,-1" %}
+                <th>{{i|addDays|date:"M d"}}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
     <tbody>
     {% for spec_dict in formset_order.values %}
         {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_form %}
 
         {% if spec_dict.group_form %}
-        <tr class="red lighten-5">
+        <tr class="green lighten-4">
             {% include "group_form_snippet.html" with form=spec_dict.group_form group=spec_dict.group %}
         </tr>
         {% endif %}

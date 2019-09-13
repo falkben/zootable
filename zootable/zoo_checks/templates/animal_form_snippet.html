@@ -10,6 +10,7 @@
 </td>
 {% for pcond in anim.prior_conditions %}
 <td>
+    <p>
     <span class=
         {% if pcond.count and pcond.count.get_condition_display != "" %}
             {% if pcond.count.condition == "BA" %}
@@ -27,11 +28,12 @@
             {% endif %}
         {% else %}
             "grey-text text-lighten-1">
-                Not entered
+                N/A
         {% endif %}
     </span>
     <a href="{% url 'edit_animal_count' animal=anim.accession_number year=pcond.day.year month=pcond.day.month day=pcond.day.day %}">
     <i class="material-icons tiny-small grey-text text-darken-4">edit</i>
     </a>
+    </p>
 </td>
 {% endfor %}
