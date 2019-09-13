@@ -24,7 +24,7 @@ This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0
 
 - Download data
 
-- From ./: `python scripts/ingest_xlsx_data.py DATA.xlsx`
+- From ./: `python zootable/scripts/ingest_xlsx_data.py DATA.xlsx`
 
 ## Deployment check
 
