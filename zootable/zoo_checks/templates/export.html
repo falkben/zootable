@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Export{% endblock %}
+
+{% block content %}
+
+<h2>Export</h2>
+
+<form action="{% url 'export' %}" method="post">
+    {{ form.non_field_errors }}
+    {% csrf_token %}
+
+    <p>
+    Number of Days to Download
+    {{form.num_days}}
+    </p>
+
+    <p>
+    Enclosures
+    <ul>
+    {{ form.selected_enclosures.errors }}
+    {% for option in form.selected_enclosures %}
+        <li>
+            <label for="{{option.id_for_label}}">
+                <input id="{{option.id_for_label}}" name="{{option.data.name}}" value="{{option.data.value}}" type="checkbox" />
+                <span>{{option.choice_label}}</span>
+            </label>
+        </li>
+    {% endfor %}
+    </ul>
+    </p>
+
+    <div class="fixed-action-btn">
+        <button class="btn-floating btn-large waves-effect waves-light red" type="submit" name="action">
+            <i class="material-icons">file_download</i>
+        </button>
+    </div>
+</form>
+
+{% endblock %}

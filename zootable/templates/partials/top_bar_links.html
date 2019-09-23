@@ -8,6 +8,7 @@
         Upload
     </a>
     {% endif %}
+    <li><a href="{% url 'export' %}">Export</a>
     <li><a href="{% url 'account_logout' %}">Logout</a>
 {% else %}
     <li><a href="{% url 'account_login' %}">Login</a>

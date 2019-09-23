@@ -4,7 +4,13 @@ from django.forms import formset_factory
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import AnimalCountForm, GroupCountForm, SpeciesCountForm, UploadFileForm
+from .forms import (
+    AnimalCountForm,
+    ExportForm,
+    GroupCountForm,
+    SpeciesCountForm,
+    UploadFileForm,
+)
 from .helpers import (
     get_init_anim_count_form,
     get_init_group_count_form,
@@ -348,3 +354,37 @@ def confirm_upload(request):
         "confirm_upload.html",
         {"changesets": changesets, "upload_file": upload_file},
     )
+
+
+@login_required
+def export(request):
+    enclosures = Enclosure.objects.filter(users=request.user)
+
+    if request.method == "POST":
+        form = ExportForm(request.POST)
+        if form.is_valid():
+            enclosures = form.cleaned_data["selected_enclosures"]
+
+            # get data from database on each enclosure
+            for enclosure in enclosures:
+                # get all species counts
+                # get all animal counts
+                # get all group counts
+
+                pass
+
+            # create xlsx file for it
+
+            # stream it to the user using bytesIO object
+
+            # redirect to home
+            return redirect("home")
+
+    else:
+        form = ExportForm(initial={"num_days": 7})
+        form["selected_enclosures"].queryset = Enclosure.objects.filter(
+            users=request.user
+        )
+
+    return render(request, "export.html", {"enclosures": enclosures, "form": form})
+

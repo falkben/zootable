@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import AnimalCount, GroupCount, SpeciesCount
+from .models import AnimalCount, Enclosure, GroupCount, SpeciesCount
 
 
 class AnimalCountForm(forms.ModelForm):
@@ -78,6 +78,17 @@ class UploadFileForm(forms.Form):
     file = forms.FileField()
     # TODO: validate that it's an excel file
     # TODO: validate the file is not too large?
+
+
+class ExportForm(forms.Form):
+    selected_enclosures = forms.ModelMultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple, queryset=Enclosure.objects.all()
+    )
+    num_days = forms.IntegerField(
+        min_value=1,
+        max_value=30,
+        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+    )
 
 
 class BaseAnimalCountFormset(forms.BaseInlineFormSet):

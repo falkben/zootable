@@ -46,4 +46,5 @@ urlpatterns = [
     ),
     path("upload/", views.ingest_form, name="ingest_form"),
     path("confirm_upload/", views.confirm_upload, name="confirm_upload"),
+    path("export/", views.export, name="export"),
 ]

@@ -62,6 +62,7 @@ th {
 }
 
 /* form stuff */
+form p > input#id_num_days.narrow-count,
 table.striped input.narrow-count,
 form p > input#id_count.narrow-count,
 form span > input#id_count_male.narrow-count,
