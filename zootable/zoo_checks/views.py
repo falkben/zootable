@@ -1,5 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models.fields import DateField
+from django.db.models.functions import Cast
 from django.forms import formset_factory
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -373,15 +375,27 @@ def export(request):
         if form.is_valid():
             enclosures = form.cleaned_data["selected_enclosures"]
 
-            # group_counts = GroupCount.objects.all(enclosure__in=enclosures)
+            # TODO: restrict to the set of "days ago" specified in the form
+            group_counts = (
+                GroupCount.objects.filter(enclosure__in=enclosures)
+                .annotate(dateonlycounted=Cast("datecounted", DateField()))
+                .order_by("dateonlycounted")
+                .distinct("dateonlycounted")
+            )
             animal_counts = (
                 AnimalCount.objects.filter(enclosure__in=enclosures)
-                .order_by("datecounted")
-                .distinct("datecounted")
+                .annotate(dateonlycounted=Cast("datecounted", DateField()))
+                .order_by("dateonlycounted")
+                .distinct("dateonlycounted")
             )
-            print(animal_counts)
+            species_counts = (
+                SpeciesCount.objects.filter(enclosure__in=enclosures)
+                .annotate(dateonlycounted=Cast("datecounted", DateField()))
+                .order_by("dateonlycounted")
+                .distinct("dateonlycounted")
+            )
 
-            # create xlsx file for it
+            # create xlsx "file" for it using... pandas?
 
             # stream it to the user using bytesIO object
 
