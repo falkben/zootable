@@ -61,7 +61,9 @@ class Species(models.Model):
         ordering = ["common_name"]
         verbose_name_plural = "species"
 
-    def get_count_day(self, enclosure, day=today_time()):
+    def get_count_day(self, enclosure, day=None):
+        if day is None:
+            day = today_time()
         try:
             count = self.counts.filter(
                 datecounted__gte=day,
@@ -153,7 +155,9 @@ class Animal(AnimalSet):
             (self.name, self.identifier, self.sex, str(self.accession_number))
         )
 
-    def count_on_day(self, day=today_time()):
+    def count_on_day(self, day=None):
+        if day is None:
+            day = today_time()
         try:
             count = self.conditions.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
@@ -163,7 +167,9 @@ class Animal(AnimalSet):
 
         return count
 
-    def condition_on_day(self, day=today_time()):
+    def condition_on_day(self, day=None):
+        if day is None:
+            day = today_time()
         count = self.count_on_day(day)
         return count
 
@@ -209,7 +215,9 @@ class Group(AnimalSet):
     def __str__(self):
         return "|".join((self.species.common_name, str(self.accession_number)))
 
-    def get_count_day(self, day=today_time()):
+    def get_count_day(self, day=None):
+        if day is None:
+            day = today_time()
         try:
             count = self.counts.filter(
                 datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
