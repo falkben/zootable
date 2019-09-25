@@ -18,7 +18,15 @@ from .helpers import (
     set_formset_order,
 )
 from .ingest import handle_upload, ingest_changesets
-from .models import Animal, Enclosure, Group, Species
+from .models import (
+    Animal,
+    AnimalCount,
+    Enclosure,
+    Group,
+    GroupCount,
+    Species,
+    SpeciesCount,
+)
 
 
 @login_required
@@ -365,13 +373,13 @@ def export(request):
         if form.is_valid():
             enclosures = form.cleaned_data["selected_enclosures"]
 
-            # get data from database on each enclosure
-            for enclosure in enclosures:
-                # get all species counts
-                # get all animal counts
-                # get all group counts
-
-                pass
+            # group_counts = GroupCount.objects.all(enclosure__in=enclosures)
+            animal_counts = (
+                AnimalCount.objects.filter(enclosure__in=enclosures)
+                .order_by("datecounted")
+                .distinct("datecounted")
+            )
+            print(animal_counts)
 
             # create xlsx file for it
 
@@ -387,4 +395,3 @@ def export(request):
         )
 
     return render(request, "export.html", {"enclosures": enclosures, "form": form})
-

@@ -89,23 +89,3 @@ class ExportForm(forms.Form):
         max_value=30,
         widget=forms.NumberInput(attrs={"class": "narrow-count"}),
     )
-
-
-class BaseAnimalCountFormset(forms.BaseInlineFormSet):
-    def clean(self):
-        if any(self.errors):
-            # Don't bother validating the formset unless each form is valid on its own
-            return
-        for form in self.forms:
-            # Where we put validation
-            pass
-
-
-class BaseSpeciesCountFormset(forms.BaseInlineFormSet):
-    def clean(self):
-        if any(self.errors):
-            # Don't bother validating the formset unless each form is valid on its own
-            return
-        for form in self.forms:
-            # Where we put validation
-            pass
