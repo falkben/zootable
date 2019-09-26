@@ -1,3 +1,6 @@
+"""to be run from root directory
+"""
+
 import os
 import sys
 
