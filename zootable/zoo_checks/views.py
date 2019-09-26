@@ -1,8 +1,10 @@
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models.fields import DateField
 from django.db.models.functions import Cast
 from django.forms import formset_factory
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -14,9 +16,11 @@ from .forms import (
     UploadFileForm,
 )
 from .helpers import (
+    clean_df,
     get_init_anim_count_form,
     get_init_group_count_form,
     get_init_spec_count_form,
+    qs_to_df,
     set_formset_order,
 )
 from .ingest import handle_upload, ingest_changesets
@@ -375,6 +379,7 @@ def export(request):
         if form.is_valid():
             enclosures = form.cleaned_data["selected_enclosures"]
 
+            # TODO: strip database ids and replace with names of objects
             # TODO: restrict to the set of "days ago" specified in the form
             group_counts = (
                 GroupCount.objects.filter(enclosure__in=enclosures)
@@ -395,12 +400,32 @@ def export(request):
                 .distinct("dateonlycounted")
             )
 
-            # create xlsx "file" for it using... pandas?
+            # convert to pandas dataframe
+            group_counts_df = qs_to_df(group_counts)
+            animal_counts_df = qs_to_df(animal_counts)
+            species_counts_df = qs_to_df(species_counts)
 
-            # stream it to the user using bytesIO object
+            # merge the dfs together
+            df_merge = pd.concat(
+                [group_counts_df, animal_counts_df, species_counts_df],
+                ignore_index=True,
+            )
 
-            # redirect to home
-            return redirect("home")
+            df_merge_clean = clean_df(df_merge)
+
+            # create response object to save the data into
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = 'attachment; filename="somefilename.xlsx"'
+
+            # create xlsx object and put it into the response using pandas
+            with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
+                df_merge_clean.to_excel(writer, sheet_name="Sheet1")
+
+            # TODO: (Fancy) redirect to home and have javascript serve the xlsx file from that page
+            # send it to the user
+            return response
 
     else:
         form = ExportForm(initial={"num_days": 7})

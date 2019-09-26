@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
+import pandas as pd
+
 
 def today_time():
     return timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -115,3 +117,21 @@ def get_init_anim_count_form(enclosure_animals):
     ]
 
     return init_anim
+
+
+def qs_to_df(qs):
+    """Takes a queryset and outputs a dataframe
+    """
+
+    df = pd.DataFrame(list(qs.values()))
+
+    return df
+
+
+def clean_df(df):
+    """cleans a dataframe for export to excel
+    removes timezones from datetimes"""
+
+    if "datecounted" in df.columns:
+        df["datecounted"] = df["datecounted"].dt.tz_localize(None)
+    return df
