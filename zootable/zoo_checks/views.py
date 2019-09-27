@@ -22,6 +22,7 @@ from .helpers import (
     get_init_spec_count_form,
     qs_to_df,
     set_formset_order,
+    today_time,
 )
 from .ingest import handle_upload, ingest_changesets
 from .models import (
@@ -378,36 +379,49 @@ def export(request):
         form = ExportForm(request.POST)
         if form.is_valid():
             enclosures = form.cleaned_data["selected_enclosures"]
+            num_days = form.cleaned_data["num_days"]
 
             # TODO: strip database ids and replace with names of objects
             # TODO: restrict to the set of "days ago" specified in the form
-            group_counts = (
-                GroupCount.objects.filter(enclosure__in=enclosures)
+            animal_counts = (
+                AnimalCount.objects.filter(
+                    enclosure__in=enclosures,
+                    datecounted__lte=timezone.localtime(),
+                    datecounted__gt=today_time() - timezone.timedelta(num_days),
+                )
                 .annotate(dateonlycounted=Cast("datecounted", DateField()))
                 .order_by("dateonlycounted")
                 .distinct("dateonlycounted")
             )
-            animal_counts = (
-                AnimalCount.objects.filter(enclosure__in=enclosures)
+            group_counts = (
+                GroupCount.objects.filter(
+                    enclosure__in=enclosures,
+                    datecounted__lte=timezone.localtime(),
+                    datecounted__gt=today_time() - timezone.timedelta(num_days),
+                )
                 .annotate(dateonlycounted=Cast("datecounted", DateField()))
                 .order_by("dateonlycounted")
                 .distinct("dateonlycounted")
             )
             species_counts = (
-                SpeciesCount.objects.filter(enclosure__in=enclosures)
+                SpeciesCount.objects.filter(
+                    enclosure__in=enclosures,
+                    datecounted__lte=timezone.localtime(),
+                    datecounted__gt=today_time() - timezone.timedelta(num_days),
+                )
                 .annotate(dateonlycounted=Cast("datecounted", DateField()))
                 .order_by("dateonlycounted")
                 .distinct("dateonlycounted")
             )
 
             # convert to pandas dataframe
-            group_counts_df = qs_to_df(group_counts)
-            animal_counts_df = qs_to_df(animal_counts)
-            species_counts_df = qs_to_df(species_counts)
+            animal_counts_df = qs_to_df(animal_counts, AnimalCount._meta.fields)
+            group_counts_df = qs_to_df(group_counts, GroupCount._meta.fields)
+            species_counts_df = qs_to_df(species_counts, SpeciesCount._meta.fields)
 
             # merge the dfs together
             df_merge = pd.concat(
-                [group_counts_df, animal_counts_df, species_counts_df],
+                [animal_counts_df, group_counts_df, species_counts_df],
                 ignore_index=True,
             )
 
@@ -421,7 +435,7 @@ def export(request):
 
             # create xlsx object and put it into the response using pandas
             with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
-                df_merge_clean.to_excel(writer, sheet_name="Sheet1")
+                df_merge_clean.to_excel(writer, sheet_name="Sheet1", index=False)
 
             # TODO: (Fancy) redirect to home and have javascript serve the xlsx file from that page
             # send it to the user
