@@ -1,8 +1,9 @@
 import pandas as pd
+import pytz
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models.fields import DateField
-from django.db.models.functions import Cast
+from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -381,17 +382,17 @@ def export(request):
             enclosures = form.cleaned_data["selected_enclosures"]
             num_days = form.cleaned_data["num_days"]
 
-            # TODO: strip database ids and replace with names of objects
-            # TODO: restrict to the set of "days ago" specified in the form
+            tzinfo = pytz.timezone(settings.TIME_ZONE)
+
             animal_counts = (
                 AnimalCount.objects.filter(
                     enclosure__in=enclosures,
                     datecounted__lte=timezone.localtime(),
                     datecounted__gt=today_time() - timezone.timedelta(num_days),
                 )
-                .annotate(dateonlycounted=Cast("datecounted", DateField()))
-                .order_by("dateonlycounted")
-                .distinct("dateonlycounted")
+                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .order_by("dateonlycounted", "animal_id")
+                .distinct("dateonlycounted", "animal_id")
             )
             group_counts = (
                 GroupCount.objects.filter(
@@ -399,9 +400,9 @@ def export(request):
                     datecounted__lte=timezone.localtime(),
                     datecounted__gt=today_time() - timezone.timedelta(num_days),
                 )
-                .annotate(dateonlycounted=Cast("datecounted", DateField()))
-                .order_by("dateonlycounted")
-                .distinct("dateonlycounted")
+                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .order_by("dateonlycounted", "group_id")
+                .distinct("dateonlycounted", "group_id")
             )
             species_counts = (
                 SpeciesCount.objects.filter(
@@ -409,9 +410,9 @@ def export(request):
                     datecounted__lte=timezone.localtime(),
                     datecounted__gt=today_time() - timezone.timedelta(num_days),
                 )
-                .annotate(dateonlycounted=Cast("datecounted", DateField()))
-                .order_by("dateonlycounted")
-                .distinct("dateonlycounted")
+                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .order_by("dateonlycounted", "species_id")
+                .distinct("dateonlycounted", "species_id")
             )
 
             # convert to pandas dataframe
@@ -423,6 +424,7 @@ def export(request):
             df_merge = pd.concat(
                 [animal_counts_df, group_counts_df, species_counts_df],
                 ignore_index=True,
+                sort=True,
             )
 
             df_merge_clean = clean_df(df_merge)
@@ -431,7 +433,11 @@ def export(request):
             response = HttpResponse(
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-            response["Content-Disposition"] = 'attachment; filename="somefilename.xlsx"'
+            past_day = today_time() - timezone.timedelta(days=num_days)
+            enclosure_names = (enc.slug for enc in enclosures)
+            response[
+                "Content-Disposition"
+            ] = f'attachment; filename="zootable_export_{"_".join(enclosure_names)}_{today_time().strftime("%Y%m%d")}_{past_day.strftime("%Y%m%d")}.xlsx"'
 
             # create xlsx object and put it into the response using pandas
             with pd.ExcelWriter(response, engine="xlsxwriter") as writer:

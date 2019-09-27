@@ -139,8 +139,13 @@ def qs_to_df(qs, fields):
                     ]
                 )
             elif f.name in ("animal", "group"):
-                field_names.append(
-                    field_name_constructor.format(f.name, "accession_number")
+                field_names.extend(
+                    [
+                        field_name_constructor.format(f.name, "accession_number"),
+                        field_name_constructor.format(f.name, "species__genus_name"),
+                        field_name_constructor.format(f.name, "species__species_name"),
+                        field_name_constructor.format(f.name, "species__common_name"),
+                    ]
                 )
             elif f.name == "species":
                 field_names.extend(

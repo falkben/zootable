@@ -24,14 +24,16 @@ This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0
   - `sudo -i -u postgres`
 - Create database
   - `createdb zootable`
-- Create postgres user
-  - `zootable` `createuser --interactive`
+- Create postgres `zootable` user
+  - `createuser --interactive`
   - If don't make superuser, grant permissions to zootable
     - `psql=# grant all privileges on database zootable to zootable;`
 - Edit `/etc/postgresql/pg_hba.conf` and insert near the top
+
   ```
   local   all             zootable                                trust
   ```
+
 - Restart database: `sudo service postgresql restart`
 
 ### Setup
@@ -63,22 +65,53 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 ## Test
 
-Run from root directory.  Specify folder for django application:
+1. Install app ineditable mode:
 
-`pytest zootable`
+    `pip install -e .`
 
-In vscode, add command line argument "zootable":
+1. Run from root directory.  Specify folder for django application:
 
-```json
-"python.testing.pytestArgs": [
-    "zootable"
-]
-```
+    `pytest zootable`
+
+1. In vscode, add command line argument "zootable":
+
+    ```json
+    "python.testing.pytestArgs": [
+        "zootable"
+    ]
+    ```
+
+## Heroku and database actions
+
+### Setup CLI
+
+1. [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#standalone-installation)
+1. `heroku login`
+
+### Database download
+
+1. `heroku pg:backups:capture -a zootable`
+1. `heroku pg:backups:download -a zootable`
+
+### Local restore database from dump
+
+1. Possibly drop database before restore:
+    1. `sudo -u postgres bash`
+    1. `DROP DATABASE zootable;`
+    1. `CREATE DATABASE zootable;`
+
+1. Command linked in heroku docs had `-h localhost` but that always required password
+
+    `pg_restore --verbose --clean --no-acl --no-owner -U zootable -d zootable latest.dump`
+
+[heroku docs](https://devcenter.heroku.com/articles/heroku-postgres-import-export)
+
+[postgres docs](https://www.postgresql.org/docs/9.1/app-pgrestore.html)
 
 ## Update all requirements
 
 [Pur](https://pypi.org/project/pur/)
 
-`pip install pur`
-`pur -r requirements.txt`
-`pip install -r requirements.txt`
+1. `pip install pur`
+1. `pur -r requirements.txt`
+1. `pip install -r requirements.txt`
