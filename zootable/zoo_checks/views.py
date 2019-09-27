@@ -423,6 +423,7 @@ def export(request):
             df_merge = pd.concat(
                 [animal_counts_df, group_counts_df, species_counts_df],
                 ignore_index=True,
+                sort=True,
             )
 
             df_merge_clean = clean_df(df_merge)
@@ -431,7 +432,11 @@ def export(request):
             response = HttpResponse(
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-            response["Content-Disposition"] = 'attachment; filename="somefilename.xlsx"'
+            past_day = today_time() - timezone.timedelta(days=num_days)
+            enclosure_names = (enc.slug for enc in enclosures)
+            response[
+                "Content-Disposition"
+            ] = f'attachment; filename="zootable_export_{"_".join(enclosure_names)}_{today_time().strftime("%Y%m%d")}_{past_day.strftime("%Y%m%d")}.xlsx"'
 
             # create xlsx object and put it into the response using pandas
             with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
