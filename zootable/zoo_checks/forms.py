@@ -86,6 +86,6 @@ class ExportForm(forms.Form):
     )
     num_days = forms.IntegerField(
         min_value=1,
-        max_value=30,
+        max_value=100,
         widget=forms.NumberInput(attrs={"class": "narrow-count"}),
     )
