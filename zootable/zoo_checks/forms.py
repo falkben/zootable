@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import AnimalCount, GroupCount, SpeciesCount
+from .models import AnimalCount, Enclosure, GroupCount, SpeciesCount
 
 
 class AnimalCountForm(forms.ModelForm):
@@ -80,21 +80,12 @@ class UploadFileForm(forms.Form):
     # TODO: validate the file is not too large?
 
 
-class BaseAnimalCountFormset(forms.BaseInlineFormSet):
-    def clean(self):
-        if any(self.errors):
-            # Don't bother validating the formset unless each form is valid on its own
-            return
-        for form in self.forms:
-            # Where we put validation
-            pass
-
-
-class BaseSpeciesCountFormset(forms.BaseInlineFormSet):
-    def clean(self):
-        if any(self.errors):
-            # Don't bother validating the formset unless each form is valid on its own
-            return
-        for form in self.forms:
-            # Where we put validation
-            pass
+class ExportForm(forms.Form):
+    selected_enclosures = forms.ModelMultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple, queryset=Enclosure.objects.all()
+    )
+    num_days = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+    )

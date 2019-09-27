@@ -1,18 +1,39 @@
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models.fields import DateField
+from django.db.models.functions import Cast
 from django.forms import formset_factory
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import AnimalCountForm, GroupCountForm, SpeciesCountForm, UploadFileForm
+from .forms import (
+    AnimalCountForm,
+    ExportForm,
+    GroupCountForm,
+    SpeciesCountForm,
+    UploadFileForm,
+)
 from .helpers import (
+    clean_df,
     get_init_anim_count_form,
     get_init_group_count_form,
     get_init_spec_count_form,
+    qs_to_df,
     set_formset_order,
+    today_time,
 )
 from .ingest import handle_upload, ingest_changesets
-from .models import Animal, Enclosure, Group, Species
+from .models import (
+    Animal,
+    AnimalCount,
+    Enclosure,
+    Group,
+    GroupCount,
+    Species,
+    SpeciesCount,
+)
 
 
 @login_required
@@ -348,3 +369,82 @@ def confirm_upload(request):
         "confirm_upload.html",
         {"changesets": changesets, "upload_file": upload_file},
     )
+
+
+@login_required
+def export(request):
+    enclosures = Enclosure.objects.filter(users=request.user)
+
+    if request.method == "POST":
+        form = ExportForm(request.POST)
+        if form.is_valid():
+            enclosures = form.cleaned_data["selected_enclosures"]
+            num_days = form.cleaned_data["num_days"]
+
+            # TODO: strip database ids and replace with names of objects
+            # TODO: restrict to the set of "days ago" specified in the form
+            animal_counts = (
+                AnimalCount.objects.filter(
+                    enclosure__in=enclosures,
+                    datecounted__lte=timezone.localtime(),
+                    datecounted__gt=today_time() - timezone.timedelta(num_days),
+                )
+                .annotate(dateonlycounted=Cast("datecounted", DateField()))
+                .order_by("dateonlycounted")
+                .distinct("dateonlycounted")
+            )
+            group_counts = (
+                GroupCount.objects.filter(
+                    enclosure__in=enclosures,
+                    datecounted__lte=timezone.localtime(),
+                    datecounted__gt=today_time() - timezone.timedelta(num_days),
+                )
+                .annotate(dateonlycounted=Cast("datecounted", DateField()))
+                .order_by("dateonlycounted")
+                .distinct("dateonlycounted")
+            )
+            species_counts = (
+                SpeciesCount.objects.filter(
+                    enclosure__in=enclosures,
+                    datecounted__lte=timezone.localtime(),
+                    datecounted__gt=today_time() - timezone.timedelta(num_days),
+                )
+                .annotate(dateonlycounted=Cast("datecounted", DateField()))
+                .order_by("dateonlycounted")
+                .distinct("dateonlycounted")
+            )
+
+            # convert to pandas dataframe
+            animal_counts_df = qs_to_df(animal_counts, AnimalCount._meta.fields)
+            group_counts_df = qs_to_df(group_counts, GroupCount._meta.fields)
+            species_counts_df = qs_to_df(species_counts, SpeciesCount._meta.fields)
+
+            # merge the dfs together
+            df_merge = pd.concat(
+                [animal_counts_df, group_counts_df, species_counts_df],
+                ignore_index=True,
+            )
+
+            df_merge_clean = clean_df(df_merge)
+
+            # create response object to save the data into
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = 'attachment; filename="somefilename.xlsx"'
+
+            # create xlsx object and put it into the response using pandas
+            with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
+                df_merge_clean.to_excel(writer, sheet_name="Sheet1", index=False)
+
+            # TODO: (Fancy) redirect to home and have javascript serve the xlsx file from that page
+            # send it to the user
+            return response
+
+    else:
+        form = ExportForm(initial={"num_days": 7})
+        form["selected_enclosures"].queryset = Enclosure.objects.filter(
+            users=request.user
+        )
+
+    return render(request, "export.html", {"enclosures": enclosures, "form": form})

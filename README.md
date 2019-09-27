@@ -63,4 +63,22 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 ## Test
 
+Run from root directory.  Specify folder for django application:
+
 `pytest zootable`
+
+In vscode, add command line argument "zootable":
+
+```json
+"python.testing.pytestArgs": [
+    "zootable"
+]
+```
+
+## Update all requirements
+
+[Pur](https://pypi.org/project/pur/)
+
+`pip install pur`
+`pur -r requirements.txt`
+`pip install -r requirements.txt`

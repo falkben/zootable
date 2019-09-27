@@ -1,14 +1,18 @@
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.conf import settings
+
+import pandas as pd
+
 
 def today_time():
     return timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def prior_days(prior_days=3):
+def prior_days(days=3):
     p_days = []
-    for p in range(prior_days):
+    for p in range(days):
         day = today_time() - timezone.timedelta(days=p + 1)
         p_days.append({"year": day.year, "month": day.month, "day": day.day})
 
@@ -115,3 +119,59 @@ def get_init_anim_count_form(enclosure_animals):
     ]
 
     return init_anim
+
+
+def qs_to_df(qs, fields):
+    """Takes a queryset and outputs a dataframe
+    """
+
+    field_names = []
+    field_name_constructor = "{}__{}"
+    for f in fields:
+        if f.is_relation:
+            if f.name == "enclosure":
+                field_names.append(field_name_constructor.format(f.name, "name"))
+            elif f.name == "user":
+                field_names.extend(
+                    [
+                        field_name_constructor.format(f.name, "username"),
+                        field_name_constructor.format(f.name, "email"),
+                    ]
+                )
+            elif f.name in ("animal", "group"):
+                field_names.append(
+                    field_name_constructor.format(f.name, "accession_number")
+                )
+            elif f.name == "species":
+                field_names.extend(
+                    [
+                        field_name_constructor.format(f.name, "genus_name"),
+                        field_name_constructor.format(f.name, "species_name"),
+                        field_name_constructor.format(f.name, "common_name"),
+                    ]
+                )
+        else:
+            field_names.append(f.name)
+
+    queryset_vals = list(qs.values(*field_names, "dateonlycounted"))
+    df = pd.DataFrame(queryset_vals)
+
+    return df
+
+
+def clean_df(df):
+    """cleans the counts dataframe for export to excel
+    """
+
+    # remove dateonlycounted
+    if "dateonlycounted" in df.columns:
+        df = df.drop(columns=["dateonlycounted"])
+
+    if "id" in df.columns:
+        df = df.drop(columns=["id"])
+
+    # remove timezones from datetimes (for excel) but still display datetime for the app's timezone
+    if "datecounted" in df.columns:
+        df["datecounted"] = df["datecounted"].dt.tz_convert(settings.TIME_ZONE)
+        df["datecounted"] = df["datecounted"].dt.tz_localize(None)
+    return df
