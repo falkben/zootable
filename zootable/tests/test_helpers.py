@@ -65,12 +65,19 @@ def test_qs_to_df():
 def test_clean_df():
     timestamp = timezone.localtime()
     test_data = [
-        {"mock_name": "john", "email": "john@gmail.com", "datecounted": timestamp}
+        {
+            "id": 1637,
+            "datecounted": timestamp,
+            "user__username": 4,
+            "enclosure__name": "encl_test_name",
+            "condition": "SE",
+            "dateonlycounted": timestamp.date(),
+        }
     ]
     test_df = pd.DataFrame(test_data)
-
     df_clean = clean_df(test_df)
 
-    assert df_clean.loc[0]["datecounted"].to_pydatetime() == timestamp.replace(
+    assert df_clean.loc[0]["date_counted"] == timestamp.replace(tzinfo=None).date()
+    assert df_clean.loc[0]["time_counted"] == timestamp.replace(
         tzinfo=None
-    )
+    ).time().strftime("%H:%M:%S")
