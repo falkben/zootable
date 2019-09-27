@@ -424,7 +424,7 @@ def export(request):
             df_merge = pd.concat(
                 [animal_counts_df, group_counts_df, species_counts_df],
                 ignore_index=True,
-                sort=True,
+                sort=False,
             )
 
             df_merge_clean = clean_df(df_merge)

@@ -132,12 +132,7 @@ def qs_to_df(qs, fields):
             if f.name == "enclosure":
                 field_names.append(field_name_constructor.format(f.name, "name"))
             elif f.name == "user":
-                field_names.extend(
-                    [
-                        field_name_constructor.format(f.name, "username"),
-                        field_name_constructor.format(f.name, "email"),
-                    ]
-                )
+                field_names.append(field_name_constructor.format(f.name, "username"))
             elif f.name in ("animal", "group"):
                 field_names.extend(
                     [
@@ -179,4 +174,54 @@ def clean_df(df):
     if "datecounted" in df.columns:
         df["datecounted"] = df["datecounted"].dt.tz_convert(settings.TIME_ZONE)
         df["datecounted"] = df["datecounted"].dt.tz_localize(None)
+
+    # combining columns for species
+    items = ("common_name", "genus_name", "species_name")
+    for item in items:
+        cols = [
+            f"species__{item}",
+            f"animal__species__{item}",
+            f"group__species__{item}",
+        ]
+        cols = [c for c in cols if c in df.columns]
+        df[f"{item}"] = df[cols].apply(
+            lambda row: "".join(row.dropna().astype(str)), axis=1
+        )
+        df = df.drop(columns=cols)
+
+    # combining accession_number
+    cols = [f"animal__accession_number", f"group__accession_number"]
+    cols = [c for c in cols if c in df.columns]
+    df["accession_number"] = df[cols].apply(
+        lambda row: "".join(row.dropna().astype(int).astype(str)), axis=1
+    )
+    df = df.drop(columns=cols)
+
+    # split the datetime into separate columns
+    df["date_counted"] = df["datecounted"].dt.date
+    df["time_counted"] = df["datecounted"].dt.strftime("%H:%M:%S")
+    df = df.drop(columns=["datecounted"])
+
+    # making col names prettier
+    rename_cols = {"enclosure__name": "enclosure", "user__username": "user"}
+    df = df.rename(columns=rename_cols)
+
+    # sorting the values
+    df = df.sort_values(
+        by=["enclosure", "date_counted", "time_counted", "species_name"]
+    )
+
+    # sorting the columns
+    cols = df.columns.to_list()
+    cols_front = [
+        "enclosure",
+        "date_counted",
+        "time_counted",
+        "genus_name",
+        "species_name",
+        "common_name",
+    ]
+    [cols.remove(c) for c in cols_front]
+    df = df[cols_front + cols]
+
     return df
