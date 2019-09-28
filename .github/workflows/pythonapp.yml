@@ -25,3 +25,5 @@ jobs:
       run: |
         pip install pytest
         pytest zootable
+      env:
+        SECRET_KEY: "PYTEST_GITHUB_ACTIONS_SECRET_KEY"
