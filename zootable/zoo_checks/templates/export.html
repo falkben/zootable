@@ -11,8 +11,13 @@
     {% csrf_token %}
 
     <p>
-    Number of Days to Download
-    {{form.num_days}}
+    Start date
+    <input id="id_start_date" name="start_date" type="text" class="datepicker" options="format:yyyy-mm-dd'">
+    </p>
+
+    <p>
+    End date
+    <input id="id_end_date" name="end_date" type="text" class="datepicker">
     </p>
 
     <p>
