@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
@@ -21,3 +21,9 @@ function allowUncheck(e) {
       elem.previous = elem.checked;
     });
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  var elems = document.querySelectorAll('.datepicker');
+  var today = new Date();
+  var instances = M.Datepicker.init(elems, { format: "mm/dd/yyyy", maxDate: today });
+});

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 
 from .models import AnimalCount, Enclosure, GroupCount, SpeciesCount
 
@@ -84,8 +85,19 @@ class ExportForm(forms.Form):
     selected_enclosures = forms.ModelMultipleChoiceField(
         widget=forms.CheckboxSelectMultiple, queryset=Enclosure.objects.all()
     )
-    num_days = forms.IntegerField(
-        min_value=1,
-        max_value=100,
-        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
-    )
+    start_date = forms.DateField(required=True)
+    end_date = forms.DateField(required=True)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
+        if end_date < start_date:
+            raise forms.ValidationError("End date should be greater than start date.")
+
+        if start_date > timezone.localdate():
+            raise forms.ValidationError(
+                "Start date should be greater than current date."
+            )
+
+        return cleaned_data
