@@ -9,18 +9,21 @@
     {{ form.count_male.errors }}
     <b>M</b><em>({{group.population_male}})</em><br />
     {{ form.count_male }}
+    {% include "increment_decrement_buttons.html" with formfield=form.count_male %}
 </span>
 
 <span class="fieldWrapper">
     {{ form.count_female.errors }}
     <b>F</b><em>({{group.population_female}})</em><br />
     {{ form.count_female }}
+    {% include "increment_decrement_buttons.html" with formfield=form.count_female %}
 </span>
 
 <span class="fieldWrapper">
     {{ form.count_unknown.errors }}
     <b>U</b><em>({{group.population_unknown}})</em><br />
     {{ form.count_unknown }}
+    {% include "increment_decrement_buttons.html" with formfield=form.count_unknown %}
 </span>
 </div>
 </td>

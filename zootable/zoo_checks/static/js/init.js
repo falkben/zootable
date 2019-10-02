@@ -27,3 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
   var today = new Date();
   var instances = M.Datepicker.init(elems, { format: "mm/dd/yyyy", maxDate: today });
 });
+
+
+function incrementValue(id, inc_val) {
+  var value = parseInt(document.getElementById(id).value, 10);
+  value = isNaN(value) ? 0 : value;
+  if (value + inc_val >= 0) {
+    value += inc_val;
+    document.getElementById(id).value = value;
+  }
+}
