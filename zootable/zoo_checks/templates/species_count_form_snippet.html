@@ -5,7 +5,14 @@
 </td>
 <td>
     {% if not group_form %}
-        {{form.as_p}}
+        {% for field in form %}
+            <p>
+            {{field}}
+            {% if not field.is_hidden %}
+                {% include "increment_decrement_buttons.html" with formfield=field %}
+            {% endif %}
+            </p>
+        {% endfor %}
     {% else %}
         <div style="display:none">
         {{form.as_p}}

@@ -20,7 +20,14 @@
 <form action="{% url 'edit_species_count' species.slug enclosure.slug dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
 
-    {{ form.as_p }}
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
+    {{ form.count.errors }}
+    <p><b>{{form.count.label}}</b>: {{form.count}}
+    {% include "increment_decrement_buttons.html" with formfield=form.count %}
+    </p>
 
     <p>
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
