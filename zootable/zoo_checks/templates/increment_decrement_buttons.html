@@ -1,10 +1,11 @@
-<a class="btn-floating waves-effect waves-light btn-small green darken-1" onclick="incrementValue('{{formfield.id_for_label}}', 1)">
-    <i class="material-icons">
-    add
+<a class="increment btn-floating btn-flat waves-effect waves-light btn-small grey lighten-2" onclick="incrementValue('{{formfield.id_for_label}}', -1)">
+    <i class="material-icons grey-text text-darken-1t">
+    remove
     </i>
 </a>
-<a class="btn-floating waves-effect waves-light btn-small red darken-3" onclick="incrementValue('{{formfield.id_for_label}}', -1)">
-    <i class="material-icons">
-    remove
+{{formfield}}
+<a class="increment btn-floating btn-flat waves-effect waves-light btn-small grey lighten-2" onclick="incrementValue('{{formfield.id_for_label}}', 1)">
+    <i class="material-icons grey-text text-darken-1">
+    add
     </i>
 </a>

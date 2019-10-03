@@ -3,16 +3,21 @@
     <b>{{species.common_name}}</b><br/>
     <em>({{species.genus_name}} {{species.species_name}})</em>
 </td>
+{% if not group_form %}
+<td colspan=4>
+</tr>
+<tr class="species">
+<td colspan=2>
+{% else %}
 <td>
+{% endif %}
     {% if not group_form %}
-        {% for field in form %}
-            <p>
+        {% for field in form.hidden_fields %}
             {{field}}
-            {% if not field.is_hidden %}
-                {% include "increment_decrement_buttons.html" with formfield=field %}
-            {% endif %}
-            </p>
         {% endfor %}
+        <p>
+        {% include "increment_decrement_buttons.html" with formfield=form.count %}
+        </p>
     {% else %}
         <div style="display:none">
         {{form.as_p}}
