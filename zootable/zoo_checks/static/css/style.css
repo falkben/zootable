@@ -77,14 +77,16 @@ form span > input#id_count_unknown.narrow-count {
 }
 
 /* remove the number spinner */
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-  -webkit-appearance: none; 
-  margin: 0; 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  text-align: center;
 }
 
-input[type=number] {
-  -moz-appearance:textfield; /* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  text-align: center;
 }
 
 table.striped .narrow-count {
@@ -178,6 +180,8 @@ label [type="radio"][value="NS"]:checked + span {
 .edit_group {
   display: flex;
   flex-direction: column;
+  padding: 1%;
+  text-align: center;
 }
 
 .edit_group span {
@@ -215,6 +219,16 @@ label [type="radio"][value="NS"]:checked + span {
   font-style: italic;
 }
 
+a.increment {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+a.increment i {
+  font-size: 20px !important;
+  line-height: 20px !important;
+}
+
 /* media queries */
 @media only screen and (min-width: 1150px) {
   .condition-radio {
@@ -222,7 +236,7 @@ label [type="radio"][value="NS"]:checked + span {
   }
 }
 
-@media only screen and (min-width: 900px) {
+@media only screen and (min-width: 560px) {
   .edit_group {
     flex-direction: row;
   }

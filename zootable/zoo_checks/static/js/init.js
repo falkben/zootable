@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
@@ -22,12 +22,14 @@ function allowUncheck(e) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  var elems = document.querySelectorAll('.datepicker');
+document.addEventListener("DOMContentLoaded", function() {
+  var elems = document.querySelectorAll(".datepicker");
   var today = new Date();
-  var instances = M.Datepicker.init(elems, { format: "mm/dd/yyyy", maxDate: today });
+  var instances = M.Datepicker.init(elems, {
+    format: "mm/dd/yyyy",
+    maxDate: today
+  });
 });
-
 
 function incrementValue(id, inc_val) {
   var value = parseInt(document.getElementById(id).value, 10);
