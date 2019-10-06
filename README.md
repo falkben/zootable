@@ -8,6 +8,13 @@ Web app to tally zoo animals. See [zootable.com](https://zootable.com) for infor
 
 This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0.html) license
 
+## Demo
+
+A working demo can be found [here](https://demo.zootable.com)
+
+- username: `demo-user`
+- password: `demo-password`
+
 ## Install
 
 ### Database
@@ -67,19 +74,19 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 1. Install app ineditable mode:
 
-    `pip install -e .`
+   `pip install -e .`
 
-1. Run from root directory.  Specify folder for django application:
+1. Run from root directory. Specify folder for django application:
 
-    `pytest zootable`
+   `pytest zootable`
 
 1. In vscode, add command line argument "zootable":
 
-    ```json
-    "python.testing.pytestArgs": [
-        "zootable"
-    ]
-    ```
+   ```json
+   "python.testing.pytestArgs": [
+       "zootable"
+   ]
+   ```
 
 ## Heroku and database actions
 
@@ -96,13 +103,14 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 ### Local restore database from dump
 
 1. Possibly drop database before restore:
-    1. `sudo -u postgres bash`
-    1. `DROP DATABASE zootable;`
-    1. `CREATE DATABASE zootable;`
+
+   1. `sudo -u postgres bash`
+   1. `DROP DATABASE zootable;`
+   1. `CREATE DATABASE zootable;`
 
 1. Command linked in heroku docs had `-h localhost` but that always required password
 
-    `pg_restore --verbose --clean --no-acl --no-owner -U zootable -d zootable latest.dump`
+   `pg_restore --verbose --clean --no-acl --no-owner -U zootable -d zootable latest.dump`
 
 [heroku docs](https://devcenter.heroku.com/articles/heroku-postgres-import-export)
 
