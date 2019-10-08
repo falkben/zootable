@@ -122,7 +122,8 @@ label [type="radio"][value="BA"]:checked + span::after {
   background-color: #1976d2;
   border: 2px solid #1976d2;
 }
-label [type="radio"][value="BA"]:checked + span {
+label [type="radio"][value="BA"]:checked + span,
+.condition-BA {
   color: #1976d2;
 }
 
@@ -131,7 +132,8 @@ label [type="radio"][value="SE"]:checked + span::after {
   background-color: #26a69a;
   border: 2px solid #26a69a;
 }
-label [type="radio"][value="SE"]:checked + span {
+label [type="radio"][value="SE"]:checked + span,
+.condition-SE {
   color: #26a69a;
 }
 
@@ -140,7 +142,8 @@ label [type="radio"][value="NA"]:checked + span::after {
   background-color: #d32f2f !important;
   border: 2px solid #d32f2f !important;
 }
-label [type="radio"][value="NA"]:checked + span {
+label [type="radio"][value="NA"]:checked + span,
+.condition-NA {
   color: #d32f2f;
 }
 
@@ -149,7 +152,8 @@ label [type="radio"][value="NS"]:checked + span::after {
   background-color: #f57c00 !important;
   border: 2px solid #f57c00 !important;
 }
-label [type="radio"][value="NS"]:checked + span {
+label [type="radio"][value="NS"]:checked + span,
+.condition-NS {
   color: #f57c00;
 }
 
@@ -232,12 +236,12 @@ a.increment i {
   line-height: 20px !important;
 }
 
-#enc-title-chart {
+#chart-text-container {
   display: flex;
   flex-direction: column;
 }
 
-#enc-title-chart > * {
+#chart-text-container > * {
   flex: 1;
 }
 
@@ -253,7 +257,7 @@ a.increment i {
     flex-direction: row;
   }
 
-  #enc-title-chart {
+  #chart-text-container {
     flex-direction: row;
   }
 }

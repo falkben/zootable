@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
@@ -270,17 +271,30 @@ def animal_counts(request, animal):
     animal = get_object_or_404(Animal, accession_number=animal)
     enclosure = animal.enclosure
 
-    animal_counts_list = AnimalCount.objects.filter(animal=animal).order_by(
-        "-datecounted"
-    )
-
-    paginator = Paginator(animal_counts_list, 25)
-    page = request.GET.get("page")
-    animal_counts_records = paginator.get_page(page)
-
     # if the user cannot edit the enclosure, redirect to home
     if request.user not in enclosure.users.all():
         return redirect("home")
+
+    animal_counts_query = AnimalCount.objects.filter(animal=animal).order_by(
+        "-datecounted"
+    )
+
+    paginator = Paginator(animal_counts_query, 10)
+    page = request.GET.get("page")
+    animal_counts_records = paginator.get_page(page)
+
+    query_data = animal_counts_query.values("condition").annotate(
+        num=Count("condition")
+    )
+
+    cond_slugs = [count["condition"] for count in query_data]
+    chart_data = []
+    for cond_slug, _ in AnimalCount.STAFF_CONDITIONS:
+        if cond_slug in cond_slugs:
+            chart_data.append(query_data.get(condition=cond_slug)["num"])
+        else:
+            chart_data.append(0)
+    chart_labels = [c[1] for c in AnimalCount.STAFF_CONDITIONS]
 
     return render(
         request,
@@ -289,6 +303,8 @@ def animal_counts(request, animal):
             "animal": animal,
             "enclosure": enclosure,
             "animal_counts": animal_counts_records,
+            "chart_data": chart_data,
+            "chart_labels": chart_labels,
         },
     )
 

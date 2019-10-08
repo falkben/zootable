@@ -5,7 +5,7 @@
 {% block content %}
 
 
-<div id="enc-title-chart">
+<div id="chart-text-container">
 
 <div>
     <h2>Animal Counts</h2>
@@ -14,12 +14,12 @@
     <p><b>Name:</b> {{animal.name}}</p>
     <p><b>Identifier:</b> {{animal.identifier}}</p>
     <p><b>Species:</b> {{animal.species.common_name}}<em>({{animal.species.genus_name}} {{animal.species.species_name}})</em></td>
-    <p><b>Enclosure:</b> {{enclosure}}
+    <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a>
     <p><b>Sex:</b> {{animal.sex}}</p>
 </div>
 
 <div>
-    {% include "pie_chart.html" %}
+    {% include "pie_chart.html" with labels=chart_labels chart_data=chart_data %}
 </div>
 
 </div>
@@ -37,7 +37,7 @@
 {% for count in animal_counts %}
     <tr>
     <td>{{count.datecounted}}
-    <td>{{count.get_condition_display}}
+    <td class="condition-{{count.condition}}">{{count.get_condition_display}}
     <td>{{count.user}}
     <td><a href="{% url 'edit_animal_count' animal=animal.accession_number year=count.datecounted|date:'Y' month=count.datecounted|date:'m' day=count.datecounted|date:'d' %}"><i class="material-icons">edit</i></a>
     </tr>
