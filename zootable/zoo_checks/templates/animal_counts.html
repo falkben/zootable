@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Animal counts{% endblock %}
+
+{% block content %}
+
+
+<div id="enc-title-chart">
+
+<div>
+    <h2>Animal Counts</h2>
+
+    <p><b>Animal Accession Number:</b> {{animal.accession_number}}</p>
+    <p><b>Name:</b> {{animal.name}}</p>
+    <p><b>Identifier:</b> {{animal.identifier}}</p>
+    <p><b>Species:</b> {{animal.species.common_name}}<em>({{animal.species.genus_name}} {{animal.species.species_name}})</em></td>
+    <p><b>Enclosure:</b> {{enclosure}}
+    <p><b>Sex:</b> {{animal.sex}}</p>
+</div>
+
+<div>
+    {% include "pie_chart.html" %}
+</div>
+
+</div>
+
+<table class="striped">
+<thead>
+<tr>
+    <th>Date
+    <th>Condition
+    <th>User
+    <th>
+</tr>
+</thead>
+<tbody>
+{% for count in animal_counts %}
+    <tr>
+    <td>{{count.datecounted}}
+    <td>{{count.get_condition_display}}
+    <td>{{count.user}}
+    <td><a href="{% url 'edit_animal_count' animal=animal.accession_number year=count.datecounted|date:'Y' month=count.datecounted|date:'m' day=count.datecounted|date:'d' %}"><i class="material-icons">edit</i></a>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+
+<p>
+<ul class="pagination">
+    {% if animal_counts.has_previous %}
+        <li class="waves-effect">
+            <a href="?page=1"><i class="material-icons">first_page</i></a>
+        </li>
+        <li class="waves-effect">
+            <a href="?page={{ animal_counts.previous_page_number }}"><i class="material-icons">chevron_left</i></a>
+        </li>
+    {% else %}
+        <li class="disabled">
+            <a href="#!"><i class="material-icons">first_page</i></a>
+        </li>
+        <li class="disabled">
+        <a href="#!"><i class="material-icons">chevron_left</i></a>
+        </li>
+    {% endif %}
+
+    <li class="active">
+        <a href="#!">{{ animal_counts.number }}</a>
+    </li>
+    <li class="disabled">
+        <a href="#!">of {{ animal_counts.paginator.num_pages }}</a>
+    </li>
+
+    
+    {% if animal_counts.has_next %}
+    <li class="waves-effect">
+        <a href="?page={{ animal_counts.next_page_number }}"><i class="material-icons">chevron_right</i></a>
+    </li>
+    <li class="waves-effect">
+        <a href="?page={{ animal_counts.paginator.num_pages }}"><i class="material-icons">last_page</i></a>
+    </li>
+    {% else %}
+        <li class="disabled">
+        <a href="#!"><i class="material-icons">chevron_right</i></a>
+        </li>
+        <li class="disabled">
+            <a href="#!"><i class="material-icons">last_page</i></a>
+        </li>
+    {% endif %}
+</ul>
+</p>
+  
+{% endblock %}

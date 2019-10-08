@@ -49,6 +49,9 @@ html {
 }
 
 /* format of tally table */
+table {
+  margin-bottom: 1rem;
+}
 
 table.striped > tbody > tr.species {
   background: #444;
@@ -236,10 +239,6 @@ a.increment i {
 
 #enc-title-chart > * {
   flex: 1;
-}
-
-#enc-title-chart > div {
-  max-width: 250px;
 }
 
 /* media queries */

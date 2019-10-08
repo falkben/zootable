@@ -5,6 +5,7 @@ import pytz
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
 from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
@@ -260,6 +261,34 @@ def edit_group_count(request, group, year, month, day):
             "group": group,
             "enclosure": enclosure,
             "dateday": dateday,
+        },
+    )
+
+
+@login_required
+def animal_counts(request, animal):
+    animal = get_object_or_404(Animal, accession_number=animal)
+    enclosure = animal.enclosure
+
+    animal_counts_list = AnimalCount.objects.filter(animal=animal).order_by(
+        "-datecounted"
+    )
+
+    paginator = Paginator(animal_counts_list, 25)
+    page = request.GET.get("page")
+    animal_counts_records = paginator.get_page(page)
+
+    # if the user cannot edit the enclosure, redirect to home
+    if request.user not in enclosure.users.all():
+        return redirect("home")
+
+    return render(
+        request,
+        "animal_counts.html",
+        {
+            "animal": animal,
+            "enclosure": enclosure,
+            "animal_counts": animal_counts_records,
         },
     )
 

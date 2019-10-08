@@ -6,13 +6,7 @@
 
 {% load template_tags %}
 
-<div id="enc-title-chart">
-    <h2>{{enclosure}}</h2>
-
-    <div>
-    {% include "pie_chart.html" %}
-    </div>
-</div>
+<h2>{{enclosure}}</h2>
 
 {{species_formset.non_form_errors}}
 {{animals_formset.non_form_errors}}
