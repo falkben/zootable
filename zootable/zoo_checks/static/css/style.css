@@ -229,6 +229,19 @@ a.increment i {
   line-height: 20px !important;
 }
 
+#enc-title-chart {
+  display: flex;
+  flex-direction: column;
+}
+
+#enc-title-chart > * {
+  flex: 1;
+}
+
+#enc-title-chart > div {
+  max-width: 250px;
+}
+
 /* media queries */
 @media only screen and (min-width: 1150px) {
   .condition-radio {
@@ -238,6 +251,10 @@ a.increment i {
 
 @media only screen and (min-width: 560px) {
   .edit_group {
+    flex-direction: row;
+  }
+
+  #enc-title-chart {
     flex-direction: row;
   }
 }
