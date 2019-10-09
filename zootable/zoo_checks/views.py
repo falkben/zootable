@@ -109,10 +109,7 @@ def count(request, enclosure_slug):
                 if form.has_changed():
                     instance = form.save(commit=False)
                     instance.user = request.user
-                    # force insert because otherwise it always updated
-                    instance.id = None
-                    instance.datetimecounted = timezone.now()
-                    instance.save()
+                    instance.update_or_create_from_form()
 
             # process the data in form.cleaned_data as required
             for formset in (species_formset, animals_formset, groups_formset):

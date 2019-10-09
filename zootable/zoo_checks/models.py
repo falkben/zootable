@@ -280,6 +280,20 @@ class AnimalCount(Count):
             )
         )
 
+    def update_or_create_from_form(self):
+        # we want the identifier to be:
+        # user, datecounted, animal, enclosure?
+        AnimalCount.objects.update_or_create(
+            user=self.user,
+            datecounted=self.datecounted,
+            animal=self.animal,
+            enclosure=self.enclosure,
+            defaults={
+                "datetimecounted": self.datetimecounted,
+                "condition": self.condition,
+            },
+        )
+
 
 class GroupCount(Count):
     count_male = models.PositiveSmallIntegerField(default=0)
@@ -304,6 +318,22 @@ class GroupCount(Count):
             )
         )
 
+    def update_or_create_from_form(self):
+        # we want the identifier to be:
+        # user, datecounted, group, enclosure?
+        GroupCount.objects.update_or_create(
+            user=self.user,
+            datecounted=self.datecounted,
+            group=self.group,
+            enclosure=self.enclosure,
+            defaults={
+                "datetimecounted": self.datetimecounted,
+                "count_male": self.count_male,
+                "count_female": self.count_female,
+                "count_unknown": self.count_unknown,
+            },
+        )
+
 
 class SpeciesCount(Count):
     count = models.PositiveSmallIntegerField(default=0)
@@ -321,3 +351,15 @@ class SpeciesCount(Count):
                 str(self.count),
             )
         )
+
+    def update_or_create_from_form(self):
+        # we want the identifier to be:
+        # user, datecounted, group, enclosure?
+        SpeciesCount.objects.update_or_create(
+            user=self.user,
+            datecounted=self.datecounted,
+            species=self.species,
+            enclosure=self.enclosure,
+            defaults={"datetimecounted": self.datetimecounted, "count": self.count},
+        )
+
