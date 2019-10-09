@@ -111,7 +111,7 @@ def count(request, enclosure_slug):
                     instance.user = request.user
                     # force insert because otherwise it always updated
                     instance.id = None
-                    instance.datecounted = timezone.now()
+                    instance.datetimecounted = timezone.now()
                     instance.save()
 
             # process the data in form.cleaned_data as required
@@ -196,9 +196,10 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datecounted = (
+                obj.datetimecounted = (
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
+                obj.datecounted = dateday
                 obj.save()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
@@ -245,9 +246,10 @@ def edit_group_count(request, group, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datecounted = (
+                obj.datetimecounted = (
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
+                obj.datecounted = dateday
                 obj.save()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
@@ -276,7 +278,7 @@ def animal_counts(request, animal):
         return redirect("home")
 
     animal_counts_query = AnimalCount.objects.filter(animal=animal).order_by(
-        "-datecounted"
+        "-datetimecounted", "-id"
     )
 
     paginator = Paginator(animal_counts_query, 10)
@@ -337,9 +339,10 @@ def edit_animal_count(request, animal, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datecounted = (
+                obj.datetimecounted = (
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
+                obj.datecounted = dateday
                 obj.save()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
@@ -439,30 +442,30 @@ def export(request):
             animal_counts = (
                 AnimalCount.objects.filter(
                     enclosure__in=enclosures,
-                    datecounted__gte=start_date,
-                    datecounted__lt=end_date,
+                    datetimecounted__gte=start_date,
+                    datetimecounted__lt=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
                 .order_by("dateonlycounted", "animal_id")
                 .distinct("dateonlycounted", "animal_id")
             )
             group_counts = (
                 GroupCount.objects.filter(
                     enclosure__in=enclosures,
-                    datecounted__gte=start_date,
-                    datecounted__lt=end_date,
+                    datetimecounted__gte=start_date,
+                    datetimecounted__lt=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
                 .order_by("dateonlycounted", "group_id")
                 .distinct("dateonlycounted", "group_id")
             )
             species_counts = (
                 SpeciesCount.objects.filter(
                     enclosure__in=enclosures,
-                    datecounted__gte=start_date,
-                    datecounted__lt=end_date,
+                    datetimecounted__gte=start_date,
+                    datetimecounted__lt=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
                 .order_by("dateonlycounted", "species_id")
                 .distinct("dateonlycounted", "species_id")
             )

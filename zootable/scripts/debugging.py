@@ -25,30 +25,30 @@ num_days = 1
 animal_counts = (
     AnimalCount.objects.filter(
         enclosure__in=enclosures,
-        datecounted__lte=timezone.localtime(),
-        datecounted__gt=today_time() - timezone.timedelta(num_days),
+        datetimecounted__lte=timezone.localtime(),
+        datetimecounted__gt=today_time() - timezone.timedelta(num_days),
     )
-    .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+    .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
     .order_by("dateonlycounted", "animal_id")
     .distinct("dateonlycounted", "animal_id")
 )
 group_counts = (
     GroupCount.objects.filter(
         enclosure__in=enclosures,
-        datecounted__lte=timezone.localtime(),
-        datecounted__gt=today_time() - timezone.timedelta(num_days),
+        datetimecounted__lte=timezone.localtime(),
+        datetimecounted__gt=today_time() - timezone.timedelta(num_days),
     )
-    .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+    .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
     .order_by("dateonlycounted", "group_id")
     .distinct("dateonlycounted", "group_id")
 )
 species_counts = (
     SpeciesCount.objects.filter(
         enclosure__in=enclosures,
-        datecounted__lte=timezone.localtime(),
-        datecounted__gt=today_time() - timezone.timedelta(num_days),
+        datetimecounted__lte=timezone.localtime(),
+        datetimecounted__gt=today_time() - timezone.timedelta(num_days),
     )
-    .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+    .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
     .order_by("dateonlycounted", "species_id")
     .distinct("dateonlycounted", "species_id")
 )

@@ -17,7 +17,7 @@ def test_qs_to_df():
     # animal count
     test_data = {
         "id": 1637,
-        "datecounted": datetime.datetime(2019, 9, 26, 13, 49, 28, 281415),
+        "datetimecounted": datetime.datetime(2019, 9, 26, 13, 49, 28, 281415),
         "user_id": 4,
         "enclosure_id": 12,
         "condition": "SE",
@@ -32,7 +32,7 @@ def test_qs_to_df():
     # group count
     test_data = {
         "id": 6,
-        "datecounted": datetime.datetime(2019, 9, 27, 3, 59, 59),
+        "datetimecounted": datetime.datetime(2019, 9, 27, 3, 59, 59),
         "user_id": 1,
         "enclosure_id": 5,
         "count_male": 0,
@@ -49,7 +49,7 @@ def test_qs_to_df():
     # species count
     test_data = {
         "id": 25,
-        "datecounted": datetime.datetime(2019, 9, 27, 16, 10, 24, 504457),
+        "datetimecounted": datetime.datetime(2019, 9, 27, 16, 10, 24, 504457),
         "user_id": 1,
         "enclosure_id": 5,
         "count": 3,
@@ -67,7 +67,7 @@ def test_clean_df():
     test_data = [
         {
             "id": 1637,
-            "datecounted": timestamp,
+            "datetimecounted": timestamp,
             "user__username": 4,
             "enclosure__name": "encl_test_name",
             "condition": "SE",

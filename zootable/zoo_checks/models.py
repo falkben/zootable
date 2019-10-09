@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
-
 from django_extensions.db.fields import AutoSlugField
 
 from .helpers import today_time
@@ -66,10 +65,10 @@ class Species(models.Model):
             day = today_time()
         try:
             count = self.counts.filter(
-                datecounted__gte=day,
-                datecounted__lt=day + timezone.timedelta(days=1),
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
                 enclosure=enclosure,
-            ).latest("datecounted", "id")
+            ).latest("datetimecounted", "id")
         except ObjectDoesNotExist:
             count = None
 
@@ -160,8 +159,9 @@ class Animal(AnimalSet):
             day = today_time()
         try:
             count = self.conditions.filter(
-                datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-            ).latest("datecounted", "id")
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            ).latest("datetimecounted", "id")
         except ObjectDoesNotExist:
             count = None
 
@@ -220,8 +220,9 @@ class Group(AnimalSet):
             day = today_time()
         try:
             count = self.counts.filter(
-                datecounted__gte=day, datecounted__lt=day + timezone.timedelta(days=1)
-            ).latest("datecounted", "id")
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            ).latest("datetimecounted", "id")
 
             return count
         except ObjectDoesNotExist:
@@ -240,14 +241,15 @@ class Group(AnimalSet):
 
 
 class Count(models.Model):
-    datecounted = models.DateTimeField(default=timezone.now)
+    datetimecounted = models.DateTimeField(default=timezone.now)
+    datecounted = models.DateField(default=timezone.localdate)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     enclosure = models.ForeignKey(Enclosure, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         abstract = True
-        ordering = ["datecounted"]
+        ordering = ["datetimecounted"]
 
 
 class AnimalCount(Count):
@@ -273,7 +275,7 @@ class AnimalCount(Count):
                 str(self.animal.accession_number),
                 self.animal.name,
                 self.user.username,
-                timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
+                timezone.localtime(self.datetimecounted).strftime("%Y-%m-%d"),
                 self.condition,
             )
         )
@@ -291,7 +293,7 @@ class GroupCount(Count):
             (
                 self.group.species.common_name,
                 self.user.username,
-                timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
+                timezone.localtime(self.datetimecounted).strftime("%Y-%m-%d"),
                 ".".join(
                     (
                         str(self.count_male),
@@ -315,7 +317,7 @@ class SpeciesCount(Count):
             (
                 self.species.common_name,
                 self.user.username,
-                timezone.localtime(self.datecounted).strftime("%Y-%m-%d"),
+                timezone.localtime(self.datetimecounted).strftime("%Y-%m-%d"),
                 str(self.count),
             )
         )

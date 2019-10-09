@@ -13,17 +13,17 @@ from zoo_checks.models import (
 
 @admin.register(AnimalCount)
 class AnimalCountAdmin(admin.ModelAdmin):
-    readonly_fields = ("datecounted",)
+    readonly_fields = ("datetimecounted", "datecounted")
 
 
 @admin.register(GroupCount)
 class GroupCountAdmin(admin.ModelAdmin):
-    readonly_fields = ("datecounted",)
+    readonly_fields = ("datetimecounted", "datecounted")
 
 
 @admin.register(SpeciesCount)
 class SpeciesCountAdmin(admin.ModelAdmin):
-    readonly_fields = ("datecounted",)
+    readonly_fields = ("datetimecounted", "datecounted")
 
 
 admin.site.register(Animal)

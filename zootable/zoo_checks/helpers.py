@@ -171,9 +171,9 @@ def clean_df(df):
         df = df.drop(columns=["id"])
 
     # remove timezones from datetimes (for excel) but still display datetime for the app's timezone
-    if "datecounted" in df.columns:
-        df["datecounted"] = df["datecounted"].dt.tz_convert(settings.TIME_ZONE)
-        df["datecounted"] = df["datecounted"].dt.tz_localize(None)
+    if "datetimecounted" in df.columns:
+        df["datetimecounted"] = df["datetimecounted"].dt.tz_convert(settings.TIME_ZONE)
+        df["datetimecounted"] = df["datetimecounted"].dt.tz_localize(None)
 
     # combining columns for species
     items = ("common_name", "genus_name", "species_name")
@@ -198,9 +198,9 @@ def clean_df(df):
     df = df.drop(columns=cols)
 
     # split the datetime into separate columns
-    df["date_counted"] = df["datecounted"].dt.date
-    df["time_counted"] = df["datecounted"].dt.strftime("%H:%M:%S")
-    df = df.drop(columns=["datecounted"])
+    df["date_counted"] = df["datetimecounted"].dt.date
+    df["time_counted"] = df["datetimecounted"].dt.strftime("%H:%M:%S")
+    df = df.drop(columns=["datetimecounted"])
 
     # making col names prettier
     rename_cols = {"enclosure__name": "enclosure", "user__username": "user"}
