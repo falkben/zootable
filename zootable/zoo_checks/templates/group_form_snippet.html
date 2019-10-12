@@ -4,6 +4,9 @@
 {% endfor %}
 
 <div class="edit_group">
+
+<span><a href="{% url 'group_counts' group=group.accession_number %}">{{group.accession_number}}</span></a>
+
 <span class="fieldWrapper">
     {{ form.count_male.errors }}
     <b>M</b><em>({{group.population_male}})</em><br />

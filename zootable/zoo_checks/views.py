@@ -10,6 +10,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
+from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -302,6 +303,44 @@ def animal_counts(request, animal):
             "animal": animal,
             "enclosure": enclosure,
             "animal_counts": animal_counts_records,
+            "chart_data": chart_data,
+            "chart_labels": chart_labels,
+        },
+    )
+
+
+@login_required
+def group_counts(request, group):
+    group = get_object_or_404(Group, accession_number=group)
+    enclosure = group.enclosure
+
+    # if the user cannot edit the enclosure, redirect to home
+    if request.user not in enclosure.users.all():
+        return redirect("home")
+
+    group_counts_query = GroupCount.objects.filter(group=group).order_by(
+        "-datetimecounted", "-id"
+    )
+
+    paginator = Paginator(group_counts_query, 10)
+    page = request.GET.get("page")
+    group_counts_records = paginator.get_page(page)
+
+    sum_counts = list(
+        group_counts_query.annotate(
+            num=F("count_male") + F("count_female") + F("count_unknown")
+        ).values_list("num", flat=True)
+    )
+    chart_labels = sorted(set(sum_counts))
+    chart_data = [sum_counts.count(s) for s in chart_labels]
+
+    return render(
+        request,
+        "group_counts.html",
+        {
+            "group": group,
+            "enclosure": enclosure,
+            "group_counts": group_counts_records,
             "chart_data": chart_data,
             "chart_labels": chart_labels,
         },

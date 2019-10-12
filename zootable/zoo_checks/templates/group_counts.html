@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Group counts{% endblock %}
+
+{% block content %}
+
+
+<div id="chart-text-container">
+
+<div>
+    <h2>Group Counts</h2>
+
+    <p><b>Group Accession Number:</b> {{group.accession_number}}</p>
+    <p><b>Species:</b> {{group.species.common_name}}<em>({{group.species.genus_name}} {{group.species.species_name}})</em></p>
+    <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
+    <p><b>Population Male</b> {{group.population_male}}</p>
+    <p><b>Population Female</b> {{group.population_female}}</p>
+    <p><b>Population Unknown</b> {{group.population_unknown}}</p>
+
+</div>
+
+{% include "pie_chart.html" with labels=chart_labels chart_data=chart_data title="Group Counts" %}
+
+</div>
+
+<table class="striped">
+<thead>
+<tr>
+    <th>Date
+    <th>Male
+    <th>Female
+    <th>Unknown
+    <th>User
+    <th>
+</tr>
+</thead>
+<tbody>
+{% for count in group_counts %}
+    <tr>
+    <td>{{count.datetimecounted}}
+    <td>{{count.count_male}}</td>
+    <td>{{count.count_female}}</td>
+    <td>{{count.count_unknown}}</td>
+    <td>{{count.user}}
+    <td><a href="{% url 'edit_group_count' group=group.accession_number year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% include "paginate_counts.html" with counts=group_counts %}
+
+{% endblock %}
