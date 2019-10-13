@@ -1,22 +1,14 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
-
-<div id="pie-chart-div">
-
-<h2></h2>
-
 <canvas id="pie-chart" width="400" height="400"></canvas>
 
 <script>
 new Chart(document.getElementById("pie-chart"), {
     type: 'pie',
     data: {
-      labels: [{% for ll in labels %}"{{ ll }}", {% endfor %}],
+      labels: {{labels|safe}},
       datasets: [{
         label: "Counts",
         backgroundColor: ["#1976d2", "#26a69a","#d32f2f", "#f57c00"],
-        data: [
-        {% for item in chart_data %}{{item}}, {% endfor %}
-        ]
+        data: {{data|safe}}
       }]
     },
     options: {
@@ -33,5 +25,3 @@ new Chart(document.getElementById("pie-chart"), {
 });
 
 </script>
-
-</div>

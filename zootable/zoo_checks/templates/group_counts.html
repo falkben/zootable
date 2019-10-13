@@ -4,45 +4,43 @@
 
 {% block content %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
 
 <div id="chart-text-container">
 
-<div>
-    <h2>Group Counts</h2>
+    <div>
+        <h2>Group Counts</h2>
 
-    <p><b>Group Accession Number:</b> {{group.accession_number}}</p>
-    <p><b>Species:</b> {{group.species.common_name}}<em>({{group.species.genus_name}} {{group.species.species_name}})</em></p>
-    <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
-    <p><b>Population Male</b> {{group.population_male}}</p>
-    <p><b>Population Female</b> {{group.population_female}}</p>
-    <p><b>Population Unknown</b> {{group.population_unknown}}</p>
+        <p><b>Group Accession Number:</b> {{group.accession_number}}</p>
+        <p><b>Species:</b> {{group.species.common_name}}<em>({{group.species.genus_name}} {{group.species.species_name}})</em></p>
+        <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
+        <p><b>Population Male</b> {{group.population_male}}</p>
+        <p><b>Population Female</b> {{group.population_female}}</p>
+        <p><b>Population Unknown</b> {{group.population_unknown}}</p>
 
-</div>
+    </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
 
-<div id="pie-chart-div">
+    <div id="chart-div">
 
-    <h2></h2>
+        <h2></h2>
 
-    <canvas id="pie-chart" width="400" height="400"></canvas>
+        <div id="line-chart-opt" style="display: block">
+            {% include "line_chart.html" with labels=chart_labels_line title="Counts per day" %}
+        </div>
 
-    <script>
-    new Chart(document.getElementById("pie-chart"), {
-    type: 'line',
-    data: {
-        labels: {{chart_labels|safe}},
-        datasets: [
-            {
-                label: "Total",
-                lineTension: 0,           
-                data: {{chart_data}}
-            }
-        ]
-        }
-    });
-    </script>
-</div>
+        <div id="pie-chart-opt" style="display: none">
+            {% include "pie_chart.html" with data=chart_data_pie labels=chart_labels_pie title="Total counted" %}
+        </div>
+
+        (last 100 displayed)
+
+        <p>Chart:
+        <a class="btn disabled" href="#" id="line-chart-opt-btn" onclick="chartVisible('line-chart-opt')">Line</a>
+        <a class="btn" href="#" id="pie-chart-opt-btn" onclick="chartVisible('pie-chart-opt')">Pie</a>
+        </p>
+
+    </div>
 
 </div>
 

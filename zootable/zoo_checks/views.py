@@ -331,26 +331,28 @@ def group_counts(request, group):
     page = request.GET.get("page")
     group_counts_records = paginator.get_page(page)
 
-    # db counts the sums
-    # query_data = (
-    #     group_counts_query.annotate(
-    #         sum=F("count_male") + F("count_female") + F("count_unknown")
-    #     )
-    #     .values("sum")
-    #     .order_by("sum")
-    #     .annotate(num=Count("sum"))
-    # )
-    # chart_labels = sorted(set(query_data.values_list("sum", flat=True)))
-    # chart_data = [query_data.get(sum=s)["num"] for s in chart_labels]
-
+    # db creates sum column
     query_data = group_counts_query.annotate(
         sum=F("count_male") + F("count_female") + F("count_unknown")
     )
-    chart_labels = [
+
+    chart_labels_line = [
         d.strftime("%Y-%m-%d")
         for d in list(query_data.values_list("datecounted", flat=True)[:100])
     ]
-    chart_data = list(query_data.values_list("sum", flat=True)[:100])
+    chart_data_line_total = list(query_data.values_list("sum", flat=True)[:100])
+    chart_data_line_male = list(query_data.values_list("count_male", flat=True)[:100])
+    chart_data_line_female = list(
+        query_data.values_list("count_female", flat=True)[:100]
+    )
+    chart_data_line_unknown = list(
+        query_data.values_list("count_unknown", flat=True)[:100]
+    )
+
+    # for the pie chart (last 100)
+    sum_counts = list(query_data.values_list("sum", flat=True)[:100])
+    chart_labels_pie = sorted(set(sum_counts))
+    chart_data_pie = [sum_counts.count(s) for s in chart_labels_pie]
 
     return render(
         request,
@@ -359,8 +361,13 @@ def group_counts(request, group):
             "group": group,
             "enclosure": enclosure,
             "group_counts": group_counts_records,
-            "chart_data": chart_data,
-            "chart_labels": chart_labels,
+            "chart_data_line_male": chart_data_line_male,
+            "chart_data_line_female": chart_data_line_female,
+            "chart_data_line_unknown": chart_data_line_unknown,
+            "chart_data_line_total": chart_data_line_total,
+            "chart_labels_line": chart_labels_line,
+            "chart_data_pie": chart_data_pie,
+            "chart_labels_pie": chart_labels_pie,
         },
     )
 

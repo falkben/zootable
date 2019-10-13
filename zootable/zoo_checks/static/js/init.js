@@ -39,3 +39,21 @@ function incrementValue(id, inc_val) {
     document.getElementById(id).value = value;
   }
 }
+
+function chartVisible(id) {
+  document.getElementById(id).style.display = "block";
+  document.getElementById(id + "-btn").classList.add("disabled");
+
+  const elems = ["line-chart-opt", "pie-chart-opt"];
+  let index = elems.indexOf(id);
+  if (index > -1) {
+    elems.splice(index, 1);
+  }
+  console.log(elems);
+
+  elems.forEach((item, index) => {
+    // console.log(item);
+    document.getElementById(item).style.display = "none";
+    document.getElementById(item + "-btn").classList.remove("disabled");
+  });
+}

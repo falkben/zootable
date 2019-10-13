@@ -4,22 +4,28 @@
 
 {% block content %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
 
 <div id="chart-text-container">
 
-<div>
-    <h2>Animal Counts</h2>
+    <div>
+        <h2>Animal Counts</h2>
 
-    <p><b>Animal Accession Number:</b> {{animal.accession_number}}</p>
-    <p><b>Name:</b> {{animal.name}}</p>
-    <p><b>Identifier:</b> {{animal.identifier}}</p>
-    <p><b>Species:</b> {{animal.species.common_name}}<em>({{animal.species.genus_name}} {{animal.species.species_name}})</em></p>
-    <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
-    <p><b>Sex:</b> {{animal.sex}}</p>
-</div>
+        <p><b>Animal Accession Number:</b> {{animal.accession_number}}</p>
+        <p><b>Name:</b> {{animal.name}}</p>
+        <p><b>Identifier:</b> {{animal.identifier}}</p>
+        <p><b>Species:</b> {{animal.species.common_name}}<em>({{animal.species.genus_name}} {{animal.species.species_name}})</em></p>
+        <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
+        <p><b>Sex:</b> {{animal.sex}}</p>
+    </div>
 
-{% include "pie_chart.html" with labels=chart_labels chart_data=chart_data title="Conditions" %}
+    <div id="chart-div">
 
+        <h2></h2>
+
+        {% include "pie_chart.html" with labels=chart_labels data=chart_data title="Conditions" %}
+
+    </div>
 </div>
 
 <table class="striped">
