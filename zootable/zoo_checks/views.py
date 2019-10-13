@@ -283,10 +283,14 @@ def animal_counts(request, animal):
     page = request.GET.get("page")
     animal_counts_records = paginator.get_page(page)
 
-    query_data = animal_counts_query.values("condition").annotate(
-        num=Count("condition")
+    # db counts each condition type
+    query_data = (
+        animal_counts_query.values("condition")
+        .order_by("condition")
+        .annotate(num=Count("condition"))
     )
 
+    # generating the data and labels
     cond_slugs = [count["condition"] for count in query_data]
     chart_data = []
     for cond_slug, _ in AnimalCount.STAFF_CONDITIONS:
@@ -294,6 +298,7 @@ def animal_counts(request, animal):
             chart_data.append(query_data.get(condition=cond_slug)["num"])
         else:
             chart_data.append(0)
+    # gets the full name of the condition (from second item in tuple)
     chart_labels = [c[1] for c in AnimalCount.STAFF_CONDITIONS]
 
     return render(
@@ -326,13 +331,17 @@ def group_counts(request, group):
     page = request.GET.get("page")
     group_counts_records = paginator.get_page(page)
 
-    sum_counts = list(
+    # db counts the sums
+    query_data = (
         group_counts_query.annotate(
-            num=F("count_male") + F("count_female") + F("count_unknown")
-        ).values_list("num", flat=True)
+            sum=F("count_male") + F("count_female") + F("count_unknown")
+        )
+        .values("sum")
+        .order_by("sum")
+        .annotate(num=Count("sum"))
     )
-    chart_labels = sorted(set(sum_counts))
-    chart_data = [sum_counts.count(s) for s in chart_labels]
+    chart_labels = sorted(set(query_data.values_list("sum", flat=True)))
+    chart_data = [query_data.get(sum=s)["num"] for s in chart_labels]
 
     return render(
         request,

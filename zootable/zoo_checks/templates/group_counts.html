@@ -30,6 +30,7 @@
     <th>Male
     <th>Female
     <th>Unknown
+    <th>Total
     <th>User
     <th>
 </tr>
@@ -41,6 +42,7 @@
     <td>{{count.count_male}}</td>
     <td>{{count.count_female}}</td>
     <td>{{count.count_unknown}}</td>
+    <td>{{count.total}}
     <td>{{count.user}}
     <td><a href="{% url 'edit_group_count' group=group.accession_number year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
     </tr>

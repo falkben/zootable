@@ -302,6 +302,10 @@ class GroupCount(Count):
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="counts")
 
+    @property
+    def total(self):
+        return self.count_male + self.count_female + self.count_unknown
+
     def __str__(self):
         return "|".join(
             (
