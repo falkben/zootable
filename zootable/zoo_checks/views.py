@@ -332,16 +332,25 @@ def group_counts(request, group):
     group_counts_records = paginator.get_page(page)
 
     # db counts the sums
-    query_data = (
-        group_counts_query.annotate(
-            sum=F("count_male") + F("count_female") + F("count_unknown")
-        )
-        .values("sum")
-        .order_by("sum")
-        .annotate(num=Count("sum"))
+    # query_data = (
+    #     group_counts_query.annotate(
+    #         sum=F("count_male") + F("count_female") + F("count_unknown")
+    #     )
+    #     .values("sum")
+    #     .order_by("sum")
+    #     .annotate(num=Count("sum"))
+    # )
+    # chart_labels = sorted(set(query_data.values_list("sum", flat=True)))
+    # chart_data = [query_data.get(sum=s)["num"] for s in chart_labels]
+
+    query_data = group_counts_query.annotate(
+        sum=F("count_male") + F("count_female") + F("count_unknown")
     )
-    chart_labels = sorted(set(query_data.values_list("sum", flat=True)))
-    chart_data = [query_data.get(sum=s)["num"] for s in chart_labels]
+    chart_labels = [
+        d.strftime("%Y-%m-%d")
+        for d in list(query_data.values_list("datecounted", flat=True)[:100])
+    ]
+    chart_data = list(query_data.values_list("sum", flat=True)[:100])
 
     return render(
         request,

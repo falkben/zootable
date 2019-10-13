@@ -19,7 +19,30 @@
 
 </div>
 
-{% include "pie_chart.html" with labels=chart_labels chart_data=chart_data title="Group Counts" %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
+
+<div id="pie-chart-div">
+
+    <h2></h2>
+
+    <canvas id="pie-chart" width="400" height="400"></canvas>
+
+    <script>
+    new Chart(document.getElementById("pie-chart"), {
+    type: 'line',
+    data: {
+        labels: {{chart_labels|safe}},
+        datasets: [
+            {
+                label: "Total",
+                lineTension: 0,           
+                data: {{chart_data}}
+            }
+        ]
+        }
+    });
+    </script>
+</div>
 
 </div>
 
