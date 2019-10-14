@@ -5,9 +5,12 @@ import pytz
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
+from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -107,10 +110,7 @@ def count(request, enclosure_slug):
                 if form.has_changed():
                     instance = form.save(commit=False)
                     instance.user = request.user
-                    # force insert because otherwise it always updated
-                    instance.id = None
-                    instance.datecounted = timezone.now()
-                    instance.save()
+                    instance.update_or_create_from_form()
 
             # process the data in form.cleaned_data as required
             for formset in (species_formset, animals_formset, groups_formset):
@@ -194,9 +194,10 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datecounted = (
+                obj.datetimecounted = (
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
+                obj.datecounted = dateday
                 obj.save()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
@@ -243,9 +244,10 @@ def edit_group_count(request, group, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datecounted = (
+                obj.datetimecounted = (
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
+                obj.datecounted = dateday
                 obj.save()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
@@ -260,6 +262,161 @@ def edit_group_count(request, group, year, month, day):
             "group": group,
             "enclosure": enclosure,
             "dateday": dateday,
+        },
+    )
+
+
+@login_required
+def animal_counts(request, animal):
+    animal = get_object_or_404(Animal, accession_number=animal)
+    enclosure = animal.enclosure
+
+    # if the user cannot edit the enclosure, redirect to home
+    if request.user not in enclosure.users.all():
+        return redirect("home")
+
+    animal_counts_query = AnimalCount.objects.filter(animal=animal).order_by(
+        "-datetimecounted", "-id"
+    )
+
+    paginator = Paginator(animal_counts_query, 10)
+    page = request.GET.get("page")
+    animal_counts_records = paginator.get_page(page)
+
+    # db counts each condition type
+    query_data = (
+        animal_counts_query.values("condition")
+        .order_by("condition")
+        .annotate(num=Count("condition"))
+    )
+
+    # generating the data and labels
+    cond_slugs = [count["condition"] for count in query_data]
+    chart_data = []
+    for cond_slug, _ in AnimalCount.STAFF_CONDITIONS:
+        if cond_slug in cond_slugs:
+            chart_data.append(query_data.get(condition=cond_slug)["num"])
+        else:
+            chart_data.append(0)
+    # gets the full name of the condition (from second item in tuple)
+    chart_labels = [c[1] for c in AnimalCount.STAFF_CONDITIONS]
+
+    return render(
+        request,
+        "animal_counts.html",
+        {
+            "animal": animal,
+            "enclosure": enclosure,
+            "animal_counts": animal_counts_records,
+            "chart_data": chart_data,
+            "chart_labels": chart_labels,
+        },
+    )
+
+
+@login_required
+def group_counts(request, group):
+    group = get_object_or_404(Group, accession_number=group)
+    enclosure = group.enclosure
+
+    # if the user cannot edit the enclosure, redirect to home
+    if request.user not in enclosure.users.all():
+        return redirect("home")
+
+    group_counts_query = GroupCount.objects.filter(group=group).order_by(
+        "-datetimecounted", "-id"
+    )
+
+    paginator = Paginator(group_counts_query, 10)
+    page = request.GET.get("page")
+    group_counts_records = paginator.get_page(page)
+
+    # db creates sum column
+    query_data = group_counts_query.annotate(
+        sum=F("count_male") + F("count_female") + F("count_unknown")
+    )
+
+    chart_labels_line = [
+        d.strftime("%m-%d-%Y")
+        for d in list(query_data.values_list("datecounted", flat=True)[:100])
+    ]
+    chart_data_line_total = list(query_data.values_list("sum", flat=True)[:100])
+    chart_data_line_male = list(query_data.values_list("count_male", flat=True)[:100])
+    chart_data_line_female = list(
+        query_data.values_list("count_female", flat=True)[:100]
+    )
+    chart_data_line_unknown = list(
+        query_data.values_list("count_unknown", flat=True)[:100]
+    )
+
+    # for the pie chart (last 100)
+    sum_counts = list(query_data.values_list("sum", flat=True)[:100])
+    chart_labels_pie = sorted(set(sum_counts))
+    chart_data_pie = [sum_counts.count(s) for s in chart_labels_pie]
+
+    return render(
+        request,
+        "group_counts.html",
+        {
+            "group": group,
+            "enclosure": enclosure,
+            "counts": group_counts_records,
+            "chart_data_line_male": chart_data_line_male,
+            "chart_data_line_female": chart_data_line_female,
+            "chart_data_line_unknown": chart_data_line_unknown,
+            "chart_data_line_total": chart_data_line_total,
+            "chart_labels_line": chart_labels_line,
+            "chart_data_pie": chart_data_pie,
+            "chart_labels_pie": chart_labels_pie,
+        },
+    )
+
+
+@login_required
+def species_counts(request, species_slug, enclosure_slug):
+    obj = get_object_or_404(Species, slug=species_slug)
+    enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
+
+    # if the user cannot edit the enclosure, redirect to home
+    if request.user not in enclosure.users.all():
+        return redirect("home")
+
+    counts_query = SpeciesCount.objects.filter(species=obj).order_by(
+        "-datetimecounted", "-id"
+    )
+
+    paginator = Paginator(counts_query, 10)
+    page = request.GET.get("page")
+    counts_records = paginator.get_page(page)
+
+    chart_labels_line = [
+        d.strftime("%m-%d-%Y")
+        for d in list(
+            counts_query.values_list("datecounted", flat=True).order_by(
+                "datetimecounted"
+            )[:100]
+        )
+    ]
+    chart_data_line_total = list(
+        counts_query.values_list("count", flat=True).order_by("datetimecounted")[:100]
+    )
+
+    # for the pie chart (last 100)
+    sum_counts = list(counts_query.values_list("count", flat=True)[:100])
+    chart_labels_pie = sorted(set(sum_counts))
+    chart_data_pie = [sum_counts.count(s) for s in chart_labels_pie]
+
+    return render(
+        request,
+        "species_counts.html",
+        {
+            "obj": obj,
+            "enclosure": enclosure,
+            "counts": counts_records,
+            "chart_data_line_total": chart_data_line_total,
+            "chart_labels_line": chart_labels_line,
+            "chart_data_pie": chart_data_pie,
+            "chart_labels_pie": chart_labels_pie,
         },
     )
 
@@ -292,9 +449,10 @@ def edit_animal_count(request, animal, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datecounted = (
+                obj.datetimecounted = (
                     dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
                 )
+                obj.datecounted = dateday
                 obj.save()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
@@ -394,30 +552,30 @@ def export(request):
             animal_counts = (
                 AnimalCount.objects.filter(
                     enclosure__in=enclosures,
-                    datecounted__gte=start_date,
-                    datecounted__lt=end_date,
+                    datetimecounted__gte=start_date,
+                    datetimecounted__lt=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
                 .order_by("dateonlycounted", "animal_id")
                 .distinct("dateonlycounted", "animal_id")
             )
             group_counts = (
                 GroupCount.objects.filter(
                     enclosure__in=enclosures,
-                    datecounted__gte=start_date,
-                    datecounted__lt=end_date,
+                    datetimecounted__gte=start_date,
+                    datetimecounted__lt=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
                 .order_by("dateonlycounted", "group_id")
                 .distinct("dateonlycounted", "group_id")
             )
             species_counts = (
                 SpeciesCount.objects.filter(
                     enclosure__in=enclosures,
-                    datecounted__gte=start_date,
-                    datecounted__lt=end_date,
+                    datetimecounted__gte=start_date,
+                    datetimecounted__lt=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datecounted", tzinfo=tzinfo))
+                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
                 .order_by("dateonlycounted", "species_id")
                 .distinct("dateonlycounted", "species_id")
             )

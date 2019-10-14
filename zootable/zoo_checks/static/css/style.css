@@ -49,6 +49,9 @@ html {
 }
 
 /* format of tally table */
+table {
+  margin-bottom: 1rem;
+}
 
 table.striped > tbody > tr.species {
   background: #444;
@@ -119,7 +122,8 @@ label [type="radio"][value="BA"]:checked + span::after {
   background-color: #1976d2;
   border: 2px solid #1976d2;
 }
-label [type="radio"][value="BA"]:checked + span {
+label [type="radio"][value="BA"]:checked + span,
+.condition-BA {
   color: #1976d2;
 }
 
@@ -128,7 +132,8 @@ label [type="radio"][value="SE"]:checked + span::after {
   background-color: #26a69a;
   border: 2px solid #26a69a;
 }
-label [type="radio"][value="SE"]:checked + span {
+label [type="radio"][value="SE"]:checked + span,
+.condition-SE {
   color: #26a69a;
 }
 
@@ -137,7 +142,8 @@ label [type="radio"][value="NA"]:checked + span::after {
   background-color: #d32f2f !important;
   border: 2px solid #d32f2f !important;
 }
-label [type="radio"][value="NA"]:checked + span {
+label [type="radio"][value="NA"]:checked + span,
+.condition-NA {
   color: #d32f2f;
 }
 
@@ -146,7 +152,8 @@ label [type="radio"][value="NS"]:checked + span::after {
   background-color: #f57c00 !important;
   border: 2px solid #f57c00 !important;
 }
-label [type="radio"][value="NS"]:checked + span {
+label [type="radio"][value="NS"]:checked + span,
+.condition-NS {
   color: #f57c00;
 }
 
@@ -229,6 +236,29 @@ a.increment i {
   line-height: 20px !important;
 }
 
+#chart-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#chart-text-container > * {
+  flex: 1;
+}
+
+div#chart-div h2 {
+  display: none;
+}
+
+#chart-div {
+  max-width: 300px;
+}
+
+#pie-chart,
+#line-chart {
+  max-width: 300px;
+  max-height: 300px;
+}
+
 /* media queries */
 @media only screen and (min-width: 1150px) {
   .condition-radio {
@@ -239,5 +269,13 @@ a.increment i {
 @media only screen and (min-width: 560px) {
   .edit_group {
     flex-direction: row;
+  }
+
+  #chart-text-container {
+    flex-direction: row;
+  }
+
+  div#chart-div h2 {
+    display: block;
   }
 }

@@ -1,0 +1,27 @@
+<canvas id="pie-chart" width="400" height="400"></canvas>
+
+<script>
+new Chart(document.getElementById("pie-chart"), {
+    type: 'pie',
+    data: {
+      labels: {{labels|safe}},
+      datasets: [{
+        label: "Counts",
+        backgroundColor: ["#1976d2", "#26a69a","#d32f2f", "#f57c00"],
+        data: {{data|safe}}
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: '{{title}}'
+      },
+      legend: {
+            display: true,
+            position: "top"
+        },
+      responsive: true,
+    }
+});
+
+</script>

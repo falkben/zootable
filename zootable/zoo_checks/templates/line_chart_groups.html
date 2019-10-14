@@ -1,0 +1,46 @@
+<canvas id="line-chart" width="400" height="400"></canvas>
+
+<script>
+new Chart(document.getElementById("line-chart"), {
+type: 'line',
+data: {
+    labels: {{labels|safe}},
+    datasets: [
+        {
+            label: "Total",
+            lineTension: 0,           
+            data: {{chart_data_line_total}},
+            fill: false,
+            borderColor: "#1976d2"
+        },
+        {
+            label: "Male",
+            lineTension: 0,           
+            data: {{chart_data_line_male}},
+            fill: false,
+            borderColor: "#26a69a"
+        },
+        {
+            label: "Female",
+            lineTension: 0,           
+            data: {{chart_data_line_female}},
+            fill: false,
+            borderColor: "#d32f2f"
+        },
+        {
+            label: "Unknown",
+            lineTension: 0,           
+            data: {{chart_data_line_unknown}},
+            fill: false,
+            borderColor: "#f57c00"
+        },
+    ]
+    },
+    options:{
+        title: {
+            display: true,
+            text: '{{title}}'
+        },
+    },
+});
+</script>

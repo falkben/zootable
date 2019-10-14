@@ -44,6 +44,13 @@ urlpatterns = [
         views.edit_animal_count,
         name="edit_animal_count",
     ),
+    path("animal_counts/<int:animal>", views.animal_counts, name="animal_counts"),
+    path("group_counts/<int:group>", views.group_counts, name="group_counts"),
+    path(
+        "species_counts/<slug:species_slug>/<slug:enclosure_slug>",
+        views.species_counts,
+        name="species_counts",
+    ),
     path("upload/", views.ingest_form, name="ingest_form"),
     path("confirm_upload/", views.confirm_upload, name="confirm_upload"),
     path("export/", views.export, name="export"),

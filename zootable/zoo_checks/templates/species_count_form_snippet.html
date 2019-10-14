@@ -1,6 +1,13 @@
 <tr class="species">
 <td>
-    <b>{{species.common_name}}</b><br/>
+    <b>
+    {% if not group_form %}
+        <a href="{% url 'species_counts' species.slug enclosure.slug %}">
+        {{species.common_name}}</a>
+    {% else %}
+        {{species.common_name}}
+    {% endif %}
+    </b><br/>
     <em>({{species.genus_name}} {{species.species_name}})</em>
 </td>
 {% if not group_form %}

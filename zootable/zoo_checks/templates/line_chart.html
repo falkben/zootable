@@ -1,0 +1,28 @@
+<canvas id="line-chart" width="400" height="400"></canvas>
+
+<script>
+new Chart(document.getElementById("line-chart"), {
+type: 'line',
+data: {
+    labels: {{labels|safe}},
+    datasets: [
+        {
+            label: "Count",
+            lineTension: 0,           
+            data: {{chart_data_line_total}},
+            fill: false,
+            borderColor: "#1976d2"
+        }
+    ]
+    },
+    options:{
+        title: {
+            display: true,
+            text: '{{title}}'
+        },
+        legend: {
+          display: false
+        }
+    },
+});
+</script>
