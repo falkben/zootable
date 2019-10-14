@@ -9,25 +9,32 @@
 <div id="chart-text-container">
 
     <div>
-        <h2>Animal Counts</h2>
+        <h4>{% if animal.name %}{{animal.name}}{% else %}{{animal.accession_number}}{% endif %}</h4>
 
         <p><b>Animal Accession Number:</b> {{animal.accession_number}}</p>
+        {% if animal.name %}
         <p><b>Name:</b> {{animal.name}}</p>
+        {% endif %}
+        {% if animal.identifier %}
         <p><b>Identifier:</b> {{animal.identifier}}</p>
+        {% endif %}
         <p><b>Species:</b> {{animal.species.common_name}}<em>({{animal.species.genus_name}} {{animal.species.species_name}})</em></p>
         <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
         <p><b>Sex:</b> {{animal.sex}}</p>
     </div>
 
     <div id="chart-div">
-
+        {% if animal_counts %}
         <h2></h2>
 
         {% include "pie_chart.html" with labels=chart_labels data=chart_data title="Conditions" %}
+        {% endif %}
 
     </div>
 </div>
 
+
+{% if animal_counts %}
 <table class="striped">
 <thead>
 <tr>
@@ -50,5 +57,7 @@
 </table>
 
 {% include "paginate_counts.html" with counts=animal_counts %}
+
+{% endif %}
 
 {% endblock %}

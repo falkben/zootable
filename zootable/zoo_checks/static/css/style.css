@@ -249,6 +249,10 @@ div#chart-div h2 {
   display: none;
 }
 
+#chart-div {
+  max-width: 300px;
+}
+
 #pie-chart,
 #line-chart {
   max-width: 300px;

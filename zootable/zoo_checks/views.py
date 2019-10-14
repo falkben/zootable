@@ -337,7 +337,7 @@ def group_counts(request, group):
     )
 
     chart_labels_line = [
-        d.strftime("%Y-%m-%d")
+        d.strftime("%m-%d-%Y")
         for d in list(query_data.values_list("datecounted", flat=True)[:100])
     ]
     chart_data_line_total = list(query_data.values_list("sum", flat=True)[:100])
@@ -360,10 +360,59 @@ def group_counts(request, group):
         {
             "group": group,
             "enclosure": enclosure,
-            "group_counts": group_counts_records,
+            "counts": group_counts_records,
             "chart_data_line_male": chart_data_line_male,
             "chart_data_line_female": chart_data_line_female,
             "chart_data_line_unknown": chart_data_line_unknown,
+            "chart_data_line_total": chart_data_line_total,
+            "chart_labels_line": chart_labels_line,
+            "chart_data_pie": chart_data_pie,
+            "chart_labels_pie": chart_labels_pie,
+        },
+    )
+
+
+@login_required
+def species_counts(request, species_slug, enclosure_slug):
+    obj = get_object_or_404(Species, slug=species_slug)
+    enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
+
+    # if the user cannot edit the enclosure, redirect to home
+    if request.user not in enclosure.users.all():
+        return redirect("home")
+
+    counts_query = SpeciesCount.objects.filter(species=obj).order_by(
+        "-datetimecounted", "-id"
+    )
+
+    paginator = Paginator(counts_query, 10)
+    page = request.GET.get("page")
+    counts_records = paginator.get_page(page)
+
+    chart_labels_line = [
+        d.strftime("%m-%d-%Y")
+        for d in list(
+            counts_query.values_list("datecounted", flat=True).order_by(
+                "datetimecounted"
+            )[:100]
+        )
+    ]
+    chart_data_line_total = list(
+        counts_query.values_list("count", flat=True).order_by("datetimecounted")[:100]
+    )
+
+    # for the pie chart (last 100)
+    sum_counts = list(counts_query.values_list("count", flat=True)[:100])
+    chart_labels_pie = sorted(set(sum_counts))
+    chart_data_pie = [sum_counts.count(s) for s in chart_labels_pie]
+
+    return render(
+        request,
+        "species_counts.html",
+        {
+            "obj": obj,
+            "enclosure": enclosure,
+            "counts": counts_records,
             "chart_data_line_total": chart_data_line_total,
             "chart_labels_line": chart_labels_line,
             "chart_data_pie": chart_data_pie,

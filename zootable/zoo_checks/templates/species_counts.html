@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Group counts{% endblock %}
+{% block title %}Species counts{% endblock %}
 
 {% block content %}
 
@@ -9,37 +9,36 @@
 <div id="chart-text-container">
 
     <div>
-        <h3>{{group.species.common_name}}</h3>
+        <h3>{{obj.common_name}}</h3>
 
-        <p><b>Group Accession Number:</b> {{group.accession_number}}</p>
-        <p><b>Species:</b> <em>{{group.species.genus_name}} {{group.species.species_name}}</em></p>
+        <p><b>Species name:</b> <em>{{obj.genus_name}} {{obj.species_name}}</em></p>
+        <p><b>Class:</b> {{obj.class_name}}</p>
+        <p><b>Order:</b> {{obj.order_name}}</p>
+        <p><b>Family:</b> {{obj.family_name}}</p>
         <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
-        <p><b>Population Male</b> {{group.population_male}}</p>
-        <p><b>Population Female</b> {{group.population_female}}</p>
-        <p><b>Population Unknown</b> {{group.population_unknown}}</p>
 
     </div>
 
 
     <div id="chart-div" class="center-align">
 
-        {% if chart_labels_line %}
+        {% if chart_data_pie %}
+
         <h2></h2>
 
         <div id="line-chart-opt" style="display: block">
-            {% include "line_chart_groups.html" with labels=chart_labels_line title="Counts per day" %}
+            {% include "line_chart.html" with labels=chart_labels_line title="Counts per day (last 100)" %}
         </div>
 
         <div id="pie-chart-opt" style="display: none">
-            {% include "pie_chart.html" with data=chart_data_pie labels=chart_labels_pie title="Total counted" %}
+            {% include "pie_chart.html" with data=chart_data_pie labels=chart_labels_pie title="Total counted (last 100)" %}
         </div>
-
-        (last 100)
 
         <p>Chart:
         <a class="waves-effect waves-light btn-small disabled" href="#" id="line-chart-opt-btn" onclick="chartVisible('line-chart-opt')">Line</a>
         <a class="waves-effect waves-light btn-small" href="#" id="pie-chart-opt-btn" onclick="chartVisible('pie-chart-opt')">Pie</a>
         </p>
+
         {% endif %}
 
     </div>
@@ -52,10 +51,7 @@
 <thead>
 <tr>
     <th>Date
-    <th>Male
-    <th>Female
-    <th>Unknown
-    <th>Total
+    <th>Count
     <th>User
     <th>
 </tr>
@@ -64,12 +60,10 @@
 {% for count in counts %}
     <tr>
     <td>{{count.datetimecounted}}
-    <td>{{count.count_male}}</td>
-    <td>{{count.count_female}}</td>
-    <td>{{count.count_unknown}}</td>
+    <td>{{count.count}}</td>
     <td>{{count.total}}
     <td>{{count.user}}
-    <td><a href="{% url 'edit_group_count' group=group.accession_number year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
+    <td><a href="{% url 'edit_species_count' species_slug=obj.slug enclosure_slug=enclosure.slug year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
     </tr>
 {% endfor %}
 </tbody>
