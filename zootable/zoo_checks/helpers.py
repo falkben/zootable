@@ -45,16 +45,15 @@ def set_formset_order(
         formset_dict[spec.id]["formset"] = species_formset[ind]
         formset_dict[spec.id]["prior_counts"] = spec.prior_counts(enclosure)
 
-        try:
-            spec_group = enclosure_groups.get(species=spec)
+        spec_groups = enclosure_groups.filter(species=spec)
+        formset_dict[spec.id]["group_forms"] = []
+        for spec_group in spec_groups:
             group_form = groups_formset[group_count]
             group_count += 1
-        except ObjectDoesNotExist:
-            group_form = None
-            spec_group = None
 
-        formset_dict[spec.id]["group_form"] = group_form
-        formset_dict[spec.id]["group"] = spec_group
+            formset_dict[spec.id]["group_forms"].append(
+                {"group": spec_group, "form": group_form}
+            )
 
         spec_anim_queryset = enclosure_animals.filter(species=spec)
         # creating an index into the animals_formset

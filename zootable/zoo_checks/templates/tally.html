@@ -31,13 +31,13 @@
 
     <tbody>
     {% for spec_dict in formset_order.values %}
-        {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_form %}
+        {% include "species_count_form_snippet.html" with form=spec_dict.formset species=spec_dict.species prior_counts=spec_dict.prior_counts group_form=spec_dict.group_forms %}
 
-        {% if spec_dict.group_form %}
-        <tr class="green lighten-4">
-            {% include "group_form_snippet.html" with form=spec_dict.group_form group=spec_dict.group %}
-        </tr>
-        {% endif %}
+        {% for group_form_dict in spec_dict.group_forms %}
+            <tr class="green lighten-4">
+                {% include "group_form_snippet.html" with form=group_form_dict.form group=group_form_dict.group %}
+            </tr>
+        {% endfor %}
         
         {% for anim, ff in spec_dict.animalformset_index %}
             <tr>
