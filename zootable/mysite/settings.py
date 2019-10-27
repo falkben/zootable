@@ -183,6 +183,7 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_UNIQUE_EMAIL = True
 
+ACCOUNT_SIGNUP_FORM_CLASS = "zoo_checks.forms.SignupForm"
 
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
