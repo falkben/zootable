@@ -63,7 +63,9 @@ def count(request, enclosure_slug):
         .order_by("species__common_name", "name")
     )
     enclosure_groups = (
-        enclosure.groups.all().filter(active=True).order_by("species__common_name")
+        enclosure.groups.all()
+        .filter(active=True)
+        .order_by("species__common_name", "accession_number")
     )
 
     enclosure_species = enclosure.species().order_by("common_name")
