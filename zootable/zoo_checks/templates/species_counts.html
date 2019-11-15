@@ -4,13 +4,22 @@
 
 {% block content %}
 
+<nav class="clean">
+    <div class="nav-wrapper">
+        <div class="col s12 truncate">
+            <a href="{% url 'home' %}" class="breadcrumb">Enclosures</a>
+            <a href="{% url 'count' enclosure.slug %}" class="breadcrumb">{{enclosure}}</a>
+            <a href="#" class="breadcrumb">{{obj.common_name}}</a>
+        </div>
+    </div>
+</nav>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
 
 <div id="chart-text-container">
 
     <div>
-        <h3>{{obj.common_name}}</h3>
-
+        <p><b>Common name:</b> {{obj.common_name}}</p>
         <p><b>Species name:</b> <em>{{obj.genus_name}} {{obj.species_name}}</em></p>
         <p><b>Class:</b> {{obj.class_name}}</p>
         <p><b>Order:</b> {{obj.order_name}}</p>
@@ -23,8 +32,6 @@
     <div id="chart-div" class="center-align">
 
         {% if chart_data_pie %}
-
-        <h2></h2>
 
         <div id="line-chart-opt" style="display: block">
             {% include "line_chart.html" with labels=chart_labels_line title="Counts per day (last 100)" %}

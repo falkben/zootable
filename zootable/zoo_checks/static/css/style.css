@@ -48,6 +48,21 @@ html {
   background-color: #ffd2d2;
 }
 
+/* breadcrumbs */
+.clean {
+  background: none;
+  box-shadow: none;
+}
+.breadcrumb {
+  color: rgba(0, 0, 0, 0.7);
+}
+.breadcrumb:before {
+  color: rgba(0, 0, 0, 0.7);
+}
+.breadcrumb:last-child {
+  color: rgba(0, 0, 0, 1);
+}
+
 /* format of tally table */
 table {
   margin-bottom: 1rem;
@@ -245,10 +260,6 @@ a.increment i {
   flex: 1;
 }
 
-div#chart-div h2 {
-  display: none;
-}
-
 #chart-div {
   max-width: 300px;
 }
@@ -273,9 +284,5 @@ div#chart-div h2 {
 
   #chart-text-container {
     flex-direction: row;
-  }
-
-  div#chart-div h2 {
-    display: block;
   }
 }

@@ -4,14 +4,23 @@
 
 {% block content %}
 
+<nav class="clean">
+    <div class="nav-wrapper">
+        <div class="col s12 truncate">
+            <a href="{% url 'home' %}" class="breadcrumb">Enclosures</a>
+            <a href="{% url 'count' enclosure.slug %}" class="breadcrumb">{{enclosure}}</a>
+            <a href="#" class="breadcrumb">{{group.species.common_name}}</a>
+        </div>
+    </div>
+</nav>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
 
 <div id="chart-text-container">
 
     <div>
-        <h3>{{group.species.common_name}}</h3>
-
         <p><b>Group Accession Number:</b> {{group.accession_number}}</p>
+        <p><b>Common Name:</b> {{group.species.common_name}}</p>
         <p><b>Species:</b> <em>{{group.species.genus_name}} {{group.species.species_name}}</em></p>
         <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
         <p><b>Population Male</b> {{group.population_male}}</p>
@@ -24,7 +33,6 @@
     <div id="chart-div" class="center-align">
 
         {% if chart_labels_line %}
-        <h2></h2>
 
         <div id="line-chart-opt" style="display: block">
             {% include "line_chart_groups.html" with labels=chart_labels_line title="Counts per day" %}

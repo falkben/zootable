@@ -4,10 +4,19 @@
 
 {% block content %}
 
-<h2>Edit Species Count</h2>
+<nav class="clean">
+    <div class="nav-wrapper">
+        <div class="col s12 truncate">
+            <a href="{% url 'home' %}" class="breadcrumb">Enclosures</a>
+            <a href="{% url 'count' enclosure.slug %}" class="breadcrumb">{{enclosure}}</a>
+            <a href="#" class="breadcrumb">Edit species count</a>
+        </div>
+    </div>
+</nav>
 
-<p><b>Species:</b> {{species.common_name}}<em>({{species.genus_name}} {{species.species_name}})</em></td>
-<p><b>Enclosure:</b> {{enclosure}}
+<p><b>Common name:</b> {{species.common_name}}</p>
+<p><b>Species:</b> <em>{{species.genus_name}} {{species.species_name}}</em></p>
+<p><b>Enclosure:</b> {{enclosure}}</p>
 <p><b>Date:</b> {{dateday.date}}</p>
 <p><b>User:</b>
 {% if count.user %}
