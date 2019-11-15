@@ -5,7 +5,7 @@
 {% block content %}
 
 {% if user.is_authenticated %}
-  <h2>Account management for {{ user.username }}</h2>
+  <h3>Account management for {{ user.username }}</h3>
   <p><a href="{% url 'account_reset_password' %}">Reset password</p>
   <p><a href="{% url 'account_email' %}">Manage email</p>
   <p><a href="{% url 'account_logout' %}">Logout</a></p>
