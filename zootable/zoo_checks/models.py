@@ -10,7 +10,7 @@ from .helpers import today_time
 
 
 class Enclosure(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
     slug = AutoSlugField(null=True, default=None, populate_from="name", unique=True)
 
@@ -39,12 +39,12 @@ class Enclosure(models.Model):
 
 
 class Species(models.Model):
-    common_name = models.CharField(max_length=50, unique=True)
-    species_name = models.CharField(max_length=50)
-    genus_name = models.CharField(max_length=50)
-    class_name = models.CharField(max_length=50)
-    order_name = models.CharField(max_length=50)
-    family_name = models.CharField(max_length=50)
+    common_name = models.CharField(max_length=100, unique=True)
+    species_name = models.CharField(max_length=100)
+    genus_name = models.CharField(max_length=100)
+    class_name = models.CharField(max_length=100)
+    order_name = models.CharField(max_length=100)
+    family_name = models.CharField(max_length=100)
 
     slug = AutoSlugField(
         null=True,
@@ -134,8 +134,8 @@ class Animal(AnimalSet):
 
     SEX = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
 
-    name = models.CharField(max_length=40)
-    identifier = models.CharField(max_length=40)
+    name = models.CharField(max_length=100)
+    identifier = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=SEX, default="U")
 
     slug = AutoSlugField(
