@@ -59,6 +59,19 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 
+# EMAIL
+# override these for local dev in local_settings.py
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# for prod
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.zoho.com"
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "default")
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "app@zootable.com"
+DEFAULT_FROM_EMAIL = "no-reply-notifications@zootable.com"
+
 try:
     from .local_settings import *
 except ImportError:
@@ -160,18 +173,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-# EMAIL
-# local dev
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# for prod
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.zoho.com"
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "app@zootable.com"
-DEFAULT_FROM_EMAIL = "no-reply-notifications@zootable.com"
 
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
