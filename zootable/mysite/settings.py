@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     # "allauth.socialaccount.providers.github",
     # "allauth.socialaccount.providers.facebook",
     # "allauth.socialaccount.providers.microsoft",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -105,6 +106,7 @@ MIDDLEWARE = [
     # Simplified static file serving.
     # https://warehouse.python.org/project/whitenoise/
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -196,3 +198,6 @@ ACCOUNT_SIGNUP_FORM_CLASS = "zoo_checks.forms.SignupForm"
 
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
+
+INTERNAL_IPS = ["127.0.0.1", "localhost"]
+
