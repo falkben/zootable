@@ -34,6 +34,46 @@ class Enclosure(models.Model):
 
         return (animal_species | group_species).distinct()
 
+    def accession_numbers(self):
+        animals = self.animals.all().filter(active=True)
+        groups = self.groups.all().filter(active=True)
+
+        return animals, groups
+
+    def accession_numbers_observed(self, day=None):
+        if day is None:
+            day = today_time()
+
+        animals, groups = self.accession_numbers()
+
+        animal_counts = (
+            AnimalCount.objects.all()
+            .filter(
+                animal__in=animals,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("animal__accession_number")
+            .distinct("animal__accession_number")
+        )
+        group_counts = (
+            GroupCount.objects.all()
+            .filter(
+                group__in=groups,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("group__accession_number")
+            .distinct("group__accession_number")
+        )
+
+        return animal_counts.count() + group_counts.count()
+
+    def accession_numbers_total(self):
+        animals, groups = self.accession_numbers()
+
+        return animals.count() + groups.count()
+
     class Meta:
         ordering = ["name"]
 
@@ -98,6 +138,8 @@ class Species(models.Model):
 
 
 class AnimalSet(models.Model):
+    """ Anything with an accession number """
+
     active = models.BooleanField(default=True)
     accession_number = models.PositiveIntegerField(unique=True)
 

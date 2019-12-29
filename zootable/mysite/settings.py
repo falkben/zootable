@@ -44,6 +44,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # SECURE_SSL_REDIRECT = False
 # SESSION_COOKIE_SECURE = False
 # CSRF_COOKIE_SECURE = False
+# EMAIL
+# override these for local dev in local_settings.py
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -58,10 +61,6 @@ CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
-
-# EMAIL
-# override these for local dev in local_settings.py
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # for prod
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -99,6 +98,7 @@ INSTALLED_APPS = [
     # "allauth.socialaccount.providers.github",
     # "allauth.socialaccount.providers.facebook",
     # "allauth.socialaccount.providers.microsoft",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -106,6 +106,7 @@ MIDDLEWARE = [
     # Simplified static file serving.
     # https://warehouse.python.org/project/whitenoise/
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -197,3 +198,6 @@ ACCOUNT_SIGNUP_FORM_CLASS = "zoo_checks.forms.SignupForm"
 
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
+
+INTERNAL_IPS = ["127.0.0.1", "localhost"]
+
