@@ -44,6 +44,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # SECURE_SSL_REDIRECT = False
 # SESSION_COOKIE_SECURE = False
 # CSRF_COOKIE_SECURE = False
+# EMAIL
+# override these for local dev in local_settings.py
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -58,10 +61,6 @@ CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
-
-# EMAIL
-# override these for local dev in local_settings.py
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # for prod
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
