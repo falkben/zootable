@@ -126,15 +126,42 @@ class Species(models.Model):
         return count
 
     def prior_counts(self, enclosure, prior_days=3):
+        """get all the prior counts returned in a list using a single query"""
+
+        # we get the min and max days to search over
+        min_day = today_time() - timezone.timedelta(days=prior_days)
+        max_day = today_time()
+
+        # perform the query, returning only the latest counts, and distinct on dates
+        # need to sort by id because edited counts have the same date/datetimes
+        counts_q = (
+            self.counts.filter(
+                datetimecounted__gte=min_day,
+                datetimecounted__lt=max_day,
+                enclosure=enclosure,
+            )
+            .order_by("-datecounted", "-datetimecounted", "-id")
+            .distinct("datecounted")
+        )
+
+        # create the dict to index into
+        if counts_q:
+            counts_dict = {q.datecounted: q.count for q in counts_q}
+        else:
+            counts_dict = {}
+
+        # iterate over the days and return
         counts = [0] * prior_days
         for p in range(prior_days):
-            day = today_time() - timezone.timedelta(days=p + 1)
-            count = self.get_count_day(enclosure, day)
-            if count is None:
-                count = {"count": 0, "day": day}
-            else:
-                count = {"count": count.count, "day": day}
-            counts[p] = count
+            daytime = today_time() - timezone.timedelta(days=p + 1)
+            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+            day_count = counts_dict.get(day)
+
+            counts[p] = (
+                {"count": day_count, "day": daytime}
+                if day_count
+                else {"count": 0, "day": daytime}
+            )
 
         return counts
 
