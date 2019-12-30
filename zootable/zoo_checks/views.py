@@ -6,11 +6,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db.models import Count, F
 from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
-from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -76,9 +75,16 @@ def count(request, enclosure_slug):
 
     AnimalCountFormset = formset_factory(AnimalCountForm, extra=0)
 
-    init_spec = get_init_spec_count_form(enclosure, enclosure_species)
-    init_group = get_init_group_count_form(enclosure_groups)
-    init_anim = get_init_anim_count_form(enclosure_animals)
+    species_counts_on_day = SpeciesCount.counts_on_day(enclosure_species)
+    init_spec = get_init_spec_count_form(
+        enclosure, enclosure_species, species_counts_on_day
+    )
+
+    group_counts_on_day = GroupCount.counts_on_day(enclosure_groups)
+    init_group = get_init_group_count_form(enclosure_groups, group_counts_on_day)
+
+    animal_counts_on_day = AnimalCount.counts_on_day(enclosure_animals)
+    init_anim = get_init_anim_count_form(enclosure_animals, animal_counts_on_day)
 
     # if this is a POST request we need to process the form data
     if request.method == "POST":
@@ -123,7 +129,12 @@ def count(request, enclosure_slug):
             return redirect("count", enclosure_slug=enclosure.slug)
 
         else:
-            formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
+            (
+                formset_order,
+                species_formset,
+                groups_formset,
+                animals_formset,
+            ) = set_formset_order(
                 enclosure,
                 enclosure_species,
                 enclosure_groups,
@@ -146,7 +157,12 @@ def count(request, enclosure_slug):
             prefix="animals_formset",
             form_kwargs={"is_staff": request.user.is_staff},
         )
-        formset_order, species_formset, groups_formset, animals_formset = set_formset_order(
+        (
+            formset_order,
+            species_formset,
+            groups_formset,
+            animals_formset,
+        ) = set_formset_order(
             enclosure,
             enclosure_species,
             enclosure_groups,

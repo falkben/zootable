@@ -46,6 +46,8 @@ class Enclosure(models.Model):
 
         animals, groups = self.accession_numbers()
 
+        # we don't care if we are getting the correct counts on the day
+        # just the number of disctinct counts
         animal_counts = (
             AnimalCount.objects.all()
             .filter(
@@ -53,7 +55,7 @@ class Enclosure(models.Model):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
-            .order_by("animal__accession_number")
+            .order_by("animal__accession_number", "-datetimecounted")
             .distinct("animal__accession_number")
         )
         group_counts = (
@@ -63,7 +65,7 @@ class Enclosure(models.Model):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
-            .order_by("group__accession_number")
+            .order_by("group__accession_number", "-datetimecounted")
             .distinct("group__accession_number")
         )
 
@@ -322,6 +324,24 @@ class AnimalCount(Count):
             )
         )
 
+    @classmethod
+    def counts_on_day(cls, animals, day=None):
+        """Returns counts on a given day from a list of animals
+        """
+        if day is None:
+            day = today_time()
+
+        return (
+            cls.objects.all()
+            .filter(
+                animal__in=animals,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("animal__accession_number", "-datetimecounted")
+            .distinct("animal__accession_number")
+        )
+
     def update_or_create_from_form(self):
         # we want the identifier to be:
         # user, datecounted, animal, enclosure?
@@ -364,6 +384,24 @@ class GroupCount(Count):
             )
         )
 
+    @classmethod
+    def counts_on_day(cls, groups, day=None):
+        """Returns counts on a given day from a list of groups
+        """
+        if day is None:
+            day = today_time()
+
+        return (
+            cls.objects.all()
+            .filter(
+                group__in=groups,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("group__accession_number", "-datetimecounted")
+            .distinct("group__accession_number")
+        )
+
     def update_or_create_from_form(self):
         # we want the identifier to be:
         # user, datecounted, group, enclosure?
@@ -396,6 +434,24 @@ class SpeciesCount(Count):
                 timezone.localtime(self.datetimecounted).strftime("%Y-%m-%d"),
                 str(self.count),
             )
+        )
+
+    @classmethod
+    def counts_on_day(cls, species, day=None):
+        """Returns the counts on a given day from a list of species
+        """
+        if day is None:
+            day = today_time()
+
+        return (
+            cls.objects.all()
+            .filter(
+                species__in=species,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("species__common_name", "-datetimecounted")
+            .distinct("species__common_name")
         )
 
     def update_or_create_from_form(self):

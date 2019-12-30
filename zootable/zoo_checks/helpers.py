@@ -1,5 +1,4 @@
 from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
 
 from django.conf import settings
 
@@ -69,34 +68,46 @@ def set_formset_order(
     return formset_dict, species_formset, groups_formset, animals_formset
 
 
-def get_init_spec_count_form(enclosure, enclosure_species):
-    # TODO: counts should default to maximum (across users) for the day
-    # TODO: eliminate for loop
+def get_init_spec_count_form(enclosure, enclosure_species, counts):
+
+    # dict of counts to easily access
+    if counts:
+        counts_dict = {cc.species: cc.count for cc in counts}
+    else:
+        counts_dict = {}
 
     # * note: this unpacks the queryset into a list and should be avoided
     init_spec = []
     for sp in enclosure_species:
-        init_spec.append(
-            {
-                "species": sp,
-                "count": sp.current_count(enclosure)["count"],
-                "enclosure": enclosure,
-            }
-        )
+        count = counts_dict.get(sp, 0)  # default to 0 if not found
+        init_spec.append({"species": sp, "count": count, "enclosure": enclosure})
 
     return init_spec
 
 
-def get_init_group_count_form(enclosure_groups):
+def get_init_group_count_form(enclosure_groups, counts):
+
+    if counts:
+        counts_dict = {
+            cc.group: {
+                "count_male": cc.count_male,
+                "count_female": cc.count_female,
+                "count_unknown": cc.count_unknown,
+            }
+            for cc in counts
+        }
+    else:
+        counts_dict = {}
+
     init_group = []
     for group in enclosure_groups:
-        count = group.current_count()
+        count = counts_dict.get(group)
         init_group.append(
             {
                 "group": group,
-                "count_male": 0 if count is None else count.count_male,
-                "count_female": 0 if count is None else count.count_female,
-                "count_unknown": 0 if count is None else count.count_unknown,
+                "count_male": 0 if count is None else count["count_male"],
+                "count_female": 0 if count is None else count["count_female"],
+                "count_unknown": 0 if count is None else count["count_unknown"],
                 "enclosure": group.enclosure,
             }
         )
@@ -104,14 +115,18 @@ def get_init_group_count_form(enclosure_groups):
     return init_group
 
 
-def get_init_anim_count_form(enclosure_animals):
+def get_init_anim_count_form(enclosure_animals, counts):
     # TODO: condition should default to median? condition (across users) for the day
 
-    # make db query to get conditions for all the animals in enclosure
+    if counts:
+        counts_dict = {cc.animal: cc.condition for cc in counts}
+    else:
+        counts_dict = {}
+
     init_anim = [
         {
             "animal": anim,
-            "condition": anim.current_condition,
+            "condition": counts_dict.get(anim) if counts_dict.get(anim) else "",
             "enclosure": anim.enclosure,
         }
         for anim in enclosure_animals
