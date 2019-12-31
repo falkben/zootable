@@ -12,19 +12,33 @@
 </head>
 
 <body>
-  {% include "partials/top_bar.html" %}
-  <div class="container">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="msg msg-{% if message.tags %}{{ message.tags }}{% endif %} z-depth-3">
-          {{ message }}
-        </div>
-      {% endfor %}
-    {% endif %}
+  <header>
+    {% include "partials/top_bar.html" %}
+  </header>
+  
+  <main>
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="msg msg-{% if message.tags %}{{ message.tags }}{% endif %} z-depth-3">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
 
-    {% block content %}
-    {% endblock %}
-  </div>
+      {% block content %}
+      {% endblock %}
+    </div>
+  </main>
+
+  <footer class="page-footer red lighten-4">
+    <div class="container">
+      <div class="row">
+        <a href="mailto:support@zootable.com" class="grey-text text-darken-2">Contact Zootable</a>
+      </div>
+    </div>
+  </footer>
+
   <script type="text/javascript" src="{% static 'js/materialize.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'js/init.js' %}"></script>
 </body>
