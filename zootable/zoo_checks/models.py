@@ -46,6 +46,8 @@ class Enclosure(models.Model):
 
         animals, groups = self.accession_numbers()
 
+        # we don't care if we are getting the correct counts on the day
+        # just the number of disctinct counts
         animal_counts = (
             AnimalCount.objects.all()
             .filter(
@@ -53,7 +55,7 @@ class Enclosure(models.Model):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
-            .order_by("animal__accession_number")
+            .order_by("animal__accession_number", "-datetimecounted")
             .distinct("animal__accession_number")
         )
         group_counts = (
@@ -63,7 +65,7 @@ class Enclosure(models.Model):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
-            .order_by("group__accession_number")
+            .order_by("group__accession_number", "-datetimecounted")
             .distinct("group__accession_number")
         )
 
@@ -124,15 +126,42 @@ class Species(models.Model):
         return count
 
     def prior_counts(self, enclosure, prior_days=3):
+        """get all the prior counts returned in a list using a single query"""
+
+        # we get the min and max days to search over
+        min_day = today_time() - timezone.timedelta(days=prior_days)
+        max_day = today_time()
+
+        # perform the query, returning only the latest counts, and distinct on dates
+        # need to sort by id because edited counts have the same date/datetimes
+        counts_q = (
+            self.counts.filter(
+                datetimecounted__gte=min_day,
+                datetimecounted__lt=max_day,
+                enclosure=enclosure,
+            )
+            .order_by("-datecounted", "-datetimecounted", "-id")
+            .distinct("datecounted")
+        )
+
+        # create the dict to index into
+        if counts_q:
+            counts_dict = {q.datecounted: q.count for q in counts_q}
+        else:
+            counts_dict = {}
+
+        # iterate over the days and return
         counts = [0] * prior_days
         for p in range(prior_days):
-            day = today_time() - timezone.timedelta(days=p + 1)
-            count = self.get_count_day(enclosure, day)
-            if count is None:
-                count = {"count": 0, "day": day}
-            else:
-                count = {"count": count.count, "day": day}
-            counts[p] = count
+            daytime = today_time() - timezone.timedelta(days=p + 1)
+            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+            day_count = counts_dict.get(day)
+
+            counts[p] = (
+                {"count": day_count, "day": daytime}
+                if day_count
+                else {"count": 0, "day": daytime}
+            )
 
         return counts
 
@@ -226,11 +255,34 @@ class Animal(AnimalSet):
     def prior_conditions(self, prior_days=3):
         """Given a set of animals, returns their counts from the prior N days
         """
+
+        # we get the min and max days to search over
+        min_day = today_time() - timezone.timedelta(days=prior_days)
+        max_day = today_time()
+
+        # perform the query, returning only the latest counts, and distinct on dates
+        # need to sort by id because edited counts have the same date/datetimes
+        counts_q = (
+            self.conditions.filter(
+                datetimecounted__gte=min_day, datetimecounted__lt=max_day
+            )
+            .order_by("-datecounted", "-datetimecounted", "-id")
+            .distinct("datecounted")
+        )
+
+        # create the dict to index into
+        if counts_q:
+            counts_dict = {q.datecounted: q for q in counts_q}
+        else:
+            counts_dict = {}
+
         conds = [""] * prior_days
         for p in range(prior_days):
-            day = today_time() - timezone.timedelta(days=p + 1)
-            count = self.count_on_day(day)
-            conds[p] = {"count": count, "day": day}
+            daytime = today_time() - timezone.timedelta(days=p + 1)
+            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+
+            count = counts_dict.get(day)
+            conds[p] = {"count": count, "day": daytime}
 
         return conds
 
@@ -274,10 +326,34 @@ class Group(AnimalSet):
         return self.get_count_day()
 
     def prior_counts(self, prior_days=3):
+        """Prior counts using a single query"""
+
+        # we get the min and max days to search over
+        min_day = today_time() - timezone.timedelta(days=prior_days)
+        max_day = today_time()
+
+        # perform the query, returning only the latest counts, and distinct on dates
+        # need to sort by id because edited counts have the same date/datetimes
+        counts_q = (
+            self.counts.filter(
+                datetimecounted__gte=min_day, datetimecounted__lt=max_day
+            )
+            .order_by("-datecounted", "-datetimecounted", "-id")
+            .distinct("datecounted")
+        )
+
+        # create the dict to index into
+        if counts_q:
+            counts_dict = {q.datecounted: q for q in counts_q}
+        else:
+            counts_dict = {}
+
         counts = [0] * prior_days
         for p in range(prior_days):
-            day = today_time() - timezone.timedelta(days=p + 1)
-            counts[p] = {"count": self.get_count_day(day), "day": day}
+            daytime = today_time() - timezone.timedelta(days=p + 1)
+            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+
+            counts[p] = {"count": counts_dict.get(day), "day": daytime}
 
         return counts
 
@@ -322,6 +398,24 @@ class AnimalCount(Count):
             )
         )
 
+    @classmethod
+    def counts_on_day(cls, animals, day=None):
+        """Returns counts on a given day from a list of animals
+        """
+        if day is None:
+            day = today_time()
+
+        return (
+            cls.objects.all()
+            .filter(
+                animal__in=animals,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("animal__accession_number", "-datetimecounted")
+            .distinct("animal__accession_number")
+        )
+
     def update_or_create_from_form(self):
         # we want the identifier to be:
         # user, datecounted, animal, enclosure?
@@ -364,6 +458,24 @@ class GroupCount(Count):
             )
         )
 
+    @classmethod
+    def counts_on_day(cls, groups, day=None):
+        """Returns counts on a given day from a list of groups
+        """
+        if day is None:
+            day = today_time()
+
+        return (
+            cls.objects.all()
+            .filter(
+                group__in=groups,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("group__accession_number", "-datetimecounted")
+            .distinct("group__accession_number")
+        )
+
     def update_or_create_from_form(self):
         # we want the identifier to be:
         # user, datecounted, group, enclosure?
@@ -396,6 +508,24 @@ class SpeciesCount(Count):
                 timezone.localtime(self.datetimecounted).strftime("%Y-%m-%d"),
                 str(self.count),
             )
+        )
+
+    @classmethod
+    def counts_on_day(cls, species, day=None):
+        """Returns the counts on a given day from a list of species
+        """
+        if day is None:
+            day = today_time()
+
+        return (
+            cls.objects.all()
+            .filter(
+                species__in=species,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .order_by("species__common_name", "-datetimecounted")
+            .distinct("species__common_name")
         )
 
     def update_or_create_from_form(self):
