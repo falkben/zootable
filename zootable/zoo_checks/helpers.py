@@ -88,14 +88,7 @@ def get_init_spec_count_form(enclosure, enclosure_species, counts):
 def get_init_group_count_form(enclosure_groups, counts):
 
     if counts:
-        counts_dict = {
-            cc.group: {
-                "count_male": cc.count_male,
-                "count_female": cc.count_female,
-                "count_unknown": cc.count_unknown,
-            }
-            for cc in counts
-        }
+        counts_dict = {cc.group: cc for cc in counts}
     else:
         counts_dict = {}
 
@@ -105,9 +98,9 @@ def get_init_group_count_form(enclosure_groups, counts):
         init_group.append(
             {
                 "group": group,
-                "count_male": 0 if count is None else count["count_male"],
-                "count_female": 0 if count is None else count["count_female"],
-                "count_unknown": 0 if count is None else count["count_unknown"],
+                "count_male": 0 if count is None else count.count_male,
+                "count_female": 0 if count is None else count.count_female,
+                "count_unknown": 0 if count is None else count.count_unknown,
                 "enclosure": group.enclosure,
             }
         )
