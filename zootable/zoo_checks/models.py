@@ -255,11 +255,35 @@ class Animal(AnimalSet):
     def prior_conditions(self, prior_days=3):
         """Given a set of animals, returns their counts from the prior N days
         """
+
+        # we get the min and max days to search over
+        min_day = today_time() - timezone.timedelta(days=prior_days)
+        max_day = today_time()
+
+        # perform the query, returning only the latest counts, and distinct on dates
+        # need to sort by id because edited counts have the same date/datetimes
+        counts_q = (
+            self.conditions.filter(
+                datetimecounted__gte=min_day, datetimecounted__lt=max_day
+            )
+            .order_by("-datecounted", "-datetimecounted", "-id")
+            .distinct("datecounted")
+        )
+
+        # create the dict to index into
+        if counts_q:
+            counts_dict = {q.datecounted: q for q in counts_q}
+        else:
+            counts_dict = {}
+
         conds = [""] * prior_days
         for p in range(prior_days):
-            day = today_time() - timezone.timedelta(days=p + 1)
-            count = self.count_on_day(day)
-            conds[p] = {"count": count, "day": day}
+            daytime = today_time() - timezone.timedelta(days=p + 1)
+            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+
+            # count = self.count_on_day(day)
+            count = counts_dict.get(day)
+            conds[p] = {"count": count, "day": daytime}
 
         return conds
 
