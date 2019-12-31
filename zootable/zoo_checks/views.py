@@ -59,7 +59,7 @@ def count(request, enclosure_slug):
     enclosure_animals = (
         enclosure.animals.all()
         .filter(active=True)
-        .order_by("species__common_name", "name")
+        .order_by("species__common_name", "name", "accession_number")
     )
     enclosure_groups = (
         enclosure.groups.all()
@@ -212,11 +212,16 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datetimecounted = (
-                    dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
-                )
+                if dateday.date() == timezone.localdate():
+                    obj.datetimecounted = timezone.localtime()
+                else:
+                    obj.datetimecounted = (
+                        dateday
+                        + timezone.timedelta(days=1)
+                        - timezone.timedelta(seconds=1)
+                    )
                 obj.datecounted = dateday
-                obj.save()
+                obj.update_or_create_from_form()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
         form = SpeciesCountForm(initial=init_form)
@@ -262,11 +267,16 @@ def edit_group_count(request, group, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datetimecounted = (
-                    dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
-                )
+                if dateday.date() == timezone.localdate():
+                    obj.datetimecounted = timezone.localtime()
+                else:
+                    obj.datetimecounted = (
+                        dateday
+                        + timezone.timedelta(days=1)
+                        - timezone.timedelta(seconds=1)
+                    )
                 obj.datecounted = dateday
-                obj.save()
+                obj.update_or_create_from_form()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
         form = GroupCountForm(initial=init_form)
@@ -286,14 +296,14 @@ def edit_group_count(request, group, year, month, day):
 
 @login_required
 def animal_counts(request, animal):
-    animal = get_object_or_404(Animal, accession_number=animal)
-    enclosure = animal.enclosure
+    animal_obj = get_object_or_404(Animal, accession_number=animal)
+    enclosure = animal_obj.enclosure
 
     # if the user cannot edit the enclosure, redirect to home
     if request.user not in enclosure.users.all():
         return redirect("home")
 
-    animal_counts_query = AnimalCount.objects.filter(animal=animal).order_by(
+    animal_counts_query = AnimalCount.objects.filter(animal=animal_obj).order_by(
         "-datetimecounted", "-id"
     )
 
@@ -323,7 +333,7 @@ def animal_counts(request, animal):
         request,
         "animal_counts.html",
         {
-            "animal": animal,
+            "animal": animal_obj,
             "enclosure": enclosure,
             "animal_counts": animal_counts_records,
             "chart_data": chart_data,
@@ -467,11 +477,16 @@ def edit_animal_count(request, animal, year, month, day):
                 obj.user = request.user
                 # force insert because otherwise it always updated
                 obj.id = None
-                obj.datetimecounted = (
-                    dateday + timezone.timedelta(days=1) - timezone.timedelta(seconds=1)
-                )
+                if dateday.date() == timezone.localdate():
+                    obj.datetimecounted = timezone.localtime()
+                else:
+                    obj.datetimecounted = (
+                        dateday
+                        + timezone.timedelta(days=1)
+                        - timezone.timedelta(seconds=1)
+                    )
                 obj.datecounted = dateday
-                obj.save()
+                obj.update_or_create_from_form()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
         form = AnimalCountForm(initial=init_form, is_staff=request.user.is_staff)
