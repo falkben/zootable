@@ -75,7 +75,7 @@ def count(request, enclosure_slug):
 
     AnimalCountFormset = formset_factory(AnimalCountForm, extra=0)
 
-    species_counts_on_day = SpeciesCount.counts_on_day(enclosure_species)
+    species_counts_on_day = SpeciesCount.counts_on_day(enclosure_species, enclosure)
     init_spec = get_init_spec_count_form(
         enclosure, enclosure_species, species_counts_on_day
     )
@@ -409,9 +409,9 @@ def species_counts(request, species_slug, enclosure_slug):
     if request.user not in enclosure.users.all():
         return redirect("home")
 
-    counts_query = SpeciesCount.objects.filter(species=obj).order_by(
-        "-datetimecounted", "-id"
-    )
+    counts_query = SpeciesCount.objects.filter(
+        species=obj, enclosure=enclosure
+    ).order_by("-datetimecounted", "-id")
 
     paginator = Paginator(counts_query, 10)
     page = request.GET.get("page")

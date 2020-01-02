@@ -511,8 +511,8 @@ class SpeciesCount(Count):
         )
 
     @classmethod
-    def counts_on_day(cls, species, day=None):
-        """Returns the counts on a given day from a list of species
+    def counts_on_day(cls, species, enclosure, day=None):
+        """Returns the counts on a given day from a list of species for an enclosure
         """
         if day is None:
             day = today_time()
@@ -521,6 +521,7 @@ class SpeciesCount(Count):
             cls.objects.all()
             .filter(
                 species__in=species,
+                enclosure=enclosure,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
