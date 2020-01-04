@@ -27,7 +27,10 @@ document.addEventListener("DOMContentLoaded", function() {
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
-    maxDate: today
+    maxDate: today,
+    autoClose: true,
+    setDefaultDate: true,
+    defaultDate: today
   });
 });
 

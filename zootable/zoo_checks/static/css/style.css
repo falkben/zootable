@@ -296,3 +296,13 @@ a.increment i {
     flex-direction: row;
   }
 }
+
+.content {
+  flex-direction: column;
+}
+
+@media only screen and (min-width: 830px) {
+  .content {
+    flex-direction: row;
+  }
+}

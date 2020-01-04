@@ -10,30 +10,40 @@
     {{ form.non_field_errors }}
     {% csrf_token %}
 
-    <p>
-    Start date
-    <input id="id_start_date" name="start_date" type="text" class="datepicker" options="format:yyyy-mm-dd'">
-    </p>
+    <div class="row">
+        <div class="col s12">
+            Start date
+            <div class="input-field inline">
+                <input id="id_start_date" name="start_date" type="text" class="datepicker inline" options="format:yyyy-mm-dd'">
+            </div>
+        </div>
+    </div>
 
-    <p>
-    End date
-    <input id="id_end_date" name="end_date" type="text" class="datepicker">
-    </p>
+    <div class="row">
+        <div class="col s12">
+            End date
+            <div class="input-field inline">
+                <input id="id_end_date" name="end_date" type="text" class="datepicker">
+            </div>
+        </div>
+    </div>
 
-    <p>
-    Enclosures
-    <ul>
-    {{ form.selected_enclosures.errors }}
-    {% for option in form.selected_enclosures %}
-        <li>
-            <label for="{{option.id_for_label}}">
-                <input id="{{option.id_for_label}}" name="{{option.data.name}}" value="{{option.data.value}}" type="checkbox" />
-                <span>{{option.choice_label}}</span>
-            </label>
-        </li>
-    {% endfor %}
-    </ul>
-    </p>
+    <div class="row">
+        <div class="col s12">
+        Enclosures
+        <ul>
+        {{ form.selected_enclosures.errors }}
+        {% for option in form.selected_enclosures %}
+            <li>
+                <label for="{{option.id_for_label}}">
+                    <input id="{{option.id_for_label}}" name="{{option.data.name}}" value="{{option.data.value}}" type="checkbox" />
+                    <span>{{option.choice_label}}</span>
+                </label>
+            </li>
+        {% endfor %}
+        </ul>
+        </div>
+    </div>
 
     <div class="fixed-action-btn">
         <button class="btn-floating btn-large waves-effect waves-light red" type="submit" name="action">
