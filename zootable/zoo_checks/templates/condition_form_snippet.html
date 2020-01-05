@@ -12,3 +12,8 @@
         <span class="help-block {{ form.error_css_class }}">{{ error }}</span>
     {% endfor %}
 </div>
+
+<div class="input-field" style="margin-top:2rem;margin-bottom:0rem">
+    <textarea name="{{form.comment.html_name}}" id="{{form.comment.id_for_label}}" class="materialize-textarea" style="font-size:.8rem">{{form.comment.value}}</textarea>
+    <label for="{{form.comment.id_for_label}}">Comment</label>
+</div>

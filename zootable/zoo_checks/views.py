@@ -520,6 +520,7 @@ def edit_animal_count(request, animal, year, month, day):
     count = animal.count_on_day(day=dateday)
     init_form = {
         "condition": "" if count is None else count.condition,
+        "comment": "" if count is None else count.comment,
         "animal": animal,
         "enclosure": enclosure,
     }
