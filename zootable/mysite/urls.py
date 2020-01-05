@@ -31,6 +31,16 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("count/<slug:enclosure_slug>/", views.count, name="count"),
     path(
+        "count/<slug:enclosure_slug>/<int:year>/<int:month>/<int:day>/",
+        views.count,
+        name="count",
+    ),
+    path(
+        "tally_date_handler/<slug:enclosure_slug>",
+        views.tally_date_handler,
+        name="tally_date_handler",
+    ),
+    path(
         "edit_species_count/<slug:species_slug>/<slug:enclosure_slug>/<int:year>/<int:month>/<int:day>/",
         views.edit_species_count,
         name="edit_species_count",
@@ -61,4 +71,4 @@ urlpatterns = [
 if settings.DEBUG:
     import debug_toolbar
 
-    urlpatterns = [path("__debug__/", include(debug_toolbar.urls)),] + urlpatterns
+    urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns

@@ -1,3 +1,5 @@
+import datetime
+
 from django import forms
 from django.utils import timezone
 
@@ -92,6 +94,12 @@ class ExportForm(forms.Form):
         cleaned_data = super().clean()
         start_date = cleaned_data.get("start_date")
         end_date = cleaned_data.get("end_date")
+
+        if not isinstance(start_date, datetime.date) or not isinstance(
+            end_date, datetime.date
+        ):
+            raise forms.ValidationError("Not a date")
+
         if end_date < start_date:
             raise forms.ValidationError("End date should be greater than start date.")
 
@@ -119,3 +127,19 @@ class SignupForm(forms.Form):
         user.first_name = self.cleaned_data["first_name"]
         user.last_name = self.cleaned_data["last_name"]
         user.save()
+
+
+class TallyDateForm(forms.Form):
+    tally_date = forms.DateField(required=True)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        target_date = cleaned_data.get("tally_date")
+
+        if not isinstance(target_date, datetime.date):
+            raise forms.ValidationError("Not a date")
+
+        if target_date > timezone.localdate():
+            raise forms.ValidationError("Date needs to be in the past.")
+
+        return cleaned_data

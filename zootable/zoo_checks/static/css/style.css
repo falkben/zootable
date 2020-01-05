@@ -280,10 +280,32 @@ a.increment i {
   max-height: 300px;
 }
 
+.breadcrumbs-date-picker {
+  flex-direction: column;
+}
+
+.tally-table-head {
+  position: sticky;
+  top: 56px;
+  z-index: 2;
+}
+
 /* media queries */
 @media only screen and (min-width: 1150px) {
   .condition-radio {
     flex-direction: row;
+  }
+}
+
+@media only screen and (min-width: 830px) {
+  .breadcrumbs-date-picker {
+    flex-direction: row;
+  }
+}
+
+@media only screen and (min-width: 601px) {
+  .tally-table-head {
+    top: 64px;
   }
 }
 

@@ -18,6 +18,7 @@ from .forms import (
     ExportForm,
     GroupCountForm,
     SpeciesCountForm,
+    TallyDateForm,
     UploadFileForm,
 )
 from .helpers import (
@@ -27,6 +28,7 @@ from .helpers import (
     get_init_spec_count_form,
     qs_to_df,
     set_formset_order,
+    today_time,
 )
 from .ingest import handle_upload, ingest_changesets
 from .models import (
@@ -49,12 +51,23 @@ def home(request):
 
 
 @login_required
-def count(request, enclosure_slug):
+def count(request, enclosure_slug, year=None, month=None, day=None):
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
     # if the user cannot edit the enclosure, redirect to home
     if request.user not in enclosure.users.all():
         return redirect("home")
+
+    if None in [year, month, day]:
+        dateday = today_time()
+        count_today = True
+    else:
+        dateday = (
+            timezone.make_aware(timezone.datetime(year, month, day))
+            + timezone.timedelta(days=1)
+            - timezone.timedelta(seconds=1)
+        )
+        count_today = False
 
     enclosure_animals = (
         enclosure.animals.all()
@@ -75,15 +88,17 @@ def count(request, enclosure_slug):
 
     AnimalCountFormset = formset_factory(AnimalCountForm, extra=0)
 
-    species_counts_on_day = SpeciesCount.counts_on_day(enclosure_species, enclosure)
+    species_counts_on_day = SpeciesCount.counts_on_day(
+        enclosure_species, enclosure, day=dateday
+    )
     init_spec = get_init_spec_count_form(
         enclosure, enclosure_species, species_counts_on_day
     )
 
-    group_counts_on_day = GroupCount.counts_on_day(enclosure_groups)
+    group_counts_on_day = GroupCount.counts_on_day(enclosure_groups, day=dateday)
     init_group = get_init_group_count_form(enclosure_groups, group_counts_on_day)
 
-    animal_counts_on_day = AnimalCount.counts_on_day(enclosure_animals)
+    animal_counts_on_day = AnimalCount.counts_on_day(enclosure_animals, day=dateday)
     init_anim = get_init_anim_count_form(enclosure_animals, animal_counts_on_day)
 
     # if this is a POST request we need to process the form data
@@ -118,6 +133,12 @@ def count(request, enclosure_slug):
                 if form.has_changed():
                     instance = form.save(commit=False)
                     instance.user = request.user
+
+                    # if we're setting a count for a different day than today, set the date/datetime
+                    if not count_today:
+                        instance.datetimecounted = dateday
+                        instance.datecounted = dateday.date()
+
                     instance.update_or_create_from_form()
 
             # process the data in form.cleaned_data as required
@@ -126,7 +147,13 @@ def count(request, enclosure_slug):
                     save_form_in_formset(form)
 
             messages.success(request, "Saved")
-            return redirect("count", enclosure_slug=enclosure.slug)
+            return redirect(
+                "count",
+                enclosure_slug=enclosure.slug,
+                year=dateday.year,
+                month=dateday.month,
+                day=dateday.day,
+            )
 
         else:
             (
@@ -142,6 +169,7 @@ def count(request, enclosure_slug):
                 species_formset,
                 groups_formset,
                 animals_formset,
+                dateday,
             )
 
             messages.error(request, "There was an error processing the form")
@@ -170,19 +198,49 @@ def count(request, enclosure_slug):
             species_formset,
             groups_formset,
             animals_formset,
+            dateday,
         )
 
+    dateform = TallyDateForm()
     return render(
         request,
         "tally.html",
         {
+            "dateday": dateday,
             "enclosure": enclosure,
             "species_formset": species_formset,
             "groups_formset": groups_formset,
             "animals_formset": animals_formset,
             "formset_order": formset_order,
+            "dateform": dateform,
         },
     )
+
+
+@login_required
+def tally_date_handler(request, enclosure_slug):
+
+    # if it's a POST: pull out the date from the cleaned data then send it to "count"
+    if request.method == "POST":
+        form = TallyDateForm(request.POST)
+        if form.is_valid():
+            tzinfo = pytz.timezone(settings.TIME_ZONE)
+
+            target_date = datetime.combine(
+                form.cleaned_data["tally_date"], datetime.min.time(), tzinfo=tzinfo
+            )
+            return redirect(
+                "count",
+                enclosure_slug=enclosure_slug,
+                year=target_date.year,
+                month=target_date.month,
+                day=target_date.day,
+            )
+        else:
+            messages.error(request, "Error in date entered")
+
+    # if it's a GET: just redirect back to count method
+    return redirect("count", enclosure_slug=enclosure_slug)
 
 
 @login_required

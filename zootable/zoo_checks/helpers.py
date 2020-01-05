@@ -26,6 +26,7 @@ def set_formset_order(
     species_formset,
     groups_formset,
     animals_formset,
+    dateday,
 ):
     """Creates an order to display the formsets
     """
@@ -42,7 +43,9 @@ def set_formset_order(
 
         # NOTE: We could avoid the following when there's group's for that species since they are hidden
         formset_dict[spec.id]["formset"] = species_formset[ind]
-        formset_dict[spec.id]["prior_counts"] = spec.prior_counts(enclosure)
+        formset_dict[spec.id]["prior_counts"] = spec.prior_counts(
+            enclosure, ref_date=dateday
+        )
 
         spec_groups = enclosure_groups.filter(species=spec)
         formset_dict[spec.id]["group_forms"] = []
@@ -51,7 +54,11 @@ def set_formset_order(
             group_count += 1
 
             formset_dict[spec.id]["group_forms"].append(
-                {"group": spec_group, "form": group_form}
+                {
+                    "group": spec_group,
+                    "form": group_form,
+                    "prior_counts": spec_group.prior_counts(ref_date=dateday),
+                }
             )
 
         spec_anim_queryset = enclosure_animals.filter(species=spec)
@@ -60,7 +67,9 @@ def set_formset_order(
             range(anim_total, spec_anim_queryset.count() + anim_total)
         )
         formset_dict[spec.id]["animalformset_index"] = zip(
-            spec_anim_queryset, [animals_formset[i] for i in spec_anim_index]
+            spec_anim_queryset,
+            [animals_formset[i] for i in spec_anim_index],
+            [anim.prior_conditions(ref_date=dateday) for anim in spec_anim_queryset],
         )
         # updating total animals
         anim_total += spec_anim_queryset.count()
