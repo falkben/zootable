@@ -284,7 +284,7 @@ a.increment i {
   flex-direction: column;
 }
 
-.tally-table-head {
+.tally-table-head th {
   position: sticky;
   top: 56px;
   z-index: 2;
@@ -304,7 +304,7 @@ a.increment i {
 }
 
 @media only screen and (min-width: 601px) {
-  .tally-table-head {
+  .tally-table-head th {
     top: 64px;
   }
 }
