@@ -6,13 +6,12 @@
 
 {% load template_tags %}
 
-<div class="content" style="display: flex">
-
+<div class="breadcrumbs-date-picker" style="display: flex">
     <nav class="clean" style="flex: 1">
         <div class="nav-wrapper">
             <div class="col s12 truncate">
             <a href="{% url 'home' %}" class="breadcrumb">Enclosures</a>
-            <a href="#" class="breadcrumb">{{enclosure}}</a>
+            <a href="{% url 'count' enclosure.slug %}" class="breadcrumb">{{enclosure}}</a>
             </div>
         </div>
     </nav>
@@ -36,19 +35,26 @@
 {{animals_formset.non_form_errors}}
 {{groups_formset.non_form_errors}}
 
-<form action="{% url 'count' enclosure.slug %}" method="post">
+<form action="{% url 'count' enclosure.slug dateday.year dateday.month dateday.day %}" method="post">
     {% csrf_token %}
     {{species_formset.management_form}}
     {{animals_formset.management_form}}
     {{groups_formset.management_form}}
 
     <table class="striped">
-    <thead>
+    <thead class="tally-table-head">
         <tr class="blue-grey lighten-4">
             <th>Name</th>
-            <th>Today's Count</th>
+            <th>
+                {% now "Y-m-d" as todays_date %}
+                {% if todays_date != dateday|date:"Y-m-d" %}
+                    {{dateday|date:"M d"}}
+                {% else %}
+                    Today's Count
+                {% endif %}
+            </th>
             {% for i in -1|range:"-4,-1" %}
-                <th>{{i|addDays|date:"M d"}}</th>
+                <th>{{i|addDays:dateday|date:"M d"}}</th>
             {% endfor %}
         </tr>
     </thead>
@@ -59,11 +65,11 @@
 
         {% for group_form_dict in spec_dict.group_forms %}
             <tr class="green lighten-4">
-                {% include "group_form_snippet.html" with form=group_form_dict.form group=group_form_dict.group %}
+                {% include "group_form_snippet.html" with form=group_form_dict.form group=group_form_dict.group prior_counts=group_form_dict.prior_counts %}
             </tr>
         {% endfor %}
         
-        {% for anim, ff in spec_dict.animalformset_index %}
+        {% for anim, ff, prior_conditions in spec_dict.animalformset_index %}
             <tr>
             {% include "animal_form_snippet.html" with form=ff %}
             </tr>

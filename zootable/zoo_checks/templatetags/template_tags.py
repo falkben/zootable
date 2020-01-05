@@ -23,6 +23,9 @@ def _range(_min, args=None):
 
 
 @register.filter()
-def addDays(days):
-    newDate = datetime.date.today() + datetime.timedelta(days=days)
+def addDays(days, start_date=None):
+    if start_date is None:
+        start_date = datetime.date.today()
+
+    newDate = start_date + datetime.timedelta(days=days)
     return newDate

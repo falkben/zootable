@@ -58,12 +58,16 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
     if request.user not in enclosure.users.all():
         return redirect("home")
 
-    dateform = TallyDateForm()
-
     if None in [year, month, day]:
         dateday = today_time()
+        count_today = True
     else:
-        dateday = timezone.make_aware(timezone.datetime(year, month, day))
+        dateday = (
+            timezone.make_aware(timezone.datetime(year, month, day))
+            + timezone.timedelta(days=1)
+            - timezone.timedelta(seconds=1)
+        )
+        count_today = False
 
     enclosure_animals = (
         enclosure.animals.all()
@@ -129,6 +133,12 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                 if form.has_changed():
                     instance = form.save(commit=False)
                     instance.user = request.user
+
+                    # if we're setting a count for a different day than today, set the date/datetime
+                    if not count_today:
+                        instance.datetimecounted = dateday
+                        instance.datecounted = dateday.date()
+
                     instance.update_or_create_from_form()
 
             # process the data in form.cleaned_data as required
@@ -137,7 +147,13 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                     save_form_in_formset(form)
 
             messages.success(request, "Saved")
-            return redirect("count", enclosure_slug=enclosure.slug)
+            return redirect(
+                "count",
+                enclosure_slug=enclosure.slug,
+                year=dateday.year,
+                month=dateday.month,
+                day=dateday.day,
+            )
 
         else:
             (
@@ -153,6 +169,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                 species_formset,
                 groups_formset,
                 animals_formset,
+                dateday,
             )
 
             messages.error(request, "There was an error processing the form")
@@ -181,12 +198,15 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
             species_formset,
             groups_formset,
             animals_formset,
+            dateday,
         )
 
+    dateform = TallyDateForm()
     return render(
         request,
         "tally.html",
         {
+            "dateday": dateday,
             "enclosure": enclosure,
             "species_formset": species_formset,
             "groups_formset": groups_formset,
@@ -216,6 +236,8 @@ def tally_date_handler(request, enclosure_slug):
                 month=target_date.month,
                 day=target_date.day,
             )
+        else:
+            messages.error(request, "Error in date entered")
 
     # if it's a GET: just redirect back to count method
     return redirect("count", enclosure_slug=enclosure_slug)

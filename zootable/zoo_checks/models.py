@@ -125,12 +125,15 @@ class Species(models.Model):
             count = {"count": count.count, "day": today_time()}
         return count
 
-    def prior_counts(self, enclosure, prior_days=3):
+    def prior_counts(self, enclosure, prior_days=3, ref_date=None):
         """get all the prior counts returned in a list using a single query"""
 
+        if ref_date is None:
+            ref_date = today_time()
+
         # we get the min and max days to search over
-        min_day = today_time() - timezone.timedelta(days=prior_days)
-        max_day = today_time()
+        min_day = ref_date - timezone.timedelta(days=prior_days)
+        max_day = ref_date
 
         # perform the query, returning only the latest counts, and distinct on dates
         # need to sort by id because edited counts have the same date/datetimes
@@ -153,8 +156,8 @@ class Species(models.Model):
         # iterate over the days and return
         counts = [0] * prior_days
         for p in range(prior_days):
-            daytime = today_time() - timezone.timedelta(days=p + 1)
-            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+            daytime = ref_date - timezone.timedelta(days=p + 1)
+            day = ref_date.date() - timezone.timedelta(days=p + 1)
             day_count = counts_dict.get(day)
 
             counts[p] = (
@@ -252,13 +255,16 @@ class Animal(AnimalSet):
         else:
             return ""
 
-    def prior_conditions(self, prior_days=3):
+    def prior_conditions(self, prior_days=3, ref_date=None):
         """Given a set of animals, returns their counts from the prior N days
         """
 
+        if ref_date is None:
+            ref_date = today_time()
+
         # we get the min and max days to search over
-        min_day = today_time() - timezone.timedelta(days=prior_days)
-        max_day = today_time()
+        min_day = ref_date - timezone.timedelta(days=prior_days)
+        max_day = ref_date
 
         # perform the query, returning only the latest counts, and distinct on dates
         # need to sort by id because edited counts have the same date/datetimes
@@ -278,8 +284,8 @@ class Animal(AnimalSet):
 
         conds = [""] * prior_days
         for p in range(prior_days):
-            daytime = today_time() - timezone.timedelta(days=p + 1)
-            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+            daytime = ref_date - timezone.timedelta(days=p + 1)
+            day = ref_date.date() - timezone.timedelta(days=p + 1)
 
             count = counts_dict.get(day)
             conds[p] = {"count": count, "day": daytime}
@@ -325,12 +331,15 @@ class Group(AnimalSet):
     def current_count(self):
         return self.get_count_day()
 
-    def prior_counts(self, prior_days=3):
+    def prior_counts(self, prior_days=3, ref_date=None):
         """Prior counts using a single query"""
 
+        if ref_date is None:
+            ref_date = today_time()
+
         # we get the min and max days to search over
-        min_day = today_time() - timezone.timedelta(days=prior_days)
-        max_day = today_time()
+        min_day = ref_date - timezone.timedelta(days=prior_days)
+        max_day = ref_date
 
         # perform the query, returning only the latest counts, and distinct on dates
         # need to sort by id because edited counts have the same date/datetimes
@@ -350,8 +359,8 @@ class Group(AnimalSet):
 
         counts = [0] * prior_days
         for p in range(prior_days):
-            daytime = today_time() - timezone.timedelta(days=p + 1)
-            day = timezone.localdate() - timezone.timedelta(days=p + 1)
+            daytime = ref_date - timezone.timedelta(days=p + 1)
+            day = ref_date.date() - timezone.timedelta(days=p + 1)
 
             counts[p] = {"count": counts_dict.get(day), "day": daytime}
 
