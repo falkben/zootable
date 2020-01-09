@@ -45,5 +45,8 @@
     <i class="material-icons tiny-small grey-text text-darken-4">edit</i>
     </a>
     </p>
+    {% if pcond.count and pcond.count.comment %}
+        <div class="condition-comment-p left-align">{{pcond.count.comment|escape|linebreaks}}</div>
+    {% endif %}
 </td>
 {% endfor %}

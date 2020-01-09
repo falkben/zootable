@@ -50,11 +50,22 @@ function chartVisible(id) {
   if (index > -1) {
     elems.splice(index, 1);
   }
-  console.log(elems);
 
   elems.forEach((item, index) => {
-    // console.log(item);
     document.getElementById(item).style.display = "none";
     document.getElementById(item + "-btn").classList.remove("disabled");
   });
 }
+
+document
+  .querySelectorAll(".condition-radio input[type=radio]")
+  .forEach(elem => {
+    elem.addEventListener("click", function(e) {
+      // needs attention causes comment field to appear
+      let comment_field =
+        elem.parentElement.parentElement.parentElement.nextElementSibling;
+      if (elem.value === "NA" || elem.value === "NS") {
+        comment_field.style.display = "block";
+      }
+    });
+  });
