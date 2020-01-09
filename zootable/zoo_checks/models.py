@@ -392,6 +392,8 @@ class AnimalCount(Count):
 
     condition = models.CharField(max_length=2, choices=STAFF_CONDITIONS, null=True)
 
+    comment = models.TextField(blank=True, default="")
+
     animal = models.ForeignKey(
         Animal, on_delete=models.CASCADE, related_name="conditions"
     )
@@ -433,9 +435,12 @@ class AnimalCount(Count):
             datecounted=self.datecounted,
             animal=self.animal,
             enclosure=self.enclosure,
+            # The update_or_create method tries to fetch an object from database based on the given kwargs.
+            # If a match is found, it updates the fields passed in the defaults dictionary.
             defaults={
                 "datetimecounted": self.datetimecounted,
                 "condition": self.condition,
+                "comment": self.comment,
             },
         )
 

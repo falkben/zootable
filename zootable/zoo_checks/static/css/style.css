@@ -87,6 +87,7 @@ td,
 th {
   line-height: 1rem;
   border-radius: 0;
+  vertical-align: top;
 }
 
 /* form stuff */
@@ -182,6 +183,14 @@ label [type="radio"][value="NS"]:checked + span,
   color: #f57c00;
 }
 
+.condition-comment-p {
+  margin-top: 1rem;
+}
+
+.condition-comment-p p {
+  text-align: left;
+}
+
 /* form ul {
   display: inline-flex;
   list-style: none;
@@ -251,9 +260,15 @@ label [type="radio"][value="NS"]:checked + span,
   font-style: italic;
 }
 
+.increment-buttons {
+  display: inline-flex;
+  flex-direction: column;
+}
+
 a.increment {
   width: 20px !important;
   height: 20px !important;
+  margin-top: 0.25rem;
 }
 
 a.increment i {
@@ -288,6 +303,12 @@ a.increment i {
   position: sticky;
   top: 56px;
   z-index: 2;
+}
+
+.condition-comment {
+  margin-top: 1.6rem;
+  margin-bottom: 0rem;
+  display: none;
 }
 
 /* media queries */

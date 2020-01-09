@@ -62,11 +62,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
         dateday = today_time()
         count_today = True
     else:
-        dateday = (
-            timezone.make_aware(timezone.datetime(year, month, day))
-            + timezone.timedelta(days=1)
-            - timezone.timedelta(seconds=1)
-        )
+        dateday = timezone.make_aware(timezone.datetime(year, month, day))
         count_today = False
 
     enclosure_animals = (
@@ -136,7 +132,11 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
                     # if we're setting a count for a different day than today, set the date/datetime
                     if not count_today:
-                        instance.datetimecounted = dateday
+                        instance.datetimecounted = (
+                            dateday
+                            + timezone.timedelta(days=1)
+                            - timezone.timedelta(seconds=1)
+                        )
                         instance.datecounted = dateday.date()
 
                     instance.update_or_create_from_form()
@@ -520,6 +520,7 @@ def edit_animal_count(request, animal, year, month, day):
     count = animal.count_on_day(day=dateday)
     init_form = {
         "condition": "" if count is None else count.condition,
+        "comment": "" if count is None else count.comment,
         "animal": animal,
         "enclosure": enclosure,
     }

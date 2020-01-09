@@ -121,14 +121,15 @@ def get_init_anim_count_form(enclosure_animals, counts):
     # TODO: condition should default to median? condition (across users) for the day
 
     if counts:
-        counts_dict = {cc.animal: cc.condition for cc in counts}
+        counts_dict = {cc.animal: cc for cc in counts}
     else:
         counts_dict = {}
 
     init_anim = [
         {
             "animal": anim,
-            "condition": counts_dict.get(anim) if counts_dict.get(anim) else "",
+            "condition": counts_dict.get(anim).condition if counts_dict.get(anim) else "",
+            "comment": counts_dict.get(anim).comment if counts_dict.get(anim) else "",
             "enclosure": anim.enclosure,
         }
         for anim in enclosure_animals

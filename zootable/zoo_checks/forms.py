@@ -9,7 +9,7 @@ from .models import AnimalCount, Enclosure, GroupCount, SpeciesCount
 class AnimalCountForm(forms.ModelForm):
     class Meta:
         model = AnimalCount
-        fields = ["condition", "animal", "enclosure"]
+        fields = ["condition", "comment", "animal", "enclosure"]
 
         # hide animal form element
         widgets = {"animal": forms.HiddenInput(), "enclosure": forms.HiddenInput()}

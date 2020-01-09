@@ -12,3 +12,12 @@
         <span class="help-block {{ form.error_css_class }}">{{ error }}</span>
     {% endfor %}
 </div>
+
+<div class="input-field condition-comment"
+{% if form.comment.value or field.value == "NA" or field.value == "NS" %}
+    style="display:block"
+{% endif %}
+>
+    <textarea name="{{form.comment.html_name}}" id="{{form.comment.id_for_label}}" class="materialize-textarea" style="font-size:.8rem">{{form.comment.value}}</textarea>
+    <label for="{{form.comment.id_for_label}}">Comment</label>
+</div>
