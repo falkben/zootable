@@ -43,9 +43,9 @@
 
     <table class="striped">
     <thead class="tally-table-head">
-        <tr class="blue-grey lighten-4">
-            <th>Name</th>
-            <th>
+        <tr>
+            <th class="blue-grey lighten-4">Name</th>
+            <th class="blue-grey lighten-4">
                 {% now "Y-m-d" as todays_date %}
                 {% if todays_date != dateday|date:"Y-m-d" %}
                     {{dateday|date:"M d"}}
@@ -54,7 +54,7 @@
                 {% endif %}
             </th>
             {% for i in -1|range:"-4,-1" %}
-                <th>{{i|addDays:dateday|date:"M d"}}</th>
+                <th class="blue-grey lighten-4">{{i|addDays:dateday|date:"M d"}}</th>
             {% endfor %}
         </tr>
     </thead>
