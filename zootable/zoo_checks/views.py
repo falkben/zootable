@@ -60,20 +60,19 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
     if None in [year, month, day]:
         dateday = today_time()
-        count_today = True
     else:
         dateday = timezone.make_aware(timezone.datetime(year, month, day))
+
+    if dateday.date() == today_time().date():
+        count_today = True
+    else:
         count_today = False
 
-    enclosure_animals = (
-        enclosure.animals.all()
-        .filter(active=True)
-        .order_by("species__common_name", "name", "accession_number")
+    enclosure_animals = enclosure.animals.filter(active=True).order_by(
+        "species__common_name", "name", "accession_number"
     )
-    enclosure_groups = (
-        enclosure.groups.all()
-        .filter(active=True)
-        .order_by("species__common_name", "accession_number")
+    enclosure_groups = enclosure.groups.filter(active=True).order_by(
+        "species__common_name", "accession_number"
     )
 
     enclosure_species = enclosure.species().order_by("common_name")
@@ -125,7 +124,6 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
             def save_form_in_formset(form):
                 # TODO: move this into model/(form?) and overwrite the save method
-                # TODO: save should be update_or_create w/ user and date (so each user has MAX 1 count/day/spec)
                 if form.has_changed():
                     instance = form.save(commit=False)
                     instance.user = request.user
@@ -695,10 +693,12 @@ def export(request):
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
-            enclosure_names = (enc.slug for enc in enclosures)
+            enclosure_names = "_".join((enc.slug for enc in enclosures))
+            start_date_str = start_date.strftime("%Y%m%d")
+            end_date_str = (end_date - timezone.timedelta(days=1)).strftime("%Y%m%d")
             response[
                 "Content-Disposition"
-            ] = f'attachment; filename="zootable_export_{"_".join(enclosure_names)}_{start_date.strftime("%Y%m%d")}_{(end_date- timezone.timedelta(days=1)).strftime("%Y%m%d")}.xlsx"'
+            ] = f'attachment; filename="zootable_export_{enclosure_names}_{start_date_str}_{end_date_str}.xlsx"'
 
             # create xlsx object and put it into the response using pandas
             with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
