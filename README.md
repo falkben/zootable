@@ -80,7 +80,7 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
    `pytest zootable`
 
-1. In vscode, add command line argument "zootable":
+1. In vscode, enable pytest and add command line argument "zootable":
 
    ```json
    "python.testing.pytestArgs": [

@@ -630,44 +630,36 @@ def export(request):
         if form.is_valid():
             enclosures = form.cleaned_data["selected_enclosures"]
 
-            tzinfo = pytz.timezone(settings.TIME_ZONE)
+            start_date = form.cleaned_data["start_date"]
+            end_date = form.cleaned_data["end_date"]
 
-            start_date = datetime.combine(
-                form.cleaned_data["start_date"], datetime.min.time(), tzinfo=tzinfo
-            )
-            end_date = datetime.combine(
-                form.cleaned_data["end_date"], datetime.min.time(), tzinfo=tzinfo
-            ) + timezone.timedelta(days=1)
-
+            # TODO: these could be abstracted to a function that returns this for any model
             animal_counts = (
                 AnimalCount.objects.filter(
                     enclosure__in=enclosures,
-                    datetimecounted__gte=start_date,
-                    datetimecounted__lt=end_date,
+                    datecounted__gte=start_date,
+                    datecounted__lte=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
-                .order_by("dateonlycounted", "animal_id")
-                .distinct("dateonlycounted", "animal_id")
+                .order_by("datecounted", "animal_id", "datetimecounted")
+                .distinct("datecounted", "animal_id")
             )
             group_counts = (
                 GroupCount.objects.filter(
                     enclosure__in=enclosures,
-                    datetimecounted__gte=start_date,
-                    datetimecounted__lt=end_date,
+                    datecounted__gte=start_date,
+                    datecounted__lte=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
-                .order_by("dateonlycounted", "group_id")
-                .distinct("dateonlycounted", "group_id")
+                .order_by("datecounted", "group_id", "datetimecounted")
+                .distinct("datecounted", "group_id")
             )
             species_counts = (
                 SpeciesCount.objects.filter(
                     enclosure__in=enclosures,
-                    datetimecounted__gte=start_date,
-                    datetimecounted__lt=end_date,
+                    datecounted__gte=start_date,
+                    datecounted__lte=end_date,
                 )
-                .annotate(dateonlycounted=TruncDate("datetimecounted", tzinfo=tzinfo))
-                .order_by("dateonlycounted", "species_id")
-                .distinct("dateonlycounted", "species_id")
+                .order_by("datecounted", "species_id", "datetimecounted")
+                .distinct("datecounted", "species_id")
             )
 
             # convert to pandas dataframe
@@ -695,7 +687,7 @@ def export(request):
 
             enclosure_names = "_".join((enc.slug for enc in enclosures))
             start_date_str = start_date.strftime("%Y%m%d")
-            end_date_str = (end_date - timezone.timedelta(days=1)).strftime("%Y%m%d")
+            end_date_str = end_date.strftime("%Y%m%d")
             response[
                 "Content-Disposition"
             ] = f'attachment; filename="zootable_export_{enclosure_names}_{start_date_str}_{end_date_str}.xlsx"'

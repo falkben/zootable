@@ -128,7 +128,9 @@ def get_init_anim_count_form(enclosure_animals, counts):
     init_anim = [
         {
             "animal": anim,
-            "condition": counts_dict.get(anim).condition if counts_dict.get(anim) else "",
+            "condition": counts_dict.get(anim).condition
+            if counts_dict.get(anim)
+            else "",
             "comment": counts_dict.get(anim).comment if counts_dict.get(anim) else "",
             "enclosure": anim.enclosure,
         }
@@ -170,7 +172,7 @@ def qs_to_df(qs, fields):
         else:
             field_names.append(f.name)
 
-    queryset_vals = list(qs.values(*field_names, "dateonlycounted"))
+    queryset_vals = qs.values(*field_names)
     df = pd.DataFrame(queryset_vals)
 
     return df
@@ -180,17 +182,20 @@ def clean_df(df):
     """cleans the counts dataframe for export to excel
     """
 
-    # remove dateonlycounted
-    if "dateonlycounted" in df.columns:
-        df = df.drop(columns=["dateonlycounted"])
-
     if "id" in df.columns:
         df = df.drop(columns=["id"])
 
-    # remove timezones from datetimes (for excel) but still display datetime for the app's timezone
+    # remove timezone from datetimes
+    # convert times to app's timezone
+    # get only time string
     if "datetimecounted" in df.columns:
-        df["datetimecounted"] = df["datetimecounted"].dt.tz_convert(settings.TIME_ZONE)
-        df["datetimecounted"] = df["datetimecounted"].dt.tz_localize(None)
+        df["time_counted"] = (
+            df["datetimecounted"]
+            .dt.tz_convert(settings.TIME_ZONE)
+            .dt.tz_localize(None)
+            .dt.strftime("%H:%M:%S")
+        )
+    df = df.drop(columns=["datetimecounted"])
 
     # combining columns for species
     items = ("common_name", "genus_name", "species_name")
@@ -214,13 +219,12 @@ def clean_df(df):
     )
     df = df.drop(columns=cols)
 
-    # split the datetime into separate columns
-    df["date_counted"] = df["datetimecounted"].dt.date
-    df["time_counted"] = df["datetimecounted"].dt.strftime("%H:%M:%S")
-    df = df.drop(columns=["datetimecounted"])
-
     # making col names prettier
-    rename_cols = {"enclosure__name": "enclosure", "user__username": "user"}
+    rename_cols = {
+        "enclosure__name": "enclosure",
+        "user__username": "user",
+        "datecounted": "date_counted",
+    }
     df = df.rename(columns=rename_cols)
 
     # sorting the values
