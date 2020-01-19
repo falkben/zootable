@@ -1,7 +1,6 @@
 import datetime
 
 import pandas as pd
-import pytest
 from django.utils import timezone
 from django_mock_queries.query import MockField, MockModel, MockSet
 
@@ -23,7 +22,7 @@ def test_qs_to_df():
         "enclosure_id": 12,
         "condition": "SE",
         "animal_id": 29,
-        "dateonlycounted": datetime.date(2019, 9, 26),
+        "datecounted": datetime.date(2019, 9, 26),
     }
     test_df = pd.DataFrame([test_data])
     qs = MockSet(MockModel(test_data))
@@ -40,7 +39,7 @@ def test_qs_to_df():
         "count_female": 0,
         "count_unknown": 25,
         "group_id": 1,
-        "dateonlycounted": datetime.date(2019, 9, 26),
+        "datecounted": datetime.date(2019, 9, 26),
     }
     test_df = pd.DataFrame([test_data])
     qs = MockSet(MockModel(test_data))
@@ -55,7 +54,7 @@ def test_qs_to_df():
         "enclosure_id": 5,
         "count": 3,
         "species_id": 10,
-        "dateonlycounted": datetime.date(2019, 9, 27),
+        "datecounted": datetime.date(2019, 9, 27),
     }
     test_df = pd.DataFrame([test_data])
     qs = MockSet(MockModel(test_data))
@@ -72,7 +71,7 @@ def test_clean_df():
             "user__username": 4,
             "enclosure__name": "encl_test_name",
             "condition": "SE",
-            "dateonlycounted": timestamp.date(),
+            "datecounted": timestamp.date(),
         }
     ]
     test_df = pd.DataFrame(test_data)

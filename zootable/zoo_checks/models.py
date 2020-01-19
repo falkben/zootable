@@ -23,20 +23,18 @@ class Enclosure(models.Model):
         """Combines exhibit's animals' species and groups' species together 
         into a distinct queryset of species
         """
-        animals = (
-            self.animals.all()
-            .filter(active=True)
-            .order_by("species__common_name", "name")
+        animals = self.animals.filter(active=True).order_by(
+            "species__common_name", "name"
         )
-        groups = self.groups.all().filter(active=True).order_by("species__common_name")
+        groups = self.groups.filter(active=True).order_by("species__common_name")
         animal_species = Species.objects.filter(animal__in=animals)
         group_species = Species.objects.filter(group__in=groups)
 
         return (animal_species | group_species).distinct()
 
     def accession_numbers(self):
-        animals = self.animals.all().filter(active=True)
-        groups = self.groups.all().filter(active=True)
+        animals = self.animals.filter(active=True)
+        groups = self.groups.filter(active=True)
 
         return animals, groups
 
@@ -49,8 +47,7 @@ class Enclosure(models.Model):
         # we don't care if we are getting the correct counts on the day
         # just the number of disctinct counts
         animal_counts = (
-            AnimalCount.objects.all()
-            .filter(
+            AnimalCount.objects.filter(
                 animal__in=animals,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
@@ -59,8 +56,7 @@ class Enclosure(models.Model):
             .distinct("animal__accession_number")
         )
         group_counts = (
-            GroupCount.objects.all()
-            .filter(
+            GroupCount.objects.filter(
                 group__in=groups,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
@@ -417,8 +413,7 @@ class AnimalCount(Count):
             day = today_time()
 
         return (
-            cls.objects.all()
-            .filter(
+            cls.objects.filter(
                 animal__in=animals,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
@@ -480,8 +475,7 @@ class GroupCount(Count):
             day = today_time()
 
         return (
-            cls.objects.all()
-            .filter(
+            cls.objects.filter(
                 group__in=groups,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
@@ -532,8 +526,7 @@ class SpeciesCount(Count):
             day = today_time()
 
         return (
-            cls.objects.all()
-            .filter(
+            cls.objects.filter(
                 species__in=species,
                 enclosure=enclosure,
                 datetimecounted__gte=day,
