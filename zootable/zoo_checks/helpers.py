@@ -1,8 +1,25 @@
+import pandas as pd
+from django.conf import settings
+from django.contrib import messages
 from django.utils import timezone
 
-from django.conf import settings
 
-import pandas as pd
+def redirect_if_not_permitted(request, enclosure):
+    """
+    Returns
+    -------
+
+    True if user does not belong to enclosure or if not superuser
+
+    False if user belongs to enclosure or is superuser
+    """
+    if request.user in enclosure.users.all() or request.user.is_superuser:
+        return False
+
+    messages.error(
+        request, f"You do not have permissions to access enclosure {enclosure.name}"
+    )
+    return True
 
 
 def today_time():
@@ -156,6 +173,9 @@ def qs_to_df(qs, fields):
                 field_names.extend(
                     [
                         field_name_constructor.format(f.name, "accession_number"),
+                        field_name_constructor.format(f.name, "species__class_name"),
+                        field_name_constructor.format(f.name, "species__order_name"),
+                        field_name_constructor.format(f.name, "species__family_name"),
                         field_name_constructor.format(f.name, "species__genus_name"),
                         field_name_constructor.format(f.name, "species__species_name"),
                         field_name_constructor.format(f.name, "species__common_name"),
@@ -164,6 +184,9 @@ def qs_to_df(qs, fields):
             elif f.name == "species":
                 field_names.extend(
                     [
+                        field_name_constructor.format(f.name, "class_name"),
+                        field_name_constructor.format(f.name, "order_name"),
+                        field_name_constructor.format(f.name, "family_name"),
                         field_name_constructor.format(f.name, "genus_name"),
                         field_name_constructor.format(f.name, "species_name"),
                         field_name_constructor.format(f.name, "common_name"),
@@ -198,7 +221,14 @@ def clean_df(df):
     df = df.drop(columns=["datetimecounted"])
 
     # combining columns for species
-    items = ("common_name", "genus_name", "species_name")
+    items = (
+        "common_name",
+        "class_name",
+        "order_name",
+        "family_name",
+        "genus_name",
+        "species_name",
+    )
     for item in items:
         cols = [
             f"species__{item}",
@@ -238,6 +268,9 @@ def clean_df(df):
         "enclosure",
         "date_counted",
         "time_counted",
+        "class_name",
+        "order_name",
+        "family_name",
         "genus_name",
         "species_name",
         "common_name",

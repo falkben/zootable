@@ -1,16 +1,22 @@
 {% if user.is_authenticated %}
-    <li><a href="{% url 'account_management' %}">Profile</a>
-    {% if user.is_superuser %}
+    <li>
+        <a href="{% url 'account_management' %}">
+            <i class="material-icons left hide-on-med-and-down">person</i>{{ user.first_name }}
+        </a>
+    </li>
+    {% if user.is_staff %}
     <li><a href="{% url 'admin:index' %}">
         Admin
     </a>
+    </li>
     <li><a href="{% url 'ingest_form' %}">
         Upload
     </a>
+    </li>
     {% endif %}
-    <li><a href="{% url 'export' %}">Export</a>
-    <li><a href="{% url 'account_logout' %}">Logout</a>
+    <li><a href="{% url 'export' %}">Export</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
 {% else %}
-    <li><a href="{% url 'account_login' %}">Login</a>
-    <li><a href="{% url 'account_signup' %}">Sign up</a>
+    <li><a href="{% url 'account_login' %}">Login</a></li>
+    <li><a href="{% url 'account_signup' %}">Sign up</a></li>
 {% endif %}

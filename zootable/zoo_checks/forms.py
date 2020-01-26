@@ -14,14 +14,8 @@ class AnimalCountForm(forms.ModelForm):
         # hide animal form element
         widgets = {"animal": forms.HiddenInput(), "enclosure": forms.HiddenInput()}
 
-    def __init__(self, *args, **kwargs):
-        is_staff = kwargs.pop("is_staff", None)
-        super(AnimalCountForm, self).__init__(*args, **kwargs)
-        if is_staff:
-            self.fields["condition"].choices = AnimalCount.STAFF_CONDITIONS
-
     condition = forms.ChoiceField(
-        choices=AnimalCount.CONDITIONS,
+        choices=AnimalCount.STAFF_CONDITIONS,
         widget=forms.RadioSelect,
         label="",
         required=False,

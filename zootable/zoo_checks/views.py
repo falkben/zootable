@@ -7,7 +7,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Count, F
-from django.db.models.functions import TruncDate
 from django.forms import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -27,6 +26,7 @@ from .helpers import (
     get_init_group_count_form,
     get_init_spec_count_form,
     qs_to_df,
+    redirect_if_not_permitted,
     set_formset_order,
     today_time,
 )
@@ -42,10 +42,27 @@ from .models import (
 )
 
 
+""" helpers that need models """
+
+
+def get_accessible_enclosures(request):
+    # superuser sees all enclosures
+    if not request.user.is_superuser:
+        enclosures = Enclosure.objects.filter(users=request.user)
+    else:
+        enclosures = Enclosure.objects.all()
+
+    return enclosures
+
+
+""" views """
+
+
 @login_required
 # TODO: logins may not be sufficient - user a part of a group?
+# TODO: add pagination
 def home(request):
-    enclosures = Enclosure.objects.filter(users=request.user)
+    enclosures = get_accessible_enclosures(request)
 
     return render(request, "home.html", {"enclosures": enclosures})
 
@@ -54,8 +71,7 @@ def home(request):
 def count(request, enclosure_slug, year=None, month=None, day=None):
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     if None in [year, month, day]:
@@ -109,10 +125,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
         # TODO: Test to make sure we are editing the correct animal counts
         animals_formset = AnimalCountFormset(
-            request.POST,
-            initial=init_anim,
-            prefix="animals_formset",
-            form_kwargs={"is_staff": request.user.is_staff},
+            request.POST, initial=init_anim, prefix="animals_formset",
         )
 
         # check whether it's valid:
@@ -179,9 +192,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
         )
         groups_formset = GroupCountFormset(initial=init_group, prefix="groups_formset")
         animals_formset = AnimalCountFormset(
-            initial=init_anim,
-            prefix="animals_formset",
-            form_kwargs={"is_staff": request.user.is_staff},
+            initial=init_anim, prefix="animals_formset",
         )
         (
             formset_order,
@@ -217,6 +228,8 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
 @login_required
 def tally_date_handler(request, enclosure_slug):
+    """ Called from tally page to change date tally
+    """
 
     # if it's a POST: pull out the date from the cleaned data then send it to "count"
     if request.method == "POST":
@@ -246,8 +259,7 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
     species = get_object_or_404(Species, slug=species_slug)
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
@@ -300,8 +312,7 @@ def edit_group_count(request, group, year, month, day):
     group = get_object_or_404(Group, accession_number=group)
     enclosure = group.enclosure
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
@@ -355,8 +366,7 @@ def animal_counts(request, animal):
     animal_obj = get_object_or_404(Animal, accession_number=animal)
     enclosure = animal_obj.enclosure
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     animal_counts_query = AnimalCount.objects.filter(animal=animal_obj).order_by(
@@ -403,8 +413,7 @@ def group_counts(request, group):
     group = get_object_or_404(Group, accession_number=group)
     enclosure = group.enclosure
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     group_counts_query = GroupCount.objects.filter(group=group).order_by(
@@ -461,8 +470,7 @@ def species_counts(request, species_slug, enclosure_slug):
     obj = get_object_or_404(Species, slug=species_slug)
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     counts_query = SpeciesCount.objects.filter(
@@ -510,8 +518,7 @@ def edit_animal_count(request, animal, year, month, day):
     animal = get_object_or_404(Animal, accession_number=animal)
     enclosure = animal.enclosure
 
-    # if the user cannot edit the enclosure, redirect to home
-    if request.user not in enclosure.users.all():
+    if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
@@ -561,7 +568,7 @@ def edit_animal_count(request, animal, year, month, day):
     )
 
 
-@user_passes_test(lambda u: u.is_superuser, redirect_field_name=None)
+@user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
 def ingest_form(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
@@ -587,7 +594,7 @@ def ingest_form(request):
     return render(request, "upload_form.html", {"form": form})
 
 
-@user_passes_test(lambda u: u.is_superuser, redirect_field_name=None)
+@user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
 def confirm_upload(request):
     changesets = request.session.get("changesets")
     upload_file = request.session.get("upload_file")
@@ -623,12 +630,15 @@ def confirm_upload(request):
 
 @login_required
 def export(request):
-    enclosures = Enclosure.objects.filter(users=request.user)
+    accessible_enclosures = get_accessible_enclosures(request)
 
     if request.method == "POST":
         form = ExportForm(request.POST)
         if form.is_valid():
-            enclosures = form.cleaned_data["selected_enclosures"]
+            selected_enclosures = form.cleaned_data["selected_enclosures"]
+            # limit to only accessible enclosures
+            # TODO: test to check we cannot export data we aren't allowed to access
+            enclosures = accessible_enclosures & selected_enclosures
 
             start_date = form.cleaned_data["start_date"]
             end_date = form.cleaned_data["end_date"]
@@ -702,8 +712,6 @@ def export(request):
 
     else:
         form = ExportForm(initial={"num_days": 7})
-        form["selected_enclosures"].queryset = Enclosure.objects.filter(
-            users=request.user
-        )
+        form.fields["selected_enclosures"].queryset = accessible_enclosures
 
-    return render(request, "export.html", {"enclosures": enclosures, "form": form})
+    return render(request, "export.html", {"form": form})
