@@ -386,6 +386,7 @@ class AnimalCount(Count):
 
     STAFF_CONDITIONS = [(BAR, "BAR")] + CONDITIONS
 
+    # NOTE: everyone can do BAR now
     condition = models.CharField(max_length=2, choices=STAFF_CONDITIONS, null=True)
 
     comment = models.TextField(blank=True, default="")
