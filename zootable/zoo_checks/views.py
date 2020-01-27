@@ -62,9 +62,18 @@ def get_accessible_enclosures(request):
 # TODO: logins may not be sufficient - user a part of a group?
 # TODO: add pagination
 def home(request):
-    enclosures = get_accessible_enclosures(request)
+    enclosures_query = get_accessible_enclosures(request)
 
-    return render(request, "home.html", {"enclosures": enclosures})
+    paginator = Paginator(enclosures_query, 20)
+    page = request.GET.get("page", 1)
+    enclosures = paginator.get_page(page)
+    page_range = range(
+        max(int(page) - 5, 1), min(int(page) + 5, paginator.num_pages) + 1
+    )
+
+    return render(
+        request, "home.html", {"enclosures": enclosures, "page_range": page_range}
+    )
 
 
 @login_required
@@ -374,8 +383,11 @@ def animal_counts(request, animal):
     )
 
     paginator = Paginator(animal_counts_query, 10)
-    page = request.GET.get("page")
+    page = request.GET.get("page", 1)
     animal_counts_records = paginator.get_page(page)
+    page_range = range(
+        max(int(page) - 5, 1), min(int(page) + 5, paginator.num_pages) + 1
+    )
 
     # db counts each condition type
     query_data = (
@@ -404,6 +416,7 @@ def animal_counts(request, animal):
             "animal_counts": animal_counts_records,
             "chart_data": chart_data,
             "chart_labels": chart_labels,
+            "page_range": page_range,
         },
     )
 
@@ -421,8 +434,11 @@ def group_counts(request, group):
     )
 
     paginator = Paginator(group_counts_query, 10)
-    page = request.GET.get("page")
+    page = request.GET.get("page", 1)
     group_counts_records = paginator.get_page(page)
+    page_range = range(
+        max(int(page) - 5, 1), min(int(page) + 5, paginator.num_pages) + 1
+    )
 
     # db creates sum column
     query_data = group_counts_query.annotate(
@@ -461,6 +477,7 @@ def group_counts(request, group):
             "chart_labels_line": chart_labels_line,
             "chart_data_pie": chart_data_pie,
             "chart_labels_pie": chart_labels_pie,
+            "page_range": page_range,
         },
     )
 
@@ -478,8 +495,11 @@ def species_counts(request, species_slug, enclosure_slug):
     ).order_by("-datetimecounted", "-id")
 
     paginator = Paginator(counts_query, 10)
-    page = request.GET.get("page")
+    page = request.GET.get("page", 1)
     counts_records = paginator.get_page(page)
+    page_range = range(
+        max(int(page) - 5, 1), min(int(page) + 5, paginator.num_pages) + 1
+    )
 
     chart_labels_line = [
         d.strftime("%m-%d-%Y")
@@ -509,6 +529,7 @@ def species_counts(request, species_slug, enclosure_slug):
             "chart_labels_line": chart_labels_line,
             "chart_data_pie": chart_data_pie,
             "chart_labels_pie": chart_labels_pie,
+            "page_range": page_range,
         },
     )
 

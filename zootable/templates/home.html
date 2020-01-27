@@ -17,6 +17,8 @@
 </p>
 {% endfor %}
 
+{% include "paginate_counts.html" with page_items=enclosures %}
+
 {% else %}
 
 <div class="errorlist">
