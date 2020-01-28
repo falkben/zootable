@@ -14,8 +14,6 @@ class Enclosure(models.Model):
 
     slug = AutoSlugField(null=True, default=None, populate_from="name", unique=True)
 
-    users = models.ManyToManyField(User)
-
     def __str__(self):
         return self.name
 
@@ -74,6 +72,19 @@ class Enclosure(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+
+class Role(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    enclosures = models.ManyToManyField(Enclosure, related_name="roles")
+    users = models.ManyToManyField(User, related_name="roles")
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Species(models.Model):

@@ -8,6 +8,7 @@ from zoo_checks.models import (
     GroupCount,
     Species,
     SpeciesCount,
+    Role,
 )
 
 
@@ -30,3 +31,4 @@ admin.site.register(Animal)
 admin.site.register(Group)
 admin.site.register(Enclosure)
 admin.site.register(Species)
+admin.site.register(Role)

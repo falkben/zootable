@@ -26,7 +26,6 @@ from .helpers import (
     get_init_group_count_form,
     get_init_spec_count_form,
     qs_to_df,
-    redirect_if_not_permitted,
     set_formset_order,
     today_time,
 )
@@ -48,11 +47,29 @@ from .models import (
 def get_accessible_enclosures(request):
     # superuser sees all enclosures
     if not request.user.is_superuser:
-        enclosures = Enclosure.objects.filter(users=request.user)
+        enclosures = Enclosure.objects.filter(roles__in=request.user.roles.all())
     else:
         enclosures = Enclosure.objects.all()
 
     return enclosures
+
+
+def redirect_if_not_permitted(request, enclosure):
+    """
+    Returns
+    -------
+
+    True if user does not belong to enclosure or if not superuser
+
+    False if user belongs to enclosure or is superuser
+    """
+    if request.user.is_superuser or request.user.roles.filter(enclosures=enclosure):
+        return False
+
+    messages.error(
+        request, f"You do not have permissions to access enclosure {enclosure.name}"
+    )
+    return True
 
 
 """ views """
