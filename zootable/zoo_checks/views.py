@@ -552,9 +552,7 @@ def edit_animal_count(request, animal, year, month, day):
     }
 
     if request.method == "POST":
-        form = AnimalCountForm(
-            request.POST, initial=init_form, is_staff=request.user.is_staff
-        )
+        form = AnimalCountForm(request.POST, initial=init_form)
         if form.is_valid():
             # save the data
             if form.has_changed():
@@ -574,7 +572,7 @@ def edit_animal_count(request, animal, year, month, day):
                 obj.update_or_create_from_form()
             return redirect("count", enclosure_slug=enclosure.slug)
     else:
-        form = AnimalCountForm(initial=init_form, is_staff=request.user.is_staff)
+        form = AnimalCountForm(initial=init_form)
 
     return render(
         request,
