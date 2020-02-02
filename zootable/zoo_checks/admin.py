@@ -29,9 +29,27 @@ class SpeciesCountAdmin(admin.ModelAdmin):
     readonly_fields = ("datetimecounted", "datecounted")
 
 
-@admin.register(Enclosure)
-class EnclosureAdmin(admin.ModelAdmin):
-    filter_horizontal = ("users",)
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    filter_horizontal = ("users", "enclosures")
+
+
+@admin.register(Animal)
+class AnimalAdmin(admin.ModelAdmin):
+    list_display = (
+        "accession_number",
+        "name",
+        "identifier",
+        "species",
+        "sex",
+        "enclosure",
+        "active",
+    )
+    list_filter = (
+        "sex",
+        "enclosure",
+        "active",
+    )
 
 
 # Unregister the provided model admin
@@ -74,7 +92,6 @@ class CustomUserAdmin(UserAdmin):
         return form
 
 
-admin.site.register(Animal)
 admin.site.register(Group)
 admin.site.register(Species)
-admin.site.register(Role)
+admin.site.register(Enclosure)
