@@ -3,6 +3,7 @@ from itertools import chain
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models.functions import Upper
 from django.utils import timezone
 from django_extensions.db.fields import AutoSlugField
 
@@ -71,7 +72,7 @@ class Enclosure(models.Model):
         return animals.count() + groups.count()
 
     class Meta:
-        ordering = ["name"]
+        ordering = [Upper("name")]
 
 
 class Role(models.Model):
@@ -81,7 +82,7 @@ class Role(models.Model):
     users = models.ManyToManyField(User, related_name="roles")
 
     class Meta:
-        ordering = ["name"]
+        ordering = [Upper("name")]
 
     def __str__(self):
         return self.name
@@ -106,7 +107,7 @@ class Species(models.Model):
         return ", ".join((self.genus_name, self.species_name))
 
     class Meta:
-        ordering = ["common_name"]
+        ordering = [Upper("common_name")]
         verbose_name_plural = "species"
 
     def get_count_day(self, enclosure, day=None):
@@ -180,7 +181,7 @@ class AnimalSet(models.Model):
     """ Anything with an accession number """
 
     active = models.BooleanField(default=True)
-    accession_number = models.PositiveIntegerField(unique=True)
+    accession_number = models.CharField(max_length=6, unique=True)
 
     species = models.ForeignKey(Species, on_delete=models.CASCADE)
 
@@ -228,7 +229,7 @@ class Animal(AnimalSet):
     )
 
     class Meta:
-        ordering = ["name"]
+        ordering = [Upper("name")]
 
     def __str__(self):
         return "|".join(
@@ -317,7 +318,7 @@ class Group(AnimalSet):
     )
 
     class Meta:
-        ordering = ["species__common_name"]
+        ordering = [Upper("species__common_name")]
 
     def __str__(self):
         return "|".join((self.species.common_name, str(self.accession_number)))
@@ -558,4 +559,3 @@ class SpeciesCount(Count):
             enclosure=self.enclosure,
             defaults={"datetimecounted": self.datetimecounted, "count": self.count},
         )
-
