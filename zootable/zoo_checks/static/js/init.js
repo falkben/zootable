@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
@@ -22,13 +22,34 @@ function allowUncheck(e) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+function change_tally_form() {
+  const tally_date = document.getElementById("id_tally_date").value;
+  if (tally_date != "") {
+    document.getElementById("datepicker_form").submit()
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".datepicker");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
-    autoClose: true
+    autoClose: true,
+  });
+});
+
+// this overwrites the init for all datepicker's above
+document.addEventListener("DOMContentLoaded", function () {
+  var elems = document.querySelectorAll("#id_tally_date");
+  var today = new Date();
+  var instances = M.Datepicker.init(elems, {
+    format: "mm/dd/yyyy",
+    maxDate: today,
+    autoClose: false,
+    onClose: function () {
+      change_tally_form();
+    }
   });
 });
 
@@ -60,7 +81,7 @@ function chartVisible(id) {
 document
   .querySelectorAll(".condition-radio input[type=radio]")
   .forEach(elem => {
-    elem.addEventListener("click", function(e) {
+    elem.addEventListener("click", function (e) {
       // needs attention causes comment field to appear
       let comment_field =
         elem.parentElement.parentElement.parentElement.nextElementSibling;
