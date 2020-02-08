@@ -34,13 +34,15 @@ def validate(df):
     if not all([col in df_col_names for col in req_cols]):
         raise TypeError("Not all columns found in file")
 
+    return df[req_cols]
+
 
 def read_xlsx_data(datafile):
     """Reads a xlsx datafile and returns a pandas dataframe
     """
     try:
         df = pd.read_excel(datafile)
-        validate(df)
+        df = validate(df)
     except Exception as e:
         raise e
     return df

@@ -205,7 +205,7 @@ class Animal(AnimalSet):
     SEX = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
 
     name = models.CharField(max_length=100)
-    identifier = models.CharField(max_length=100)
+    identifier = models.CharField(max_length=200)
     sex = models.CharField(max_length=1, choices=SEX, default="U")
 
     slug = AutoSlugField(
