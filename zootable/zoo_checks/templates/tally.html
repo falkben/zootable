@@ -17,14 +17,14 @@
     </nav>
 
     <div class="right-align" style="flex: 1">
-        <form action="{% url 'tally_date_handler' enclosure.slug %}" method="post">
+        <form action="{% url 'tally_date_handler' enclosure.slug %}" method="post" id="datepicker_form">
             {{ dateform.non_field_errors }}
             {% csrf_token %}
             Edit tally on date
             <div class="input-field inline">
                 <input id="id_tally_date" name="tally_date"  type="text" class="datepicker inline" style="width:10ch" options="format:yyyy-mm-dd'">
             </div>
-            <button type="submit" class="btn btn-flat btn-small blue lighten-4">
+            <button type="submit" class="hide btn btn-flat btn-small blue lighten-4">
                 <i class="material-icons">send</i>
             </button>
         </form>

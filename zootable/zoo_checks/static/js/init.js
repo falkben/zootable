@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
@@ -22,13 +22,20 @@ function allowUncheck(e) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".datepicker");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
-    autoClose: true
+    onClose: function () {
+      tally_date = document.getElementById("id_tally_date").value;
+      if (tally_date != "") {
+        form = document.getElementById("datepicker_form");
+        console.log(tally_date)
+        form.submit()
+      }
+    }
   });
 });
 
@@ -60,7 +67,7 @@ function chartVisible(id) {
 document
   .querySelectorAll(".condition-radio input[type=radio]")
   .forEach(elem => {
-    elem.addEventListener("click", function(e) {
+    elem.addEventListener("click", function (e) {
       // needs attention causes comment field to appear
       let comment_field =
         elem.parentElement.parentElement.parentElement.nextElementSibling;
