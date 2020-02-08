@@ -22,19 +22,33 @@ function allowUncheck(e) {
     });
 }
 
+function change_tally_form() {
+  const tally_date = document.getElementById("id_tally_date").value;
+  if (tally_date != "") {
+    document.getElementById("datepicker_form").submit()
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".datepicker");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
+    autoClose: true,
+  });
+});
+
+// this overwrites the init for all datepicker's above
+document.addEventListener("DOMContentLoaded", function () {
+  var elems = document.querySelectorAll("#id_tally_date");
+  var today = new Date();
+  var instances = M.Datepicker.init(elems, {
+    format: "mm/dd/yyyy",
+    maxDate: today,
+    autoClose: false,
     onClose: function () {
-      tally_date = document.getElementById("id_tally_date").value;
-      if (tally_date != "") {
-        form = document.getElementById("datepicker_form");
-        console.log(tally_date)
-        form.submit()
-      }
+      change_tally_form();
     }
   });
 });
