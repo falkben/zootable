@@ -6,6 +6,15 @@
 
 {% if enclosures|length > 0 %}
 
+{% if roles %}
+  <ul>
+  <li><a href="/">All</a></li>
+  {% for role in roles %}
+    <li><a href="?role={{role.name}}">{{role.name}}</a></li>
+  {% endfor %}
+  </ul>
+{% endif %}
+
 <h3>Enclosures</h3>
 
 {% for enclosure in enclosures %}
