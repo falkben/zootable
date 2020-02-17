@@ -25,7 +25,7 @@ enclosures = Enclosure.objects.all()
 # create a set of unique sets of users
 shared_users_set = {
     # needs to be tuple to be put into a set (immutable)
-    # sorted to create idential sequences
+    # sorted to create identical sequences
     tuple([u for u in enc.users.exclude(first_name="admin").order_by("id")])
     for enc in enclosures
 }
@@ -35,6 +35,7 @@ for users_group in shared_users_set:
     if not users_group:  # empty
         continue
 
+    # ? this doesn't work in migrations, first user is not a user object but the username?
     query = Q()
     for user in users_group:
         query &= Q(users=user)
