@@ -6,14 +6,9 @@
 
 {% if enclosures|length > 0 %}
 
-{% if roles %}
-  <ul>
-  <li><a href="/">All</a></li>
-  {% for role in roles %}
-    <li><a href="?role={{role.name}}">{{role.name}}</a></li>
-  {% endfor %}
-  </ul>
-{% endif %}
+<div class="row">
+
+<div class="col s7">
 
 <h3>Enclosures</h3>
 
@@ -35,5 +30,25 @@ No enclosures found. Contact an admin to have them add you to an enclosure
 </div>
 
 {% endif%}
+
+</div>
+
+{% if roles %}
+
+<div class="col s5 m4">
+  <div class="collection with-header">
+    <div class="collection-header lighten-4"><h5>Roles</h5></div>
+    
+    <a href="/" class="collection-item indigo lighten-5">All<a/>
+    {% for role in roles %}
+      <a href="?role={{role.name}}" class="collection-item indigo lighten-4 black-text
+        {% if selected_role == role %}
+        active accent-2 white-text
+        {% endif %}
+      " >{{role.name}}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 
 {% endblock %}

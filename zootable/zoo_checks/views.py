@@ -89,6 +89,8 @@ def home(request):
     if role_name is not None:
         role = Role.objects.get(name=role_name)
         query = query & Q(roles=role)
+    else:
+        role = None
 
     enclosures_query = enclosures_query.filter(query).distinct()
 
@@ -104,7 +106,12 @@ def home(request):
     return render(
         request,
         "home.html",
-        {"enclosures": enclosures, "page_range": page_range, "roles": roles},
+        {
+            "enclosures": enclosures,
+            "page_range": page_range,
+            "roles": roles,
+            "selected_role": role,
+        },
     )
 
 
