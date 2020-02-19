@@ -52,6 +52,23 @@ class AnimalAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    list_display = (
+        "accession_number",
+        "species",
+        "population_male",
+        "population_female",
+        "population_unknown",
+        "enclosure",
+        "active",
+    )
+    list_filter = (
+        "enclosure",
+        "active",
+    )
+
+
 # Unregister the provided model admin
 admin.site.unregister(User)
 
@@ -92,6 +109,5 @@ class CustomUserAdmin(UserAdmin):
         return form
 
 
-admin.site.register(Group)
 admin.site.register(Species)
 admin.site.register(Enclosure)
