@@ -4,27 +4,58 @@
 
 {% block content %}
 
-{% if enclosures|length > 0 %}
+<div class="row">
 
-<h3>Enclosures</h3>
+  <div class="col s7">
 
-{% for enclosure in enclosures %}
-<p>
-  <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.slug %}">
-    {{enclosure}}
-  </a>
-  <em>{{enclosure.accession_numbers_observed}}/{{enclosure.accession_numbers_total}} observed</em>
-</p>
-{% endfor %}
+    {% if enclosures %}
+
+      <h3>Enclosures</h3>
+      {% for enclosure in enclosures %}
+      <p>
+        <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.slug %}">
+          {{enclosure}}
+        </a>
+        <em>{{enclosure.accession_numbers_observed}}/{{enclosure.accession_numbers_total}} obs.</em>
+      </p>
+      {% endfor %}
+
+    {% else %}
+
+      <div class="errorlist">
+      No enclosures. Contact a manager to be added to a role
+      </div>
+
+    {% endif%}
+
+  </div>
+
+{% if roles %}
+  <div class="col s5 m4 right pin-top" style="margin-top: 42px">
+    <div class="collection with-header black-text">
+
+      <div class="collection-header red accent-4 white-text" style="border: 0px">
+        <h5>Roles</h5>
+      </div>
+
+      <a href="/" class="collection-item red lighten-5 black-text
+        {% if selected_role == None %}
+          active accent-1
+        {% endif %}
+      " style="border: 0px">View all</a>
+      {% for role in roles %}
+        <a href="?role={{role.name}}" class="collection-item red lighten-5 black-text
+          {% if selected_role == role %}
+            active accent-1
+          {% endif %}
+        " style="border: 0px">{{role.name}}</a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
 
 {% include "paginate_counts.html" with page_items=enclosures %}
 
-{% else %}
-
-<div class="errorlist">
-No enclosures found. Contact an admin to have them add you to an enclosure
 </div>
-
-{% endif%}
 
 {% endblock %}

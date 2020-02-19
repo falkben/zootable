@@ -26,7 +26,6 @@ from .helpers import (
     get_init_group_count_form,
     get_init_spec_count_form,
     qs_to_df,
-    redirect_if_not_permitted,
     set_formset_order,
     today_time,
 )
@@ -37,6 +36,7 @@ from .models import (
     Enclosure,
     Group,
     GroupCount,
+    Role,
     Species,
     SpeciesCount,
 )
@@ -47,11 +47,29 @@ from .models import (
 def get_accessible_enclosures(request):
     # superuser sees all enclosures
     if not request.user.is_superuser:
-        enclosures = Enclosure.objects.filter(users=request.user)
+        enclosures = Enclosure.objects.filter(roles__in=request.user.roles.all())
     else:
         enclosures = Enclosure.objects.all()
 
     return enclosures
+
+
+def redirect_if_not_permitted(request, enclosure):
+    """
+    Returns
+    -------
+
+    True if user does not belong to enclosure or if not superuser
+
+    False if user belongs to enclosure or is superuser
+    """
+    if request.user.is_superuser or request.user.roles.filter(enclosures=enclosure):
+        return False
+
+    messages.error(
+        request, f"You do not have permissions to access enclosure {enclosure.name}"
+    )
+    return True
 
 
 """ views """
@@ -63,10 +81,18 @@ def get_accessible_enclosures(request):
 def home(request):
     enclosures_query = get_accessible_enclosures(request)
 
+    query = Q(animals__active=True) | Q(groups__active=True)
+
     # only show enclosures that have active animals/groups
-    enclosures_query = enclosures_query.filter(
-        Q(animals__active=True) | Q(groups__active=True)
-    ).distinct()
+
+    role_name = request.GET.get("role", None)
+    if role_name is not None:
+        role = Role.objects.get(name=role_name)
+        query = query & Q(roles=role)
+    else:
+        role = None
+
+    enclosures_query = enclosures_query.filter(query).distinct()
 
     paginator = Paginator(enclosures_query, 20)
     page = request.GET.get("page", 1)
@@ -75,8 +101,17 @@ def home(request):
         max(int(page) - 5, 1), min(int(page) + 5, paginator.num_pages) + 1
     )
 
+    roles = request.user.roles.all()
+
     return render(
-        request, "home.html", {"enclosures": enclosures, "page_range": page_range}
+        request,
+        "home.html",
+        {
+            "enclosures": enclosures,
+            "page_range": page_range,
+            "roles": roles,
+            "selected_role": role,
+        },
     )
 
 

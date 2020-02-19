@@ -104,7 +104,7 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 1. Possibly drop database before restore:
 
-   1. `sudo -u postgres bash`
+   1. `sudo -u postgres psql`
    1. `DROP DATABASE zootable;`
    1. `CREATE DATABASE zootable;`
 

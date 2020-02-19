@@ -1,25 +1,6 @@
 import pandas as pd
 from django.conf import settings
-from django.contrib import messages
 from django.utils import timezone
-
-
-def redirect_if_not_permitted(request, enclosure):
-    """
-    Returns
-    -------
-
-    True if user does not belong to enclosure or if not superuser
-
-    False if user belongs to enclosure or is superuser
-    """
-    if request.user in enclosure.users.all() or request.user.is_superuser:
-        return False
-
-    messages.error(
-        request, f"You do not have permissions to access enclosure {enclosure.name}"
-    )
-    return True
 
 
 def today_time():

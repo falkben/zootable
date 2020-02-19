@@ -62,7 +62,6 @@ def create_enclosures(df):
 
 def create_enclosure_name(enclosure_name):
     encl, _ = Enclosure.objects.get_or_create(name=enclosure_name)
-    encl.users.add(*list(User.objects.filter(is_superuser=True)))
 
 
 def create_species(df):
@@ -312,13 +311,25 @@ def get_changesets(df):
     return changesets
 
 
+def validate_input(df):
+    # check that all accession numbers are of 6 digit length
+    digit_list = df["Accession"]
+    digits = list(map(lambda a: len(str(a)), digit_list))
+    if any(d != 6 for d in digits):
+        raise ValueError("Accession numbers should only have 6 characters")
+
+    return df
+
+
 def handle_upload(f):
     """Input: an xlsx file containing data to ingest
     Returns: changeset
     """
     df = read_xlsx_data(f)
 
-    changeset = get_changesets(df)
+    df_validated = validate_input(df)
+
+    changeset = get_changesets(df_validated)
 
     return changeset
 
