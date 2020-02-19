@@ -1,3 +1,5 @@
+{% if page_items.has_other_pages %}
+
 {% load template_tags %}
 
 <div class="row">
@@ -15,7 +17,7 @@
             <a href="#!"><i class="material-icons">first_page</i></a>
         </li>
         <li class="disabled">
-        <a href="#!"><i class="material-icons">chevron_left</i></a>
+            <a href="#!"><i class="material-icons">chevron_left</i></a>
         </li>
     {% endif %}
 
@@ -55,3 +57,5 @@
 </ul>
 </div>
 </div>
+
+{% endif %}
