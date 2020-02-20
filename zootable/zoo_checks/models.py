@@ -216,7 +216,7 @@ class Animal(AnimalSet):
 
     SEX = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     identifier = models.CharField(max_length=200)
     sex = models.CharField(max_length=1, choices=SEX, default="U")
 
@@ -376,8 +376,8 @@ class Group(AnimalSet):
 
 
 class Count(models.Model):
-    datetimecounted = models.DateTimeField(default=timezone.now)
-    datecounted = models.DateField(default=timezone.localdate)
+    datetimecounted = models.DateTimeField(default=timezone.now, db_index=True)
+    datecounted = models.DateField(default=timezone.localdate, db_index=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     enclosure = models.ForeignKey(Enclosure, on_delete=models.SET_NULL, null=True)
