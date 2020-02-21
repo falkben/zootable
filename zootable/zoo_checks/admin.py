@@ -32,6 +32,19 @@ class SpeciesCountAdmin(admin.ModelAdmin):
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
     filter_horizontal = ("users", "enclosures")
+    # these can be function names
+    # it uses what is defined in models.py which isn't what we want unless you give a "unique" name
+    list_display = ("name", "get_enclosures", "get_users")
+
+    def get_queryset(self, request):
+        qs = super(RoleAdmin, self).get_queryset(request)
+        return qs.prefetch_related("users", "enclosures")
+
+    def get_users(self, obj):
+        return ", ".join(f"{a.first_name} {a.last_name}" for a in obj.users.all())
+
+    def get_enclosures(self, obj):
+        return ", ".join(a.name for a in obj.enclosures.all())
 
 
 @admin.register(Animal)
