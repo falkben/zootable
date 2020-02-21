@@ -7,9 +7,9 @@ from zoo_checks.models import (
     Enclosure,
     Group,
     GroupCount,
+    Role,
     Species,
     SpeciesCount,
-    Role,
     User,
 )
 
@@ -69,6 +69,65 @@ class GroupAdmin(admin.ModelAdmin):
     )
 
 
+class AnimalInline(admin.TabularInline):
+    model = Animal
+
+    fields = (
+        "accession_number",
+        "name",
+        "identifier",
+        "sex",
+        "species",
+        "active",
+    )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class GroupInline(admin.TabularInline):
+    model = Group
+    fields = (
+        "accession_number",
+        "species",
+        "population_male",
+        "population_female",
+        "population_unknown",
+        "active",
+    )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Enclosure)
+class EnclosureAdmin(admin.ModelAdmin):
+    list_display = ("name", "animals", "groups")
+    inlines = (AnimalInline, GroupInline)
+
+    def get_queryset(self, request):
+        qs = super(EnclosureAdmin, self).get_queryset(request)
+        return qs.prefetch_related("animals", "groups")
+
+    def animals(self, obj):
+        return ", ".join(a.accession_number for a in obj.animals.all())
+
+    def groups(self, obj):
+        return ", ".join(g.accession_number for g in obj.groups.all())
+
+
 # Unregister the provided model admin
 admin.site.unregister(User)
 
@@ -110,4 +169,3 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(Species)
-admin.site.register(Enclosure)
