@@ -36,21 +36,9 @@
     {% endfor %}
 
     <span class="fieldWrapper">
-    {{ form.count_male.errors }}
-        <b>M</b><em>({{group.population_male}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_male %}
-    </span>
-
-    <span class="fieldWrapper">
-        {{ form.count_female.errors }}
-        <b>F</b><em>({{group.population_female}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_female %}
-    </span>
-
-    <span class="fieldWrapper">
-        {{ form.count_unknown.errors }}
-        <b>U</b><em>({{group.population_unknown}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_unknown %}
+        {{ form.count_total.errors }}
+        <b>U</b><em>({{group.population_total}})</em>: 
+        {% include "increment_decrement_buttons.html" with formfield=form.count_seen %}
     </span>
 
     <p>

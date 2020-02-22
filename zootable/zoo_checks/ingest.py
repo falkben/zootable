@@ -132,6 +132,7 @@ def get_group_attributes(row):
         "population_male": population_male,
         "population_female": population_female,
         "population_unknown": population_unknown,
+        "population_total": population_male + population_female + population_unknown,
     }
 
     return attributes
@@ -141,7 +142,8 @@ def create_groups(df):
     """Creates groups
     """
     # col names for groups:
-    # active, accession_number, species, population_male, population_female, population_unknown, enclosure
+    # active, accession_number, species, population_male, population_female, population_unknown,
+    # enclosure, population_total
     for _, row in df.iterrows():
         attributes = get_group_attributes(row)
 
