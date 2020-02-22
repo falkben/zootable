@@ -46,6 +46,9 @@ class RoleAdmin(admin.ModelAdmin):
     def get_enclosures(self, obj):
         return ", ".join(a.name for a in obj.enclosures.all())
 
+    get_users.short_description = "users"
+    get_enclosures.short_description = "enclosures"
+
 
 @admin.register(Animal)
 class AnimalAdmin(admin.ModelAdmin):
