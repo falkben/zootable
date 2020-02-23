@@ -69,7 +69,7 @@
     <td>{{count.datetimecounted}}
     <td>{{count.count}}</td>
     <td>{{count.total}}
-    <td>{{count.user}}
+    <td>{{count.user.first_name}} {{count.user.last_name}}
     <td><a href="{% url 'edit_species_count' species_slug=obj.slug enclosure_slug=enclosure.slug year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
     </tr>
 {% endfor %}

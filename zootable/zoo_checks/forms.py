@@ -42,28 +42,30 @@ class SpeciesCountForm(forms.ModelForm):
 class GroupCountForm(forms.ModelForm):
     class Meta:
         model = GroupCount
-        fields = ["count_male", "count_female", "count_unknown", "group", "enclosure"]
+        fields = [
+            "count_seen",
+            "count_bar",
+            "comment",
+            "group",
+            "enclosure",
+            "count_total",
+        ]
 
         # TODO: figure out how to add max value in widget attrs
         widgets = {
             # hide species/enclosure form elements
             "group": forms.HiddenInput(),
             "enclosure": forms.HiddenInput(),
+            "count_total": forms.HiddenInput(),
         }
 
-    count_male = forms.IntegerField(
+    count_seen = forms.IntegerField(
         max_value=None,
         min_value=0,
         show_hidden_initial=True,
         widget=forms.NumberInput(attrs={"class": "narrow-count"}),
     )
-    count_female = forms.IntegerField(
-        max_value=None,
-        min_value=0,
-        show_hidden_initial=True,
-        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
-    )
-    count_unknown = forms.IntegerField(
+    count_bar = forms.IntegerField(
         max_value=None,
         min_value=0,
         show_hidden_initial=True,

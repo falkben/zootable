@@ -58,7 +58,7 @@
     <td>{{count.datetimecounted}}
     <td class="condition-{{count.condition}}">{{count.get_condition_display}}
     <td>{{count.comment}}
-    <td>{{count.user}}
+    <td>{{count.user.first_name}} {{count.user.last_name}}
     <td><a href="{% url 'edit_animal_count' animal=animal.accession_number year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
     </tr>
 {% endfor %}
