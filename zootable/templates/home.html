@@ -34,19 +34,19 @@
   <div class="col s5 m4 right pin-top" style="margin-top: 42px">
     <div class="collection with-header black-text">
 
-      <div class="collection-header red accent-4 white-text" style="border: 0px">
+      <div class="collection-header blue darken-4 white-text" style="border: 0px">
         <h5>Roles</h5>
       </div>
 
-      <a href="/" class="collection-item red lighten-5 black-text
+      <a href="/" class="collection-item blue lighten-5 black-text
         {% if selected_role == None %}
-          active accent-1
+          active white-text accent-3
         {% endif %}
-      " style="border: 0px">View all</a>
+      " style="border: 0px; padding-left: 20px">View all</a>
       {% for role in roles %}
-        <a href="?role={{role.name}}" class="collection-item red lighten-5 black-text
+        <a href="?role={{role.name}}" class="collection-item blue lighten-5 black-text
           {% if selected_role == role %}
-            active accent-1
+            active white-text accent-3
           {% endif %}
         " style="border: 0px">{{role.name}}</a>
       {% endfor %}

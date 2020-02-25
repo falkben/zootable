@@ -12,6 +12,11 @@ main {
   flex: 1 0 auto;
 }
 
+/* override materialize */
+.collection a.collection-item:not(.active):hover {
+  background-color: #bbdefb !important;
+}
+
 /* for message list */
 .msg {
   border: 1px solid;
@@ -53,7 +58,7 @@ main {
 /* form errors */
 .errorlist {
   margin: 10px 0px;
-  padding: 12px;
+  padding: 12px !important;
   color: #d8000c;
   background-color: #ffd2d2;
 }
@@ -91,13 +96,10 @@ th {
 }
 
 /* form stuff */
-form p > input#id_num_days.narrow-count,
-table.striped input.narrow-count,
-form p > input#id_count.narrow-count,
-form span > input#id_count_male.narrow-count,
-form span > input#id_count_female.narrow-count,
-form span > input#id_count_unknown.narrow-count {
-  width: 3ch;
+
+.checkbox-red[type="checkbox"]:checked + span:not(.lever)::before {
+  border-right: 2px solid #d8000c;
+  border-bottom: 2px solid #d8000c;
 }
 
 [type="radio"]:not(:checked) + span,

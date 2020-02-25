@@ -507,9 +507,10 @@ class GroupCount(Count):
                 "datetimecounted": self.datetimecounted,
                 "count_total": self.count_total,
                 "count_seen": self.count_seen,
-                "count_not_seen": self.count_not_seen,
+                "count_not_seen": max(0, self.count_total - self.count_seen),
                 "count_bar": self.count_bar,
                 "needs_attn": self.needs_attn,
+                "comment": self.comment,
             },
         )
 

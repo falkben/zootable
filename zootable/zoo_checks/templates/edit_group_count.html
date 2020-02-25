@@ -19,35 +19,77 @@
 <p><b>Species:</b> <em>{{group.species.genus_name}} {{group.species.species_name}}</em></p>
 <p><b>Enclosure:</b> {{enclosure}}</p>
 <p><b>Date:</b> {{dateday.date}}</p>
-<p><b>User:</b>
-{% if count.user %}
-    {{count.user}}
-{% else %}
-    None
-{% endif %}
+<p>
+    <b>User:</b>
+    {% if count.user %}
+        {{count.user.first_name}} {{count.user.last_name}}
+    {% else %}
+        None
+    {% endif %}
 </p>
 
-<p>
 <form action="{% url 'edit_group_count' group.accession_number dateday.year dateday.month dateday.day %}" method="post">
-    {% csrf_token %}
+{% csrf_token %}
 
-    {% for hidden in form.hidden_fields %}
-        {{ hidden }}
-    {% endfor %}
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+
+<p>
+    <b>Total</b>: {{group.population_total}}
+</p>
+
+{{ form.count_seen.errors }}
+<div class="row" style="display: flex; flex-direction: row">
+    <span class="valign-wrapper"><b>Seen</b>: </span>
+    
+    <p class="range-field" style="margin: 0 1rem">
+        <input type="range" class="count_seen_slider" id="{{form.count_seen.id_for_label}}_slider"
+        min="0" max="{{group.population_total}}" value="{{form.count_seen.value}}"/>
+    </p>
+    
+    <span class="fieldWrapper">
+        {{ form.count_seen }}
+    </span>
+</div>
+
+{{ form.count_bar.errors }}
+<div class = "row" style="display: flex; flex-direction: row">
+    <span class="valign-wrapper"><b>BAR</b>: </span>
+    
+    <p class="range-field" style="margin: 0 1rem">
+        <input type="range" class="count_bar_slider" id="{{form.count_bar.id_for_label}}_slider" 
+        min="0" max="{{form.count_seen.value}}" value="{{form.count_bar.value}}"/>
+    </p>
 
     <span class="fieldWrapper">
-        {{ form.count_total.errors }}
-        <b>U</b><em>({{group.population_total}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_seen %}
+        {{ form.count_bar}}
     </span>
+</div>
 
-    <p>
+
+<div class="row">
+<span class="fieldWrapper">
+    {{form.needs_attn.errors}}
+    <label for="{{form.needs_attn.id_for_label}}">
+        <input type="checkbox" name="{{form.needs_attn.html_name}}" id="{{form.needs_attn.id_for_label}}"
+            class="checkbox-red" {% if form.needs_attn.value %}checked = ""{% endif %}>
+        <span>Needs Attention</span>
+    </label>
+</span>
+</div>
+
+<div class="input-field count-comment row">
+    {{ form.comment.errors }}
+    <textarea name="{{form.comment.html_name}}" id="{{form.comment.id_for_label}}" class="materialize-textarea" style="font-size:.8rem">{{form.comment.value}}</textarea>
+    <label for="{{form.comment.id_for_label}}">Comment</label>
+</div>
+
+<p>
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
         <i class="material-icons right">send</i>
     </button>
-    </p>
-</form>
 </p>
-
+</form>
 
 {% endblock %}

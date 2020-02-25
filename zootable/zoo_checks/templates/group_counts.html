@@ -73,7 +73,10 @@
     <td>{{count.count_seen}}
     <td>{{count.count_bar}}
     <td>{{count.count_total}}
-    <td>{{count.needs_attention}}
+    <td>
+        {% if count.needs_attn %}
+            <i class="material-icons">error</i>
+        {% endif %}
     <td>{{count.comment}}
     <td>{{count.user.first_name}} {{count.user.last_name}}
     <td><a href="{% url 'edit_group_count' group=group.accession_number year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>

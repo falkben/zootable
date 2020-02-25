@@ -368,10 +368,11 @@ def edit_group_count(request, group, year, month, day):
     init_form = {
         "count_seen": 0 if count is None else count.count_seen,
         "count_bar": 0 if count is None else count.count_bar,
-        "comment": 0 if count is None else count.comment,
+        "comment": "" if count is None else count.comment,
         "count_total": group.population_total,
         "group": group,
         "enclosure": enclosure,
+        "needs_attn": False if count is None else count.needs_attn,
     }
 
     if request.method == "POST":
@@ -496,7 +497,7 @@ def group_counts(request, group):
     )
 
     # for the pie chart (last 100)
-    sum_counts = chart_data_line_total
+    sum_counts = chart_data_line_seen
     chart_labels_pie = sorted(set(sum_counts))
     chart_data_pie = [sum_counts.count(s) for s in chart_labels_pie]
 
