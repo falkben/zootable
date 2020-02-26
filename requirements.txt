@@ -13,3 +13,4 @@ django-cloudflare-push==0.2.0
 django_mock_queries==2.1.3
 XlsxWriter==1.2.7
 django-debug-toolbar
+newrelic
