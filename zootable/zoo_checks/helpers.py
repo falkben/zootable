@@ -105,9 +105,11 @@ def get_init_group_count_form(enclosure_groups, counts):
         init_group.append(
             {
                 "group": group,
-                "count_male": 0 if count is None else count.count_male,
-                "count_female": 0 if count is None else count.count_female,
-                "count_unknown": 0 if count is None else count.count_unknown,
+                "count_total": group.population_total,
+                "count_seen": 0 if count is None else count.count_seen,
+                "count_bar": 0 if count is None else count.count_bar,
+                "comment": "" if count is None else count.comment,
+                "needs_attn": False if count is None else count.needs_attn,
                 "enclosure": group.enclosure,
             }
         )

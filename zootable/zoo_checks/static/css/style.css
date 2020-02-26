@@ -223,7 +223,6 @@ label [type="radio"][value="NS"]:checked + span,
 .edit_group {
   display: flex;
   flex-direction: column;
-  padding: 1%;
   text-align: center;
 }
 
@@ -333,10 +332,6 @@ a.increment i {
 }
 
 @media only screen and (min-width: 560px) {
-  .edit_group {
-    flex-direction: row;
-  }
-
   #chart-text-container {
     flex-direction: row;
   }

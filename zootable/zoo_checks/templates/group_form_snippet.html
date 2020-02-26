@@ -5,48 +5,20 @@
 
 <div class="edit_group">
 
-<span><a href="{% url 'group_counts' group=group.accession_number %}">{{group.accession_number}}</span></a>
+<div class="row">
+<a href="{% url 'group_counts' group=group.accession_number %}">{{group.accession_number}}</a>
+</div>
 
-<span class="fieldWrapper">
-    {{ form.count_male.errors }}
-    <b>M</b><em>({{group.population_male}})</em><br />
-    {% include "increment_decrement_buttons.html" with formfield=form.count_male %}
-</span>
-
-<span class="fieldWrapper">
-    {{ form.count_female.errors }}
-    <b>F</b><em>({{group.population_female}})</em><br />
-    {% include "increment_decrement_buttons.html" with formfield=form.count_female %}
-</span>
-
-<span class="fieldWrapper">
-    {{ form.count_unknown.errors }}
-    <b>U</b><em>({{group.population_unknown}})</em><br />
-    {% include "increment_decrement_buttons.html" with formfield=form.count_unknown %}
-</span>
+{% include "group_counts_form_snippet.html" %}
 </div>
 </td>
 
 {% for count in prior_counts %}
 <td>
     <div class="group_prior_counts">
-        <span>M<br />
+        <span>
             {% if count.count %}
-            {{count.count.count_male}}
-            {% else %}
-            0
-            {% endif %}
-        </span>
-        <span>F<br />
-            {% if count.count %}
-            {{count.count.count_female}}
-            {% else %}
-            0
-            {% endif %}
-        </span>
-        <span>U<br />
-            {% if count.count %}
-            {{count.count.count_unknown}}
+                {{count.count.count_seen}}
             {% else %}
             0
             {% endif %}
