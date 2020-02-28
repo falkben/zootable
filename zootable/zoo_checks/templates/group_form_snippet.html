@@ -14,20 +14,49 @@
 </td>
 
 {% for count in prior_counts %}
-<td>
-    <div class="group_prior_counts">
-        <span>
+<td style="position: relative" class="prior_count_td">
+    <div class="group_prior_counts">        
+        <div class="group_prior_count_items">
+            <span><b>Seen</b></span>
+            
+            <span>
             {% if count.count %}
                 {{count.count.count_seen}}
             {% else %}
             0
             {% endif %}
-        </span>
-        <span>
-            <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
+            </span>
+        </div>
+        
+        <div class="group_prior_count_items">
+            <span><b>BAR</b></span>
+            
+            <span>
+            {% if count.count %}
+                {{count.count.count_bar}}
+            {% else %}
+            0
+            {% endif %}
+            </span>
+        </div>
+        
+        <div class="group_prior_count_items">
+        {% if count.count and count.count.needs_attn%}
+            <span><b>Attn</b></span>
+            
+            <span>
+            <i class="material-icons tooltipped red-text text-accent-2" 
+            data-position="bottom" data-tooltip="Needs attention">error</i>
+            </span>
+        {% else %}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="edit_group_prior_count">
+        <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
             <i class="material-icons tiny-small">edit</i>
-            </a>
-        </span>
+        </a>
     </div>
 </td>
 {% endfor %}

@@ -97,6 +97,10 @@ th {
 
 /* form stuff */
 
+input[type="range"] {
+  border: 1px solid transparent;
+}
+
 .checkbox-red[type="checkbox"]:checked + span:not(.lever)::before {
   border-right: 2px solid #d8000c;
   border-bottom: 2px solid #d8000c;
@@ -230,13 +234,22 @@ label [type="radio"][value="NS"]:checked + span,
   flex: auto;
 }
 
-.group_prior_counts {
-  display: flex;
-  flex-direction: row;
+.group_table_row .prior_count_td {
+  padding: 15px 0;
 }
 
-.group_prior_counts span {
-  flex: auto;
+.group_prior_counts div.group_prior_count_items {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.1rem 0.1rem;
+}
+
+.edit_group_prior_count {
+  position: absolute;
+  top: 8.5rem;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .condition-radio {
@@ -328,6 +341,14 @@ a.increment i {
 @media only screen and (min-width: 601px) {
   .tally-table-head th {
     top: 64px;
+  }
+
+  .group_prior_counts div.group_prior_count_items {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .group_table_row .prior_count_td {
+    padding: inherit;
   }
 }
 
