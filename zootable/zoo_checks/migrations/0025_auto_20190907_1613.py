@@ -2,20 +2,20 @@
 
 from django.db import migrations, models
 
-from ..models import AnimalCount
-
 
 def migrate_data_forward(apps, schema_editor):
-    # for instance in AnimalCount.objects.filter(condition=""):
-    #     instance.condition = "NS"
-    #     instance.save()
+    AnimalCount = apps.get_model("zoo_checks", "AnimalCount")
+    for instance in AnimalCount.objects.filter(condition=""):
+        instance.condition = "NS"
+        instance.save()
     pass
 
 
 def migrate_data_backward(apps, schema_editor):
-    # for instance in AnimalCount.objects.filter(condition="NS"):
-    #     instance.condition = ""
-    #     instance.save()
+    AnimalCount = apps.get_model("zoo_checks", "AnimalCount")
+    for instance in AnimalCount.objects.filter(condition="NS"):
+        instance.condition = ""
+        instance.save()
     pass
 
 
