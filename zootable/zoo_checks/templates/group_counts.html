@@ -14,7 +14,7 @@
     </div>
 </nav>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js" integrity="sha256-xKeoJ50pzbUGkpQxDYHD7o7hxe0LaOGeguUidbq6vis=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js" integrity="sha256-8zyeSXm+yTvzUN1VgAOinFgaVFEFTyYzWShOy9w7WoQ=" crossorigin="anonymous"></script>
 
 <div id="chart-text-container">
 
@@ -23,10 +23,7 @@
         <p><b>Common Name:</b> {{group.species.common_name}}</p>
         <p><b>Species:</b> <em>{{group.species.genus_name}} {{group.species.species_name}}</em></p>
         <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
-        <p><b>Population Male</b> {{group.population_male}}</p>
-        <p><b>Population Female</b> {{group.population_female}}</p>
-        <p><b>Population Unknown</b> {{group.population_unknown}}</p>
-
+        <p><b>Population Total</b> {{group.population_total}}</p>
     </div>
 
 
@@ -60,10 +57,11 @@
 <thead>
 <tr>
     <th>Date
-    <th>Male
-    <th>Female
-    <th>Unknown
+    <th>Seen
+    <th>Bar
     <th>Total
+    <th>Needs Attn
+    <th>Comment
     <th>User
     <th>
 </tr>
@@ -72,11 +70,15 @@
 {% for count in counts %}
     <tr>
     <td>{{count.datetimecounted}}
-    <td>{{count.count_male}}</td>
-    <td>{{count.count_female}}</td>
-    <td>{{count.count_unknown}}</td>
-    <td>{{count.total}}
-    <td>{{count.user}}
+    <td>{{count.count_seen}}
+    <td>{{count.count_bar}}
+    <td>{{count.count_total}}
+    <td>
+        {% if count.needs_attn %}
+            <i class="material-icons">error</i>
+        {% endif %}
+    <td>{{count.comment}}
+    <td>{{count.user.first_name}} {{count.user.last_name}}
     <td><a href="{% url 'edit_group_count' group=group.accession_number year=count.datetimecounted|date:'Y' month=count.datetimecounted|date:'m' day=count.datetimecounted|date:'d' %}"><i class="material-icons">edit</i></a>
     </tr>
 {% endfor %}

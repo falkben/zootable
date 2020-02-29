@@ -5,57 +5,58 @@
 
 <div class="edit_group">
 
-<span><a href="{% url 'group_counts' group=group.accession_number %}">{{group.accession_number}}</span></a>
+<div class="row">
+<a href="{% url 'group_counts' group=group.accession_number %}">{{group.accession_number}}</a>
+</div>
 
-<span class="fieldWrapper">
-    {{ form.count_male.errors }}
-    <b>M</b><em>({{group.population_male}})</em><br />
-    {% include "increment_decrement_buttons.html" with formfield=form.count_male %}
-</span>
-
-<span class="fieldWrapper">
-    {{ form.count_female.errors }}
-    <b>F</b><em>({{group.population_female}})</em><br />
-    {% include "increment_decrement_buttons.html" with formfield=form.count_female %}
-</span>
-
-<span class="fieldWrapper">
-    {{ form.count_unknown.errors }}
-    <b>U</b><em>({{group.population_unknown}})</em><br />
-    {% include "increment_decrement_buttons.html" with formfield=form.count_unknown %}
-</span>
+{% include "group_counts_form_snippet.html" %}
 </div>
 </td>
 
 {% for count in prior_counts %}
-<td>
-    <div class="group_prior_counts">
-        <span>M<br />
+<td style="position: relative" class="prior_count_td">
+    <div class="group_prior_counts">        
+        <div class="group_prior_count_items">
+            <span><b>Seen</b></span>
+            
+            <span>
             {% if count.count %}
-            {{count.count.count_male}}
+                {{count.count.count_seen}}
             {% else %}
             0
             {% endif %}
-        </span>
-        <span>F<br />
+            </span>
+        </div>
+        
+        <div class="group_prior_count_items">
+            <span><b>BAR</b></span>
+            
+            <span>
             {% if count.count %}
-            {{count.count.count_female}}
+                {{count.count.count_bar}}
             {% else %}
             0
             {% endif %}
-        </span>
-        <span>U<br />
-            {% if count.count %}
-            {{count.count.count_unknown}}
-            {% else %}
-            0
-            {% endif %}
-        </span>
-        <span>
-            <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
+            </span>
+        </div>
+        
+        <div class="group_prior_count_items">
+        {% if count.count and count.count.needs_attn%}
+            <span><b>Attn</b></span>
+            
+            <span>
+            <i class="material-icons tooltipped red-text text-accent-2" 
+            data-position="bottom" data-tooltip="Needs attention">error</i>
+            </span>
+        {% else %}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="edit_group_prior_count">
+        <a href="{% url 'edit_group_count' group=group.accession_number year=count.day.year month=count.day.month day=count.day.day %}">
             <i class="material-icons tiny-small">edit</i>
-            </a>
-        </span>
+        </a>
     </div>
 </td>
 {% endfor %}

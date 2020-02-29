@@ -19,47 +19,25 @@
 <p><b>Species:</b> <em>{{group.species.genus_name}} {{group.species.species_name}}</em></p>
 <p><b>Enclosure:</b> {{enclosure}}</p>
 <p><b>Date:</b> {{dateday.date}}</p>
-<p><b>User:</b>
-{% if count.user %}
-    {{count.user}}
-{% else %}
-    None
-{% endif %}
+<p>
+    <b>User:</b>
+    {% if count.user %}
+        {{count.user.first_name}} {{count.user.last_name}}
+    {% else %}
+        None
+    {% endif %}
 </p>
 
-<p>
 <form action="{% url 'edit_group_count' group.accession_number dateday.year dateday.month dateday.day %}" method="post">
-    {% csrf_token %}
+{% csrf_token %}
 
-    {% for hidden in form.hidden_fields %}
-        {{ hidden }}
-    {% endfor %}
+{% include "group_counts_form_snippet.html" %}
 
-    <span class="fieldWrapper">
-    {{ form.count_male.errors }}
-        <b>M</b><em>({{group.population_male}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_male %}
-    </span>
-
-    <span class="fieldWrapper">
-        {{ form.count_female.errors }}
-        <b>F</b><em>({{group.population_female}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_female %}
-    </span>
-
-    <span class="fieldWrapper">
-        {{ form.count_unknown.errors }}
-        <b>U</b><em>({{group.population_unknown}})</em>: 
-        {% include "increment_decrement_buttons.html" with formfield=form.count_unknown %}
-    </span>
-
-    <p>
+<p>
     <button class="btn waves-effect waves-light" type="submit" name="action">Submit
         <i class="material-icons right">send</i>
     </button>
-    </p>
-</form>
 </p>
-
+</form>
 
 {% endblock %}

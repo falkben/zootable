@@ -35,40 +35,61 @@ class SpeciesCountForm(forms.ModelForm):
         max_value=None,
         min_value=0,
         show_hidden_initial=True,
-        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+        widget=forms.NumberInput(
+            attrs={"style": "width: 3ch", "class": "narrow-count"}
+        ),
     )
 
 
 class GroupCountForm(forms.ModelForm):
     class Meta:
         model = GroupCount
-        fields = ["count_male", "count_female", "count_unknown", "group", "enclosure"]
+        fields = [
+            "count_seen",
+            "count_bar",
+            "comment",
+            "group",
+            "enclosure",
+            "count_total",
+            "needs_attn",
+        ]
 
         # TODO: figure out how to add max value in widget attrs
         widgets = {
             # hide species/enclosure form elements
             "group": forms.HiddenInput(),
             "enclosure": forms.HiddenInput(),
+            "count_total": forms.HiddenInput(),
         }
 
-    count_male = forms.IntegerField(
+    count_seen = forms.IntegerField(
         max_value=None,
         min_value=0,
         show_hidden_initial=True,
-        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+        widget=forms.NumberInput(
+            attrs={"style": "width: 3ch", "class": "narrow-count count_seen_input"}
+        ),
     )
-    count_female = forms.IntegerField(
+    count_bar = forms.IntegerField(
         max_value=None,
         min_value=0,
         show_hidden_initial=True,
-        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
+        widget=forms.NumberInput(
+            attrs={"style": "width: 3ch", "class": "narrow-count count_bar_input"}
+        ),
     )
-    count_unknown = forms.IntegerField(
-        max_value=None,
-        min_value=0,
-        show_hidden_initial=True,
-        widget=forms.NumberInput(attrs={"class": "narrow-count"}),
-    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        count_seen = cleaned_data.get("count_seen")
+        count_bar = cleaned_data.get("count_bar")
+        if count_bar > count_seen:
+            msg = "Number BAR cannot be higher than number seen."
+            self.add_error("count_seen", msg)
+            self.add_error("count_bar", msg)
+
+        return cleaned_data
 
 
 class UploadFileForm(forms.Form):

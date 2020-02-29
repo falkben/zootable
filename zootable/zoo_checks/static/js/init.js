@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
@@ -25,29 +25,29 @@ function allowUncheck(e) {
 function change_tally_form() {
   const tally_date = document.getElementById("id_tally_date").value;
   if (tally_date != "") {
-    document.getElementById("datepicker_form").submit()
+    document.getElementById("datepicker_form").submit();
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   var elems = document.querySelectorAll(".datepicker");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
-    autoClose: true,
+    autoClose: true
   });
 });
 
 // this overwrites the init for all datepicker's above
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   var elems = document.querySelectorAll("#id_tally_date");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
     autoClose: false,
-    onClose: function () {
+    onClose: function() {
       change_tally_form();
     }
   });
@@ -81,7 +81,7 @@ function chartVisible(id) {
 document
   .querySelectorAll(".condition-radio input[type=radio]")
   .forEach(elem => {
-    elem.addEventListener("click", function (e) {
+    elem.addEventListener("click", function(e) {
       // needs attention causes comment field to appear
       let comment_field =
         elem.parentElement.parentElement.parentElement.nextElementSibling;
@@ -90,3 +90,65 @@ document
       }
     });
   });
+
+function update_count_bar(slider_elem) {
+  const count_bar_id = slider_elem.id.replace("_slider", "");
+  document.getElementById(count_bar_id).value = slider_elem.value;
+}
+
+function update_count_seen(slider_elem) {
+  // const total = slider_elem.max;
+  const count_seen_id = slider_elem.id.replace("_slider", "");
+  document.getElementById(count_seen_id).value = slider_elem.value;
+
+  update_bar_elems(
+    slider_elem.id.replace("_seen_slider", "_bar_slider"),
+    slider_elem.value
+  );
+}
+
+function update_bar_elems(count_bar_id, seen_value) {
+  //set the slider max value for BAR
+  const count_bar = document.getElementById(count_bar_id);
+  if (parseInt(seen_value) < parseInt(count_bar.value)) {
+    // set the count_bar value to max of seen and BAR
+    count_bar.value = seen_value;
+    update_count_bar(count_bar);
+  }
+  count_bar.max = seen_value;
+}
+
+function update_slider(slider_id, value) {
+  document.getElementById(slider_id).value = value;
+}
+
+document.querySelectorAll(".count_seen_slider").forEach(elem => {
+  elem.addEventListener("input", function(e) {
+    update_count_seen(elem);
+  });
+});
+
+document.querySelectorAll(".count_bar_slider").forEach(elem => {
+  elem.addEventListener("input", function(e) {
+    update_count_bar(elem);
+  });
+});
+
+document
+  .querySelectorAll(".count_seen_input,.count_bar_input")
+  .forEach(elem => {
+    elem.addEventListener("input", function(e) {
+      update_slider(elem.id + "_slider", elem.value);
+      if (elem.className.includes("count_seen_input")) {
+        update_bar_elems(
+          elem.id.replace("_seen", "_bar") + "_slider",
+          elem.value
+        );
+      }
+    });
+  });
+
+document.addEventListener("DOMContentLoaded", function() {
+  var elems = document.querySelectorAll(".tooltipped");
+  var instances = M.Tooltip.init(elems, {});
+});

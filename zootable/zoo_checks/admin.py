@@ -76,6 +76,7 @@ class GroupAdmin(admin.ModelAdmin):
         "population_male",
         "population_female",
         "population_unknown",
+        "population_total",
         "enclosure",
         "active",
     )
@@ -115,6 +116,7 @@ class GroupInline(admin.TabularInline):
         "population_male",
         "population_female",
         "population_unknown",
+        "population_total",
         "active",
     )
 

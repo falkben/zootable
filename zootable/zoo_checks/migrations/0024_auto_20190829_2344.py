@@ -4,10 +4,12 @@ from django.db import migrations
 import django_extensions.db.fields
 
 
-from ..models import Animal, Enclosure, Group, Species
-
-
 def migrate_data_forward(apps, schema_editor):
+    Animal = apps.get_model("zoo_checks", "Animal")
+    Enclosure = apps.get_model("zoo_checks", "Enclosure")
+    Group = apps.get_model("zoo_checks", "Group")
+    Species = apps.get_model("zoo_checks", "Species")
+
     for model_type in [Animal, Enclosure, Group, Species]:
         for instance in model_type.objects.all():
             print("Generating slug for %s" % instance)

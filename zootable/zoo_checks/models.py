@@ -308,6 +308,7 @@ class Group(AnimalSet):
     population_male = models.PositiveSmallIntegerField(default=0)
     population_female = models.PositiveSmallIntegerField(default=0)
     population_unknown = models.PositiveSmallIntegerField(default=0)
+    population_total = models.PositiveSmallIntegerField(default=0)
 
     slug = AutoSlugField(
         null=True, default=None, populate_from="accession_number", unique=True
@@ -454,15 +455,14 @@ class AnimalCount(Count):
 
 
 class GroupCount(Count):
-    count_male = models.PositiveSmallIntegerField(default=0)
-    count_female = models.PositiveSmallIntegerField(default=0)
-    count_unknown = models.PositiveSmallIntegerField(default=0)
+    count_total = models.PositiveSmallIntegerField(default=0)
+    count_seen = models.PositiveSmallIntegerField(default=0)
+    count_not_seen = models.PositiveSmallIntegerField(default=0)
+    count_bar = models.PositiveSmallIntegerField(default=0)
+    needs_attn = models.BooleanField(default=False)
+    comment = models.TextField(blank=True, default="")
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="counts")
-
-    @property
-    def total(self):
-        return self.count_male + self.count_female + self.count_unknown
 
     def __str__(self):
         return "|".join(
@@ -470,13 +470,9 @@ class GroupCount(Count):
                 self.group.species.common_name,
                 self.user.username,
                 timezone.localtime(self.datetimecounted).strftime("%Y-%m-%d"),
-                ".".join(
-                    (
-                        str(self.count_male),
-                        str(self.count_female),
-                        str(self.count_unknown),
-                    )
-                ),
+                f"count: {self.count_seen}/{self.count_total}/",
+                f"bar: {self.count_bar}",
+                "needs attn" if self.needs_attn else "",
             )
         )
 
@@ -498,8 +494,10 @@ class GroupCount(Count):
         )
 
     def update_or_create_from_form(self):
+        # tries to get obj from db using kwargs, if found, updates with "defaults"
+        # https://docs.djangoproject.com/en/dev/ref/models/querysets/#update-or-create
         # we want the identifier to be:
-        # user, datecounted, group, enclosure?
+        # user, datecounted, group, enclosure
         GroupCount.objects.update_or_create(
             user=self.user,
             datecounted=self.datecounted,
@@ -507,9 +505,12 @@ class GroupCount(Count):
             enclosure=self.enclosure,
             defaults={
                 "datetimecounted": self.datetimecounted,
-                "count_male": self.count_male,
-                "count_female": self.count_female,
-                "count_unknown": self.count_unknown,
+                "count_total": self.count_total,
+                "count_seen": self.count_seen,
+                "count_not_seen": max(0, self.count_total - self.count_seen),
+                "count_bar": self.count_bar,
+                "needs_attn": self.needs_attn,
+                "comment": self.comment,
             },
         )
 

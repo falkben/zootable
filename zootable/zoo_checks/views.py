@@ -366,11 +366,13 @@ def edit_group_count(request, group, year, month, day):
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
     count = group.get_count_day(day=dateday)
     init_form = {
-        "count_male": 0 if count is None else count.count_male,
-        "count_female": 0 if count is None else count.count_female,
-        "count_unknown": 0 if count is None else count.count_unknown,
+        "count_seen": 0 if count is None else count.count_seen,
+        "count_bar": 0 if count is None else count.count_bar,
+        "comment": "" if count is None else count.comment,
+        "count_total": group.population_total,
         "group": group,
         "enclosure": enclosure,
+        "needs_attn": False if count is None else count.needs_attn,
     }
 
     if request.method == "POST":
@@ -479,26 +481,23 @@ def group_counts(request, group):
         max(int(page) - 5, 1), min(int(page) + 5, paginator.num_pages) + 1
     )
 
-    # db creates sum column
-    query_data = group_counts_query.annotate(
-        sum=F("count_male") + F("count_female") + F("count_unknown")
-    )
-
     chart_labels_line = [
         d.strftime("%m-%d-%Y")
-        for d in list(query_data.values_list("datecounted", flat=True)[:100])
+        for d in list(group_counts_query.values_list("datecounted", flat=True)[:100])
     ]
-    chart_data_line_total = list(query_data.values_list("sum", flat=True)[:100])
-    chart_data_line_male = list(query_data.values_list("count_male", flat=True)[:100])
-    chart_data_line_female = list(
-        query_data.values_list("count_female", flat=True)[:100]
+    chart_data_line_total = list(
+        group_counts_query.values_list("count_total", flat=True)[:100]
     )
-    chart_data_line_unknown = list(
-        query_data.values_list("count_unknown", flat=True)[:100]
+
+    chart_data_line_seen = list(
+        group_counts_query.values_list("count_seen", flat=True)[:100]
+    )
+    chart_data_line_bar = list(
+        group_counts_query.values_list("count_bar", flat=True)[:100]
     )
 
     # for the pie chart (last 100)
-    sum_counts = list(query_data.values_list("sum", flat=True)[:100])
+    sum_counts = chart_data_line_seen
     chart_labels_pie = sorted(set(sum_counts))
     chart_data_pie = [sum_counts.count(s) for s in chart_labels_pie]
 
@@ -509,10 +508,9 @@ def group_counts(request, group):
             "group": group,
             "enclosure": enclosure,
             "counts": group_counts_records,
-            "chart_data_line_male": chart_data_line_male,
-            "chart_data_line_female": chart_data_line_female,
-            "chart_data_line_unknown": chart_data_line_unknown,
             "chart_data_line_total": chart_data_line_total,
+            "chart_data_line_seen": chart_data_line_seen,
+            "chart_data_line_bar": chart_data_line_bar,
             "chart_labels_line": chart_labels_line,
             "chart_data_pie": chart_data_pie,
             "chart_labels_pie": chart_labels_pie,

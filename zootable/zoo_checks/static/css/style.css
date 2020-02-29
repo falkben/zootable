@@ -12,6 +12,11 @@ main {
   flex: 1 0 auto;
 }
 
+/* override materialize */
+.collection a.collection-item:not(.active):hover {
+  background-color: #bbdefb !important;
+}
+
 /* for message list */
 .msg {
   border: 1px solid;
@@ -53,7 +58,7 @@ main {
 /* form errors */
 .errorlist {
   margin: 10px 0px;
-  padding: 12px;
+  padding: 12px !important;
   color: #d8000c;
   background-color: #ffd2d2;
 }
@@ -91,13 +96,14 @@ th {
 }
 
 /* form stuff */
-form p > input#id_num_days.narrow-count,
-table.striped input.narrow-count,
-form p > input#id_count.narrow-count,
-form span > input#id_count_male.narrow-count,
-form span > input#id_count_female.narrow-count,
-form span > input#id_count_unknown.narrow-count {
-  width: 3ch;
+
+input[type="range"] {
+  border: 1px solid transparent;
+}
+
+.checkbox-red[type="checkbox"]:checked + span:not(.lever)::before {
+  border-right: 2px solid #d8000c;
+  border-bottom: 2px solid #d8000c;
 }
 
 [type="radio"]:not(:checked) + span,
@@ -221,7 +227,6 @@ label [type="radio"][value="NS"]:checked + span,
 .edit_group {
   display: flex;
   flex-direction: column;
-  padding: 1%;
   text-align: center;
 }
 
@@ -229,13 +234,22 @@ label [type="radio"][value="NS"]:checked + span,
   flex: auto;
 }
 
-.group_prior_counts {
-  display: flex;
-  flex-direction: row;
+.group_table_row .prior_count_td {
+  padding: 15px 0;
 }
 
-.group_prior_counts span {
-  flex: auto;
+.group_prior_counts div.group_prior_count_items {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.1rem 0.1rem;
+}
+
+.edit_group_prior_count {
+  position: absolute;
+  top: 8.5rem;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .condition-radio {
@@ -328,13 +342,17 @@ a.increment i {
   .tally-table-head th {
     top: 64px;
   }
+
+  .group_prior_counts div.group_prior_count_items {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .group_table_row .prior_count_td {
+    padding: inherit;
+  }
 }
 
 @media only screen and (min-width: 560px) {
-  .edit_group {
-    flex-direction: row;
-  }
-
   #chart-text-container {
     flex-direction: row;
   }
