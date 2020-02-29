@@ -81,14 +81,17 @@ def redirect_if_not_permitted(request, enclosure):
 def home(request):
     enclosures_query = get_accessible_enclosures(request)
 
+    # only show enclosures that have active animals/groups
     query = Q(animals__active=True) | Q(groups__active=True)
 
-    # only show enclosures that have active animals/groups
+    # storing selected role, gets cleared if you log out
+    session_role_name = request.session.get("selected_role", None)
 
-    role_name = request.GET.get("role", None)
+    role_name = request.GET.get("role", session_role_name)
     if role_name is not None:
         role = Role.objects.get(name=role_name)
         query = query & Q(roles=role)
+        request.session["selected_role"] = role_name
     else:
         role = None
 
