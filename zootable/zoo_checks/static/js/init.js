@@ -152,3 +152,32 @@ document.addEventListener("DOMContentLoaded", function() {
   var elems = document.querySelectorAll(".tooltipped");
   var instances = M.Tooltip.init(elems, {});
 });
+
+function update_species_count_elem(species_form_id, counted) {
+  const q_sel = "td#" + species_form_id + " p input";
+  var species_input = (document.querySelector(
+    q_sel
+  ).value = counted.toString());
+}
+
+document
+  .querySelectorAll(".tally-table-body .condition-radio input[type=radio]")
+  .forEach(elem => {
+    elem.addEventListener("click", function(e) {
+      const condition_radio_td_id =
+        elem.parentElement.parentElement.parentElement.parentElement.id;
+      const radio_selector =
+        "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
+      var cond_counted = 0;
+      document.querySelectorAll(radio_selector).forEach(elem => {
+        if (elem.checked && elem.value != "NS") {
+          cond_counted += 1;
+        }
+      });
+      const species_form_id = condition_radio_td_id.replace(
+        "_animal_condition_form",
+        "_form"
+      );
+      update_species_count_elem(species_form_id, cond_counted);
+    });
+  });
