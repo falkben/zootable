@@ -155,9 +155,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function update_species_count_elem(species_form_id, counted) {
   const q_sel = "td#" + species_form_id + " p input";
-  var species_input = (document.querySelector(
-    q_sel
-  ).value = counted.toString());
+  const species_input = document.querySelector(q_sel);
+
+  if (parseInt(species_input.value) < counted) {
+    species_input.value = counted.toString();
+  }
+}
+
+function count_species_animals_conditions(condition_radio_td_id) {
+  const radio_selector =
+    "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
+  let cond_counted = 0;
+  document.querySelectorAll(radio_selector).forEach(elem => {
+    if (elem.checked && elem.value != "NS") {
+      cond_counted += 1;
+    }
+  });
+  return cond_counted;
 }
 
 document
@@ -166,14 +180,9 @@ document
     elem.addEventListener("click", function(e) {
       const condition_radio_td_id =
         elem.parentElement.parentElement.parentElement.parentElement.id;
-      const radio_selector =
-        "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
-      var cond_counted = 0;
-      document.querySelectorAll(radio_selector).forEach(elem => {
-        if (elem.checked && elem.value != "NS") {
-          cond_counted += 1;
-        }
-      });
+
+      cond_counted = count_species_animals_conditions(condition_radio_td_id);
+
       const species_form_id = condition_radio_td_id.replace(
         "_animal_condition_form",
         "_form"
