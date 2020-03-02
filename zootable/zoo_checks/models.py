@@ -90,11 +90,11 @@ class Role(models.Model):
 
 class Species(models.Model):
     common_name = models.CharField(max_length=100, unique=True)
-    species_name = models.CharField(max_length=100)
-    genus_name = models.CharField(max_length=100)
     class_name = models.CharField(max_length=100)
     order_name = models.CharField(max_length=100)
     family_name = models.CharField(max_length=100)
+    genus_name = models.CharField(max_length=100)
+    species_name = models.CharField(max_length=100)
 
     slug = AutoSlugField(
         null=True,
