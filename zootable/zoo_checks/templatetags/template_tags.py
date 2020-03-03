@@ -29,3 +29,8 @@ def addDays(days, start_date=None):
 
     newDate = start_date + datetime.timedelta(days=days)
     return newDate
+
+
+@register.filter()
+def hidden_initial_field(field):
+    return field.as_hidden(only_initial=True)
