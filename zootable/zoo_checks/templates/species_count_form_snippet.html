@@ -10,7 +10,7 @@
     </b><br/>
     <em>({{species.genus_name}} {{species.species_name}})</em>
 </td>
-<td id="{{species.common_name|cut:" "}}_form">
+<td id="species_{{species.id}}_form">
     {% if not group_form %}
         {% for field in form.hidden_fields %}
             {{field}}
