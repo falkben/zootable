@@ -14,10 +14,10 @@
     </div>
 </nav>
 
-<p><b>Group Accession Number:</b> {{group.accession_number}}</p>
+<p><b>Group Accession Number:</b> <a href="{% url 'group_counts' group.accession_number%}">{{group.accession_number}}</a></p>
 <p><b>Common name:</b> {{group.species.common_name}}</p>
 <p><b>Species:</b> <em>{{group.species.genus_name}} {{group.species.species_name}}</em></p>
-<p><b>Enclosure:</b> {{enclosure}}</p>
+<p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure.name}}</a></p>
 <p><b>Date:</b> {{dateday.date}}</p>
 <p>
     <b>User:</b>
