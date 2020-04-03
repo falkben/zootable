@@ -1,5 +1,5 @@
-
 {% for enc_changeset_list in obj_enclosure_changeset_list %}
+    <h5>{{enc_changeset_list.grouper}}</h5>
     {% regroup enc_changeset_list.list by action as obj_enc_changeset_list %}
     {% for change in obj_enc_changeset_list %}
         <div>
@@ -33,7 +33,7 @@
             {% for value in change.object_kwargs.values %}
                 <td>{{value}}</td>
             {% endfor %}
-            
+
             </tr>
         {% endfor %}
         </tbody>

@@ -10,15 +10,23 @@
 <b>File</b>: {{upload_file}}
 </p>
 
-<h3>Animals</h3>
+<h4>Animals</h4>
 
+{% if changesets.animals %}
 {% regroup changesets.animals by enclosure as animal_enclosure_changeset_list %}
 {% include "changeset_table_partial.html" with obj_enclosure_changeset_list=animal_enclosure_changeset_list %}
+{% else %}
+    No animals
+{% endif %}
 
-<h3>Groups</h3>
+<h4>Groups</h4>
 
-{% regroup changesets.groups by enclosure as group_enclosure_changeset_list %}
-{% include "changeset_table_partial.html" with obj_enclosure_changeset_list=group_enclosure_changeset_list %}
+{% if changesets.groups %}
+    {% regroup changesets.groups by enclosure as group_enclosure_changeset_list %}
+    {% include "changeset_table_partial.html" with obj_enclosure_changeset_list=group_enclosure_changeset_list %}
+{% else %}
+    No groups
+{% endif %}
 
 <form action="{% url 'confirm_upload' %}" method="post">
     {% csrf_token %}
