@@ -46,17 +46,17 @@ urlpatterns = [
         name="edit_species_count",
     ),
     path(
-        "edit_group_count/<int:group>/<int:year>/<int:month>/<int:day>/",
+        "edit_group_count/<group>/<int:year>/<int:month>/<int:day>/",
         views.edit_group_count,
         name="edit_group_count",
     ),
     path(
-        "edit_animal_count/<int:animal>/<int:year>/<int:month>/<int:day>/",
+        "edit_animal_count/<animal>/<int:year>/<int:month>/<int:day>/",
         views.edit_animal_count,
         name="edit_animal_count",
     ),
-    path("animal_counts/<int:animal>", views.animal_counts, name="animal_counts"),
-    path("group_counts/<int:group>", views.group_counts, name="group_counts"),
+    path("animal_counts/<animal>", views.animal_counts, name="animal_counts"),
+    path("group_counts/<group>", views.group_counts, name="group_counts"),
     path(
         "species_counts/<slug:species_slug>/<slug:enclosure_slug>",
         views.species_counts,

@@ -14,9 +14,9 @@
     </div>
 </nav>
 
-<p><b>Common name:</b> {{species.common_name}}</p>
+<p><b>Common name:</b> <a href="{% url 'species_counts' species.slug enclosure.slug %}">{{species.common_name}}</a></p>
 <p><b>Species:</b> <em>{{species.genus_name}} {{species.species_name}}</em></p>
-<p><b>Enclosure:</b> {{enclosure}}</p>
+<p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure.name}}</a></p>
 <p><b>Date:</b> {{dateday.date}}</p>
 <p><b>User:</b>
 {% if count.user %}

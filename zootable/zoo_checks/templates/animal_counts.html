@@ -28,7 +28,7 @@
         {% endif %}
         <p><b>Common name:</b> {{animal.species.common_name}}</p>
         <p><b>Species:</b> <em>{{animal.species.genus_name}} {{animal.species.species_name}}</em></p>
-        <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure}}</a></p>
+        <p><b>Enclosure:</b> <a href="{%url 'count' enclosure.slug %}">{{enclosure.name}}</a></p>
         <p><b>Sex:</b> {{animal.sex}}</p>
     </div>
 
