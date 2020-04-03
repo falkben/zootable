@@ -1,9 +1,10 @@
+from operator import itemgetter
 import re
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
 
-from zoo_checks.models import Animal, Enclosure, Group, Species, User
+from zoo_checks.models import Animal, Enclosure, Group, Species
 
 
 def validate(df):
@@ -33,6 +34,8 @@ def validate(df):
 
     if not all([col in df_col_names for col in req_cols]):
         raise TypeError("Not all columns found in file")
+
+    df["Accession"] = df["Accession"].apply(str)
 
     return df[req_cols]
 
@@ -261,6 +264,8 @@ def get_objs_to_delete(df, modeltype):
                 )
             )
 
+    changesets.sort(key=itemgetter("enclosure"))
+
     return changesets
 
 
@@ -289,6 +294,8 @@ def get_modeltype_changeset(df, modeltype):
                     "add", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
                 )
             )
+
+    add_update_changesets.sort(key=itemgetter("enclosure"))
 
     return add_update_changesets
 
