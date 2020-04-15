@@ -1,9 +1,9 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
 
-document.querySelectorAll("input[type=radio]").forEach(elem => {
+document.querySelectorAll("input[type=radio]").forEach((elem) => {
   elem.addEventListener("click", allowUncheck);
   // only needed if elem can be pre-checked
   elem.previous = elem.checked;
@@ -17,7 +17,7 @@ function allowUncheck(e) {
   // (either that or store the id of the checked element)
   document
     .querySelectorAll(`input[type=radio][name=${this.name}]`)
-    .forEach(elem => {
+    .forEach((elem) => {
       elem.previous = elem.checked;
     });
 }
@@ -29,27 +29,27 @@ function change_tally_form() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".datepicker");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
-    autoClose: true
+    autoClose: true,
   });
 });
 
 // this overwrites the init for all datepicker's above
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll("#id_tally_date");
   var today = new Date();
   var instances = M.Datepicker.init(elems, {
     format: "mm/dd/yyyy",
     maxDate: today,
     autoClose: false,
-    onClose: function() {
+    onClose: function () {
       change_tally_form();
-    }
+    },
   });
 });
 
@@ -80,8 +80,8 @@ function chartVisible(id) {
 
 document
   .querySelectorAll(".condition-radio input[type=radio]")
-  .forEach(elem => {
-    elem.addEventListener("click", function(e) {
+  .forEach((elem) => {
+    elem.addEventListener("click", function (e) {
       // needs attention causes comment field to appear
       let comment_field =
         elem.parentElement.parentElement.parentElement.nextElementSibling;
@@ -122,22 +122,22 @@ function update_slider(slider_id, value) {
   document.getElementById(slider_id).value = value;
 }
 
-document.querySelectorAll(".count_seen_slider").forEach(elem => {
-  elem.addEventListener("input", function(e) {
+document.querySelectorAll(".count_seen_slider").forEach((elem) => {
+  elem.addEventListener("input", function (e) {
     update_count_seen(elem);
   });
 });
 
-document.querySelectorAll(".count_bar_slider").forEach(elem => {
-  elem.addEventListener("input", function(e) {
+document.querySelectorAll(".count_bar_slider").forEach((elem) => {
+  elem.addEventListener("input", function (e) {
     update_count_bar(elem);
   });
 });
 
 document
   .querySelectorAll(".count_seen_input,.count_bar_input")
-  .forEach(elem => {
-    elem.addEventListener("input", function(e) {
+  .forEach((elem) => {
+    elem.addEventListener("input", function (e) {
       update_slider(elem.id + "_slider", elem.value);
       if (elem.className.includes("count_seen_input")) {
         update_bar_elems(
@@ -148,7 +148,7 @@ document
     });
   });
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".tooltipped");
   var instances = M.Tooltip.init(elems, {});
 });
@@ -166,7 +166,7 @@ function count_species_animals_conditions(condition_radio_td_id) {
   const radio_selector =
     "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
   let cond_counted = 0;
-  document.querySelectorAll(radio_selector).forEach(elem => {
+  document.querySelectorAll(radio_selector).forEach((elem) => {
     if (elem.checked && elem.value != "NS") {
       cond_counted += 1;
     }
@@ -176,8 +176,8 @@ function count_species_animals_conditions(condition_radio_td_id) {
 
 document
   .querySelectorAll(".tally-table-body .condition-radio input[type=radio]")
-  .forEach(elem => {
-    elem.addEventListener("click", function(e) {
+  .forEach((elem) => {
+    elem.addEventListener("click", function (e) {
       const condition_radio_td_id =
         elem.parentElement.parentElement.parentElement.parentElement.id;
 
@@ -190,3 +190,9 @@ document
       update_species_count_elem(species_form_id, cond_counted);
     });
   });
+
+document.querySelectorAll(".msg").forEach((elem) => {
+  elem.addEventListener("animationend", () => {
+    elem.style.display = "none";
+  });
+});

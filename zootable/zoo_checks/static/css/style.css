@@ -19,11 +19,30 @@ main {
 
 /* for message list */
 .msg {
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  z-index: 2;
+
   border: 1px solid;
   padding: 10px;
   margin: 20px;
   color: grey;
+
+  opacity: 1;
+
+  animation: fade 3s linear;
 }
+
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 .msg-error {
   /* rouge */
   border-color: #d32f2f;
