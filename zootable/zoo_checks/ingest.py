@@ -127,6 +127,9 @@ def get_group_attributes(row):
     population_female = row["Population _Female"]
     population_unknown = row["Population _Unknown"]
 
+    # todo: we need to make sure we grab _all_ the attributes
+    # something like Model._meta.get_fields()
+
     attributes = {
         "accession_number": accession_number,
         "active": active,
@@ -159,6 +162,9 @@ def create_groups(df):
 def get_animal_attributes(row):
     # zootable animal col names:
     # name, active, accession, species, identifier, enclosure, sex
+
+    # todo: we need to always make sure we grab _all_ the attributes
+
     active, accession_number, species, enclosure = get_animal_set_info(row)
     identifier = get_animal_identifier(row["Identifiers"])
     name = get_animal_name(row["Identifiers"])
@@ -251,18 +257,25 @@ def create_changeset_action(action, **kwargs):
 def get_objs_to_delete(df, modeltype):
     changesets = []
 
+    # * this should mark for delete any anim/grps that get switched from one type to the other
     upload_accession_numbers = set(df["Accession"])
+
     enclosure_objects = Enclosure.objects.filter(name__in=get_enclosures(df))
-    all_objs = modeltype.objects.filter(enclosure__in=enclosure_objects, active=True)
-    for obj in all_objs:
-        if obj.accession_number not in upload_accession_numbers:
-            obj_attrs = obj.to_dict()
-            obj_attrs.pop("id")
-            changesets.append(
-                create_changeset_action(
-                    "del", object_kwargs=obj_attrs, enclosure=obj.enclosure.name
-                )
+
+    # "active" animals/groups in the included enclosures which aren't in uploaded accession numbers
+    # need to be deleted
+    objs_to_delete = modeltype.objects.filter(
+        active=True, enclosure__in=enclosure_objects
+    ).exclude(accession_number__in=upload_accession_numbers)
+
+    for obj in objs_to_delete:
+        obj_attrs = obj.to_dict()
+        obj_attrs.pop("id")
+        changesets.append(
+            create_changeset_action(
+                "del", object_kwargs=obj_attrs, enclosure=obj.enclosure.name
             )
+        )
 
     changesets.sort(key=itemgetter("enclosure"))
 
@@ -281,19 +294,23 @@ def get_modeltype_changeset(df, modeltype):
     for _, row in df.iterrows():
         try:
             modeltype.objects.get(accession_number=row["Accession"])
-            # if this doesn't fail, we have an update
+            # if this doesn't fail, an entry exists for that modeltype
+
+            # note: this is not necessarily an update
             add_update_changesets.append(
                 create_changeset_action(
                     "update", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
                 )
             )
         except ObjectDoesNotExist:
-            # an addition
+            # an addition for this modeltype
             add_update_changesets.append(
                 create_changeset_action(
                     "add", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
                 )
             )
+
+            # todo: check to see if it's a deletion of the other model type here?
 
     add_update_changesets.sort(key=itemgetter("enclosure"))
 
@@ -304,10 +321,11 @@ def get_changesets(df):
     # get the set of enclosures that the user loaded -- that data is expected to be complete
     enclosures_uploaded = get_enclosures(df)
 
-    del_anim_changesets = get_objs_to_delete(df, Animal)
-    del_group_changesets = get_objs_to_delete(df, Group)
-
     animals, groups = find_animals_groups(df)
+
+    del_anim_changesets = get_objs_to_delete(animals, Animal)
+    del_group_changesets = get_objs_to_delete(groups, Group)
+
     animal_changeset = get_modeltype_changeset(animals, Animal)
     group_changeset = get_modeltype_changeset(groups, Group)
 
