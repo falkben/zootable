@@ -15,14 +15,40 @@ from zoo_checks.ingest import (
     # get_changesets,
 )
 
+INPUT_EXAMPLE = "zootable/test_data/example.xlsx"
+INPUT_EMPTY = "zootable/test_data/empty_data.xlsx"
+INPUT_WRONG_COL = "zootable/test_data/wrong_column.xlsx"
+INPUT_MALFORMED = "zootable/test_data/malformed.xlsx"
+INPUT_ACCESSIONS_BAD = "zootable/test_data/too_many_digits_access_num.xlsx"
+
 
 def test_read_xlsx_data():
-    pytest.raises(TypeError, read_xlsx_data, "zootable/test_data/empty_data.xlsx")
-    pytest.raises(TypeError, read_xlsx_data, "zootable/test_data/wrong_column.xlsx")
-    pytest.raises(XLRDError, read_xlsx_data, "zootable/test_data/malformed.xlsx")
+    pytest.raises(TypeError, read_xlsx_data, INPUT_EMPTY)
+    pytest.raises(TypeError, read_xlsx_data, INPUT_WRONG_COL)
+    pytest.raises(XLRDError, read_xlsx_data, INPUT_MALFORMED)
 
-    df = read_xlsx_data("zootable/test_data/example.xlsx")
+    df = read_xlsx_data(INPUT_EXAMPLE)
     assert df.shape[0] == 5
+
+
+def test_validate_input():
+
+    df = read_xlsx_data(INPUT_ACCESSIONS_BAD)
+    with pytest.raises(
+        ValueError, match="Accession numbers should only have 6 characters"
+    ):
+        validate_input(df)
+
+    df_simple_bad = pd.DataFrame({"Accession": "12345"}, index=[0])
+    with pytest.raises(
+        ValueError, match="Accession numbers should only have 6 characters"
+    ):
+        validate_input(df_simple_bad)
+
+    df_simple_good = pd.DataFrame([{"Accession": "654321"}])
+    df_validated = validate_input(df_simple_good)
+    assert df_validated is not None
+    assert df_validated.loc[0, "Accession"] == "654321"
 
 
 @pytest.mark.django_db
@@ -41,7 +67,7 @@ def test_create_enclosures():
 @pytest.mark.django_db
 def test_create_species():
 
-    df = read_xlsx_data("zootable/test_data/example.xlsx")
+    df = read_xlsx_data(INPUT_EXAMPLE)
     create_species(df)
 
     for common_name in df["Common"]:
@@ -51,22 +77,17 @@ def test_create_species():
 
 @pytest.mark.django_db
 def test_create_animals():
-    df = read_xlsx_data("zootable/test_data/example.xlsx")
+    df = read_xlsx_data(INPUT_EXAMPLE)
 
     # need to first create species, enclosures
     create_enclosures(df)
     create_species(df)
 
-    df_validated = validate_input(df)
-    create_animals(df_validated)
+    create_animals(df)
 
-    for acc_num in df_validated["Accession"]:
+    for acc_num in df["Accession"]:
         anim = Animal.objects.get(accession_number=acc_num)
         assert anim is not None
-
-
-def test_validate_input():
-    pass
 
 
 def test_find_animals_groups():
@@ -84,4 +105,12 @@ def test_get_changesets():
 
     # test removes from enclosure as adds
 
+    pass
+
+
+def test_group_becomes_individuals():
+    pass
+
+
+def test_individual_becomes_group():
     pass
