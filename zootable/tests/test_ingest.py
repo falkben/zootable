@@ -10,7 +10,7 @@ from zoo_checks.ingest import (
     create_species,
     create_animals,
     validate_input,
-    # find_animals_groups,
+    find_animals_groups,
     # create_groups,
     # get_changesets,
 )
@@ -91,7 +91,18 @@ def test_create_animals():
 
 
 def test_find_animals_groups():
-    pass
+    cols = ["Population _Male", "Population _Female", "Population _Unknown"]
+    nums = [[0, 1, 0], [1, 0, 1], [1, 0, 0], [0, 0, 1]]
+
+    data = []
+    for row in nums:
+        data.append({c: n for c, n in zip(cols, row)})
+
+    df = pd.DataFrame(data)
+    animals, groups = find_animals_groups(df)
+
+    assert animals.shape[0] == 3
+    assert groups.shape[0] == 1
 
 
 def test_create_groups():
@@ -109,8 +120,22 @@ def test_get_changesets():
 
 
 def test_group_becomes_individuals():
+    # create a group w/ an accession number
+    # create a dataframe with that accession number but only one individual
+    # get_changesets on that dataframe
+
+    # assert we are removing the group
+    # assert we are adding an individual
+
     pass
 
 
 def test_individual_becomes_group():
+    # create an individual with an accession number
+    # create a dataframe w/ that accession number w/ > 1 individuals
+    # get_changesets on that dataframe
+
+    # assert we are removing the individual
+    # assert we are adding a group
+
     pass
