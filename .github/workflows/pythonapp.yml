@@ -40,5 +40,3 @@ jobs:
         run: python zootable/manage.py migrate --noinput
       - name: Test with pytest
         run: pytest zootable
-        env:
-          SECRET_KEY: "PYTEST_GITHUB_ACTIONS_SECRET_KEY"
