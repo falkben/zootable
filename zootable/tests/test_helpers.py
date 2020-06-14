@@ -1,65 +1,85 @@
-import datetime
-
 import pandas as pd
+import pytest
 from django.utils import timezone
-from django_mock_queries.query import MockField, MockModel, MockSet
 
 from zoo_checks.helpers import clean_df, qs_to_df
+from zoo_checks.models import Animal, Enclosure, Group, Species, GroupCount
 
 
-class MockFieldIsRelation(MockField):
-    def __init__(self, *args, **kwargs):
-        self.is_relation = kwargs.pop("is_relation", False)
-        super().__init__(*args, **kwargs)
-
-
+@pytest.mark.django_db
 def test_qs_to_df():
-    # animal count
-    test_data = {
-        "id": 1637,
-        "datetimecounted": datetime.datetime(2019, 9, 26, 13, 49, 28, 281415),
-        "user_id": 4,
-        "enclosure_id": 12,
-        "condition": "SE",
-        "animal_id": 29,
-        "datecounted": datetime.date(2019, 9, 26),
-    }
-    test_df = pd.DataFrame([test_data])
-    qs = MockSet(MockModel(test_data))
-    df = qs_to_df(qs, [MockFieldIsRelation(k) for k in list(test_data.keys())])
-    assert pd.DataFrame.equals(df, test_df)
+    """ Tests the conversion of a queryset to a dataframe
+    """
 
-    # group count
-    test_data = {
-        "id": 6,
-        "datetimecounted": datetime.datetime(2019, 9, 27, 3, 59, 59),
-        "user_id": 1,
-        "enclosure_id": 5,
-        "count_male": 0,
-        "count_female": 0,
-        "count_unknown": 25,
-        "group_id": 1,
-        "datecounted": datetime.date(2019, 9, 26),
-    }
-    test_df = pd.DataFrame([test_data])
-    qs = MockSet(MockModel(test_data))
-    df = qs_to_df(qs, [MockFieldIsRelation(k) for k in list(test_data.keys())])
-    assert pd.DataFrame.equals(df, test_df)
+    # pattern:
+    # testdata: dict
+    # create test dataframe from dict
+    # create a record in the database from dict
+    # get the record as a queryset using that dict as the filter
+    # convert the queryset to a dataframe
+    # assert all items in original dict are present in created dataframe
 
-    # species count
-    test_data = {
-        "id": 25,
-        "datetimecounted": datetime.datetime(2019, 9, 27, 16, 10, 24, 504457),
-        "user_id": 1,
-        "enclosure_id": 5,
-        "count": 3,
-        "species_id": 10,
-        "datecounted": datetime.date(2019, 9, 27),
+    enc_data = {"name": "test_enclosure"}
+    enc = Enclosure(**enc_data)
+    enc.save()
+
+    sp_data = {
+        "common_name": "test_common_name",
+        "class_name": "test_class_name",
+        "order_name": "test_order_name",
+        "family_name": "test_family_name",
+        "genus_name": "test_genus_name",
+        "species_name": "test_species_name",
     }
-    test_df = pd.DataFrame([test_data])
-    qs = MockSet(MockModel(test_data))
-    df = qs_to_df(qs, [MockFieldIsRelation(k) for k in list(test_data.keys())])
-    assert pd.DataFrame.equals(df, test_df)
+    sp = Species(**sp_data)
+    sp.save()
+
+    anim_data = {
+        "accession_number": "abcdef",
+        "name": "test_name",
+        "identifier": "test_identifier",
+    }
+    anim_foreign = {
+        "species": sp,
+        "enclosure": enc,
+    }
+    animal = Animal(**{**anim_data, **anim_foreign})
+    animal.save()
+
+    group_data = {
+        "accession_number": "fedcba",
+        "population_female": 10,
+    }
+    group_foreign = {
+        "species": sp,
+        "enclosure": enc,
+    }
+    group = Group(**{**group_data, **group_foreign})
+    group.save()
+
+    gp_count_data = {
+        "count_bar": 10,
+        "count_seen": 100,
+    }
+    gp_count_foreign = {
+        "group": group,
+    }
+    gp_count = GroupCount(**{**gp_count_data, **gp_count_foreign})
+    gp_count.save()
+
+    def _check_dataframe(dict_data, model):
+        df_test = pd.DataFrame([dict_data])
+
+        qs = model.objects.filter(**dict_data)
+        df_from_qs = qs_to_df(qs, model._meta.fields)
+
+        for k, v in dict_data.items():
+            assert df_test.iloc[0][k] == df_from_qs.iloc[0][k] == v
+
+    _check_dataframe(sp_data, Species)
+    _check_dataframe(anim_data, Animal)
+    _check_dataframe(group_data, Group)
+    _check_dataframe(gp_count_data, GroupCount)
 
 
 def test_clean_df():
