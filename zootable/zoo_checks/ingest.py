@@ -6,38 +6,39 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from zoo_checks.models import Animal, Enclosure, Group, Species
 
+TRACKS_REQ_COLS = [
+    "Enclosure",
+    "Accession",
+    "Common",
+    "Class",
+    "Order",
+    "Family",
+    "GSS",
+    "Species",
+    "Sex",
+    "Identifiers",  # * contains both name and identifier for an animal
+    "Population _Male",
+    "Population _Female",
+    "Population _Unknown",
+]
+
 
 def validate(df):
     """xlsx file needs certain columns, can't be empty
     """
 
-    req_cols = [
-        "Enclosure",
-        "Accession",
-        "Common",
-        "Class",
-        "Order",
-        "Family",
-        "GSS",
-        "Species",
-        "Sex",
-        "Identifiers",
-        "Population _Male",
-        "Population _Female",
-        "Population _Unknown",
-    ]
     df_col_names = list(df.columns)
 
     # ensure # of rows > 0
     if not df.shape[0] > 0:
         raise TypeError("No data found in file")
 
-    if not all([col in df_col_names for col in req_cols]):
+    if not all([col in df_col_names for col in TRACKS_REQ_COLS]):
         raise TypeError("Not all columns found in file")
 
     df["Accession"] = df["Accession"].apply(str)
 
-    return df[req_cols]
+    return df[TRACKS_REQ_COLS]
 
 
 def read_xlsx_data(datafile):
@@ -147,6 +148,15 @@ def get_group_attributes(row):
 def create_groups(df):
     """Creates groups
     """
+
+    pop_sum = df[["Population _Male", "Population _Female", "Population _Unknown"]].sum(
+        axis=1
+    )
+    try:
+        assert all(pop_sum > 1)
+    except AssertionError:
+        raise ValueError("Cannot create groups. Not all have a pop. > 1")
+
     # col names for groups:
     # active, accession_number, species, population_male, population_female, population_unknown,
     # enclosure, population_total
@@ -186,6 +196,15 @@ def get_animal_attributes(row):
 def create_animals(df):
     """Creates animals (individuals)
     """
+
+    pop_sum = df[["Population _Male", "Population _Female", "Population _Unknown"]].sum(
+        axis=1
+    )
+    try:
+        assert all(pop_sum == 1)
+    except AssertionError:
+        raise ValueError("Cannot create individuals. Not all have a pop. of 1")
+
     for _, row in df.iterrows():
         attributes = get_animal_attributes(row)
 
@@ -254,13 +273,13 @@ def create_changeset_action(action, **kwargs):
     return changeset
 
 
-def get_objs_to_delete(df, modeltype):
+def get_objs_to_delete(df, modeltype, enclosure_names):
     changesets = []
 
     # * this should mark for delete any anim/grps that get switched from one type to the other
     upload_accession_numbers = set(df["Accession"])
 
-    enclosure_objects = Enclosure.objects.filter(name__in=get_enclosures(df))
+    enclosure_objects = Enclosure.objects.filter(name__in=enclosure_names)
 
     # "active" animals/groups in the included enclosures which aren't in uploaded accession numbers
     # need to be deleted
@@ -293,10 +312,11 @@ def get_modeltype_changeset(df, modeltype):
 
     for _, row in df.iterrows():
         try:
-            modeltype.objects.get(accession_number=row["Accession"])
             # if this doesn't fail, an entry exists for that modeltype
+            modeltype.objects.get(accession_number=row["Accession"])
 
-            # note: this is not necessarily an update
+            # * this is not necessarily an update if there's been no change
+            # TODO: separate type added if nothing changed
             add_update_changesets.append(
                 create_changeset_action(
                     "update", object_kwargs=row.to_dict(), enclosure=row["Enclosure"]
@@ -323,8 +343,8 @@ def get_changesets(df):
 
     animals, groups = find_animals_groups(df)
 
-    del_anim_changesets = get_objs_to_delete(animals, Animal)
-    del_group_changesets = get_objs_to_delete(groups, Group)
+    del_anim_changesets = get_objs_to_delete(animals, Animal, enclosures_uploaded)
+    del_group_changesets = get_objs_to_delete(groups, Group, enclosures_uploaded)
 
     animal_changeset = get_modeltype_changeset(animals, Animal)
     group_changeset = get_modeltype_changeset(groups, Group)
