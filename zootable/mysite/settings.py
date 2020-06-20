@@ -209,6 +209,10 @@ ACCOUNT_UNIQUE_EMAIL = True
 
 ACCOUNT_SIGNUP_FORM_CLASS = "zoo_checks.forms.SignupForm"
 
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+if ADMIN_EMAIL is not None:
+    ADMINS = [("admin", ADMIN_EMAIL)]
+
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
 

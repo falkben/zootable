@@ -1,6 +1,6 @@
 # Zootable
 
-[![Build Status](https://travis-ci.org/falkben/zootable.svg?branch=master)](https://travis-ci.org/falkben/zootable)
+![Build Status](https://github.com/falkben/zootable/workflows/Python%20application/badge.svg)
 
 Web app to tally zoo animals. See [zootable.com](https://zootable.com) for information.
 
