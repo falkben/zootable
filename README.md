@@ -116,6 +116,13 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 [postgres docs](https://www.postgresql.org/docs/9.1/app-pgrestore.html)
 
+### To clear sessions
+
+1. First log into heroku bash: `heroku run bash -a zootable`
+1. Next clear the sessions: `django-admin clearsessions --pythonpath zootable --settings=zootable.mysite.settings`
+
+Documentation on clearing session store: https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store
+
 ## Update all requirements
 
 [Pur](https://pypi.org/project/pur/)
