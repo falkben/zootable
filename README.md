@@ -1,6 +1,6 @@
 # Zootable
 
-[![Build Status](https://travis-ci.org/falkben/zootable.svg?branch=master)](https://travis-ci.org/falkben/zootable)
+![Build Status](https://github.com/falkben/zootable/workflows/Python%20application/badge.svg)
 
 Web app to tally zoo animals. See [zootable.com](https://zootable.com) for information.
 
@@ -115,6 +115,13 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 [heroku docs](https://devcenter.heroku.com/articles/heroku-postgres-import-export)
 
 [postgres docs](https://www.postgresql.org/docs/9.1/app-pgrestore.html)
+
+### To clear sessions
+
+1. First log into heroku bash: `heroku run bash -a zootable`
+1. Next clear the sessions: `django-admin clearsessions --pythonpath zootable --settings=zootable.mysite.settings`
+
+Documentation on clearing session store: https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store
 
 ## Update all requirements
 
