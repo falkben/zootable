@@ -31,6 +31,8 @@ class SpeciesCountAdmin(admin.ModelAdmin):
 
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
+    fields = ("name", "slug", "enclosures", "users")
+    readonly_fields = ("slug",)
     filter_horizontal = ("users", "enclosures")
     # these can be function names
     # it uses what is defined in models.py which isn't what we want unless you give a "unique" name
@@ -130,10 +132,16 @@ class GroupInline(admin.TabularInline):
         return False
 
 
+class RoleEnclosureMembershipInline(admin.TabularInline):
+    # this allows modifying from the other side of the M2M relationship
+    model = Role.enclosures.through
+    extra = 0
+
+
 @admin.register(Enclosure)
 class EnclosureAdmin(admin.ModelAdmin):
     list_display = ("name", "animals", "groups")
-    inlines = (AnimalInline, GroupInline)
+    inlines = (AnimalInline, GroupInline, RoleEnclosureMembershipInline)
 
     def get_queryset(self, request):
         qs = super(EnclosureAdmin, self).get_queryset(request)
@@ -146,6 +154,12 @@ class EnclosureAdmin(admin.ModelAdmin):
         return ", ".join(g.accession_number for g in obj.groups.all())
 
 
+class RoleUserMembershipInline(admin.TabularInline):
+    # through references the model that manages the m2m relation
+    model = Role.users.through
+    extra = 0
+
+
 # Unregister the provided model admin
 admin.site.unregister(User)
 
@@ -154,18 +168,18 @@ admin.site.unregister(User)
 class CustomUserAdmin(UserAdmin):
     """This is primarily to limit permissions on the user page
     We really only want to allow staff to be able to add users to groups
-    This is copied from: 
+    This is copied from:
     https://realpython.com/manage-users-in-django-admin/#prevent-non-superusers-from-editing-their-own-permissions
     """
 
-    readonly_fields = [
-        "date_joined",
-    ]
+    readonly_fields = ["date_joined", "last_login"]
+
+    inlines = (RoleUserMembershipInline,)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         is_superuser = request.user.is_superuser
-        disabled_fields = set()  # type: Set[str]
+        disabled_fields = set()  # type: set[str]
 
         if not is_superuser:
             disabled_fields = {"username", "is_superuser", "user_permissions"}

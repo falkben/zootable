@@ -19,7 +19,7 @@ class Enclosure(models.Model):
         return self.name
 
     def species(self):
-        """Combines exhibit's animals' species and groups' species together 
+        """Combines exhibit's animals' species and groups' species together
         into a distinct queryset of species
         """
         animals = self.animals.filter(active=True).order_by(
@@ -77,6 +77,8 @@ class Enclosure(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
+
+    slug = AutoSlugField(null=True, default=None, populate_from="name", unique=True)
 
     enclosures = models.ManyToManyField(Enclosure, related_name="roles")
     users = models.ManyToManyField(User, related_name="roles")
