@@ -5,6 +5,7 @@ import pytz
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.forms import formset_factory
@@ -40,6 +41,10 @@ from .models import (
     Species,
     SpeciesCount,
 )
+import logging
+
+baselogger = logging.getLogger("zootable")
+logger = baselogger.getChild(__name__)
 
 """ helpers that need models """
 
@@ -84,16 +89,34 @@ def home(request):
     # only show enclosures that have active animals/groups
     query = Q(animals__active=True) | Q(groups__active=True)
 
-    # storing selected role, gets cleared if you log out
-    session_role_name = request.session.get("selected_role", None)
-
-    role_name = request.GET.get("role", session_role_name)
-    if role_name is not None:
-        role = Role.objects.get(name=role_name)
-        query = query & Q(roles=role)
-        request.session["selected_role"] = role_name
-    else:
+    # user requests view all
+    view_all_param = request.GET.get("view_all", False)
+    if view_all_param:
         role = None
+        request.session.pop("selected_role", None)
+
+    # might have a default selected role in session
+    # or might be requesting a selected role
+    else:
+        # default selected role, gets cleared if you log out
+        default_role = request.session.get("selected_role", None)
+
+        # get role query param (default_role if not found)
+        role_name = request.GET.get("role", default_role)
+
+        if role_name is not None:
+            try:
+                role = Role.objects.get(slug=role_name)
+                query = query & Q(roles=role)
+                request.session["selected_role"] = role_name
+            except ObjectDoesNotExist:
+                # role probably changed or bad query
+                messages.info(request, "Selected role not found")
+                role = None
+                request.session.pop("selected_role", None)
+                logger.info(f"role not found and removed from session: {role_name}")
+        else:
+            role = None
 
     enclosures_query = enclosures_query.filter(query).distinct()
 

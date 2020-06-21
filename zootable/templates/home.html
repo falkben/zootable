@@ -38,13 +38,13 @@
         <h5>Roles</h5>
       </div>
 
-      <a href="/" class="collection-item blue lighten-5 black-text
+      <a href="/?view_all=true" class="collection-item blue lighten-5 black-text
         {% if selected_role == None %}
           active white-text accent-3
         {% endif %}
       " style="border: 0px; padding-left: 20px">View all</a>
       {% for role in roles %}
-        <a href="?role={{role.name}}" class="collection-item blue lighten-5 black-text
+        <a href="?role={{role.slug}}" class="collection-item blue lighten-5 black-text
           {% if selected_role == role %}
             active white-text accent-3
           {% endif %}

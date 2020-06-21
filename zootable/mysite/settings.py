@@ -69,7 +69,8 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "default")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "app@zootable.com"
-DEFAULT_FROM_EMAIL = "no-reply-notifications@zootable.com"
+DEFAULT_FROM_EMAIL = "no-reply-notifications@zootable.com"  # used for all other email
+SERVER_EMAIL = "server@zootable.com"  # used for email to ADMINS and MANAGERS
 
 try:
     from .local_settings import *
@@ -216,4 +217,31 @@ if ADMIN_EMAIL is not None:
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": (
+                "%(asctime)s [%(process)d] [%(levelname)s] "
+                + "pathname=%(pathname)s lineno=%(lineno)s "
+                + "funcname=%(funcName)s %(message)s"
+            ),
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "simple": {"format": "%(levelname)s %(message)s"},
+    },
+    "handlers": {
+        "null": {"level": "DEBUG", "class": "logging.NullHandler"},
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {"zootable": {"handlers": ["console"], "level": "INFO"}},
+}
+
+# django debug toolbar allowlist
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configuring-internal-ips
 INTERNAL_IPS = ["127.0.0.1", "localhost"]
