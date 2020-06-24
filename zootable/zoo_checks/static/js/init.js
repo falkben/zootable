@@ -85,7 +85,7 @@ document
       // needs attention causes comment field to appear
       let comment_field =
         elem.parentElement.parentElement.parentElement.nextElementSibling;
-      if (elem.value === "NA" || elem.value === "NS") {
+      if (elem.value === "NA" || elem.value === "AB") {
         comment_field.style.display = "block";
       }
     });
