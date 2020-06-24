@@ -393,16 +393,20 @@ class Count(models.Model):
 class AnimalCount(Count):
     SEEN = "SE"
     NEEDSATTENTION = "NA"
-    # bright active responsive (the best)
-    BAR = "BA"
+    BAR = "BA"  # bright active responsive
     NOT_SEEN = "NS"
+    ABSENT = "AB"
 
-    CONDITIONS = [(SEEN, "Seen"), (NEEDSATTENTION, "Attn"), (NOT_SEEN, "Not Seen")]
-
-    STAFF_CONDITIONS = [(BAR, "BAR")] + CONDITIONS
+    CONDITIONS = [
+        (BAR, "BAR"),
+        (SEEN, "Seen"),
+        (NEEDSATTENTION, "Attn"),
+        (ABSENT, "Absent"),
+        (NOT_SEEN, "Not Obs"),
+    ]
 
     # NOTE: everyone can do BAR now
-    condition = models.CharField(max_length=2, choices=STAFF_CONDITIONS, null=True)
+    condition = models.CharField(max_length=2, choices=CONDITIONS, null=True)
 
     comment = models.TextField(blank=True, default="")
 
