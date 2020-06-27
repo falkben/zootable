@@ -10,6 +10,7 @@ from zoo_checks.ingest import (
     create_species,
     find_animals_groups,
     get_changesets,
+    ingest_changesets,
     read_xlsx_data,
     validate_input,
 )
@@ -20,6 +21,8 @@ INPUT_EMPTY = "zootable/test_data/empty_data.xlsx"
 INPUT_WRONG_COL = "zootable/test_data/wrong_column.xlsx"
 INPUT_MALFORMED = "zootable/test_data/malformed.xlsx"
 INPUT_ACCESSIONS_BAD = "zootable/test_data/too_many_digits_access_num.xlsx"
+ONLY_GROUPS_EXAMPLE = "zootable/test_data/only_groups.xlsx"
+ONLY_ANIMALS_EXAMPLE = "zootable/test_data/only_animals.xlsx"
 
 
 def test_read_xlsx_data():
@@ -170,6 +173,39 @@ def test_get_changesets():
     ]
     # only one group
     assert ["111112"] == gp_add_accession
+
+
+@pytest.mark.django_db
+def test_ingest_changesets():
+    """ Test example ingest from df """
+
+    df = read_xlsx_data(INPUT_EXAMPLE)
+    ch_s = get_changesets(df)
+    ingest_changesets(ch_s)
+
+    accession_nums = df["Accession"]
+    for accession_num in accession_nums:
+        anim = Animal.objects.filter(accession_number=accession_num)
+        groups = Group.objects.filter(accession_number=accession_num)
+        assert len(anim) + len(groups) == 1
+
+    df = read_xlsx_data(ONLY_GROUPS_EXAMPLE)
+    ch_s = get_changesets(df)
+    ingest_changesets(ch_s)
+
+    accession_nums = df["Accession"]
+    for accession_num in accession_nums:
+        # this would raise an exception if it didn't find one
+        Group.objects.get(accession_number=accession_num)
+
+    df = read_xlsx_data(ONLY_ANIMALS_EXAMPLE)
+    ch_s = get_changesets(df)
+    ingest_changesets(ch_s)
+
+    accession_nums = df["Accession"]
+    for accession_num in accession_nums:
+        # this would raise an exception if it didn't find one
+        Animal.objects.get(accession_number=accession_num)
 
 
 @pytest.mark.django_db
