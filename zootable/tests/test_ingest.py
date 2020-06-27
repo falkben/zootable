@@ -189,6 +189,7 @@ def test_ingest_changesets():
         groups = Group.objects.filter(accession_number=accession_num)
         assert len(anim) + len(groups) == 1
 
+    # only groups
     df = read_xlsx_data(ONLY_GROUPS_EXAMPLE)
     ch_s = get_changesets(df)
     ingest_changesets(ch_s)
@@ -198,6 +199,7 @@ def test_ingest_changesets():
         # this would raise an exception if it didn't find one
         Group.objects.get(accession_number=accession_num)
 
+    # only animals
     df = read_xlsx_data(ONLY_ANIMALS_EXAMPLE)
     ch_s = get_changesets(df)
     ingest_changesets(ch_s)
@@ -206,6 +208,12 @@ def test_ingest_changesets():
     for accession_num in accession_nums:
         # this would raise an exception if it didn't find one
         Animal.objects.get(accession_number=accession_num)
+
+    # empty: making sure we don't raise any exceptions
+    df = read_xlsx_data(INPUT_EXAMPLE)
+    df_empty = df[0:0]
+    ch_s = get_changesets(df_empty)
+    ingest_changesets(ch_s)
 
 
 @pytest.mark.django_db
