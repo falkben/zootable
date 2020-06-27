@@ -149,6 +149,10 @@ def create_groups(df):
     """Creates groups
     """
 
+    # we sometimes don't have any to add
+    if len(df.index) == 0:
+        return None
+
     pop_sum = df[["Population _Male", "Population _Female", "Population _Unknown"]].sum(
         axis=1
     )
@@ -196,6 +200,10 @@ def get_animal_attributes(row):
 def create_animals(df):
     """Creates animals (individuals)
     """
+
+    # we sometimes don't have any to add
+    if len(df.index) == 0:
+        return None
 
     pop_sum = df[["Population _Male", "Population _Female", "Population _Unknown"]].sum(
         axis=1
