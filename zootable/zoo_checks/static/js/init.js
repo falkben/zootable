@@ -153,41 +153,58 @@ document.addEventListener("DOMContentLoaded", function () {
   var instances = M.Tooltip.init(elems, {});
 });
 
-function update_species_count_elem(species_form_id, counted) {
-  const q_sel = "td#" + species_form_id + " p input";
-  const species_input = document.querySelector(q_sel);
-
-  if (parseInt(species_input.value) < counted) {
-    species_input.value = counted.toString();
-  }
-}
-
 function count_species_animals_conditions(condition_radio_td_id) {
+  // get the number of individuals in a species
+  const input_selector = "td#" + condition_radio_td_id;
+  const elem_total = document.querySelectorAll(input_selector).length;
+
+  // get the number counted & checked
   const radio_selector =
     "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
   let cond_counted = 0;
+  let not_seen = 0;
   document.querySelectorAll(radio_selector).forEach((elem) => {
-    if (elem.checked && elem.value != "NS") {
-      cond_counted += 1;
+    if (elem.checked) {
+      if (elem.value == "NS") {
+        not_seen += 1;
+      } else {
+        cond_counted += 1;
+      }
     }
   });
-  return cond_counted;
+  return [cond_counted, not_seen, elem_total];
 }
 
 document
   .querySelectorAll(".tally-table-body .condition-radio input[type=radio]")
   .forEach((elem) => {
     elem.addEventListener("click", function (e) {
+      // elem (input radio) > label > span > div > td
+      // td.id gets us the species selector
       const condition_radio_td_id =
         elem.parentElement.parentElement.parentElement.parentElement.id;
 
-      cond_counted = count_species_animals_conditions(condition_radio_td_id);
+      // we count the radio buttons
+      const [
+        cond_counted,
+        not_seen,
+        elem_total,
+      ] = count_species_animals_conditions(condition_radio_td_id);
 
+      // we go up to the form in order to get the species count input text box
       const species_form_id = condition_radio_td_id.replace(
         "_animal_condition_form",
         "_form"
       );
-      update_species_count_elem(species_form_id, cond_counted);
+      const q_sel = "td#" + species_form_id + " p input";
+      const species_input = document.querySelector(q_sel);
+
+      const current_tally = parseInt(species_input.value);
+      if (current_tally > elem_total - not_seen) {
+        species_input.value = elem_total - not_seen;
+      } else if (current_tally < cond_counted) {
+        species_input.value = cond_counted;
+      }
     });
   });
 
