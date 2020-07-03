@@ -162,16 +162,12 @@ function count_species_animals_conditions(condition_radio_td_id) {
   const radio_selector =
     "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
   let cond_counted = 0;
-  let not_seen = 0;
   document.querySelectorAll(radio_selector).forEach((elem) => {
-    if (elem.checked) {
-      if (elem.value == "NS") {
-        not_seen += 1;
-      } else {
-        cond_counted += 1;
-      }
+    if (elem.checked && elem.value != "NS") {
+      cond_counted += 1;
     }
   });
+  const not_seen = elem_total - cond_counted;
   return [cond_counted, not_seen, elem_total];
 }
 
