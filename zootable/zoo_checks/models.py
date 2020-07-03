@@ -394,15 +394,15 @@ class AnimalCount(Count):
     SEEN = "SE"
     NEEDSATTENTION = "NA"
     BAR = "BA"  # bright active responsive
-    NOT_SEEN = "NS"
-    ABSENT = "AB"
+    ABSENT = "NS"  # used to be not seen
+    NOT_OBSERVED = ""
 
     CONDITIONS = [
         (BAR, "BAR"),
         (SEEN, "Seen"),
         (NEEDSATTENTION, "Attn"),
         (ABSENT, "Absent"),
-        (NOT_SEEN, "Not Obs"),
+        (NOT_OBSERVED, "Not Obs"),
     ]
 
     # NOTE: everyone can do BAR now

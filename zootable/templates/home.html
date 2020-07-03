@@ -16,7 +16,8 @@
         <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.slug %}">
           {{enclosure}}
         </a>
-        <em>{{enclosure.accession_numbers_observed}}/{{enclosure.accession_numbers_total}} obs.</em>
+      <br />
+        <em>{{enclosure.accession_numbers_observed}}/{{enclosure.accession_numbers_total}} entered</em>
       </p>
       {% endfor %}
 

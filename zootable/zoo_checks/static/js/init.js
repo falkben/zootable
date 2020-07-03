@@ -163,7 +163,7 @@ function count_species_animals_conditions(condition_radio_td_id) {
     "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
   let cond_counted = 0;
   document.querySelectorAll(radio_selector).forEach((elem) => {
-    if (elem.checked && elem.value != "NS") {
+    if (elem.checked && elem.value !== "NS" && elem.value !== "") {
       cond_counted += 1;
     }
   });
