@@ -108,3 +108,5 @@ venv.bak/
 
 # ignore database dumps
 *.dump
+
+node_modules
