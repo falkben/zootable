@@ -466,13 +466,13 @@ def animal_counts(request, animal):
     # generating the data and labels
     cond_slugs = [count["condition"] for count in query_data]
     chart_data = []
-    for cond_slug, _ in AnimalCount.STAFF_CONDITIONS:
+    for cond_slug, _ in AnimalCount.CONDITIONS:
         if cond_slug in cond_slugs:
             chart_data.append(query_data.get(condition=cond_slug)["num"])
         else:
             chart_data.append(0)
     # gets the full name of the condition (from second item in tuple)
-    chart_labels = [c[1] for c in AnimalCount.STAFF_CONDITIONS]
+    chart_labels = [c[1] for c in AnimalCount.CONDITIONS]
 
     return render(
         request,

@@ -198,7 +198,7 @@ label [type="radio"][value="NA"]:checked + span,
   color: #d32f2f;
 }
 
-/* Not seen orange darken-2 */
+/* Absent orange darken-2 */
 label [type="radio"][value="NS"]:checked + span::after {
   background-color: #f57c00 !important;
   border: 2px solid #f57c00 !important;
@@ -206,6 +206,16 @@ label [type="radio"][value="NS"]:checked + span::after {
 label [type="radio"][value="NS"]:checked + span,
 .condition-NS {
   color: #f57c00;
+}
+
+/* Not observed grey lighten-1 */
+label [type="radio"][value=""]:checked + span::after {
+  background-color: #757575 !important;
+  border: 2px solid #757575 !important;
+}
+label [type="radio"][value=""]:checked + span,
+.condition- {
+  color: #757575;
 }
 
 .condition-comment-p {

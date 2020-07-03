@@ -3,7 +3,7 @@
   "scripts": {
     "css-compile": "node-sass zootable/zoo_checks/static/scss -o zootable/zoo_checks/static/css",
     "css-watch": "node-sass zootable/zoo_checks/static/scss -o zootable/zoo_checks/static/css --watch",
-    "browser-sync": "browser-sync start --files \"zootable/zoo_checks/static/css/*.css, zootable/zoo_checks/static/js/*.js, zootable/zoo_checks/**/*.py, zootable/zoo_checks/templates/*.html\" --proxy 127.0.0.1:8000 --reload-delay=300 --reload-debounce=500",
+    "browser-sync": "browser-sync start --files \"zootable/zoo_checks/static/css/*.css, zootable/zoo_checks/static/js/*.js, zootable/zoo_checks/**/*.py, zootable/zoo_checks/templates/*.html, zootable/templates/*.html\" --proxy 127.0.0.1:8000 --reload-delay=1000 --reload-debounce=500",
     "start": "cd zootable && concurrently --kill-others \"npm run css-watch\" \"python manage.py runserver\" \"npm run browser-sync\" "
   },
   "repository": {

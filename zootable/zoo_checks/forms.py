@@ -15,7 +15,7 @@ class AnimalCountForm(forms.ModelForm):
         widgets = {"animal": forms.HiddenInput(), "enclosure": forms.HiddenInput()}
 
     condition = forms.ChoiceField(
-        choices=AnimalCount.STAFF_CONDITIONS,
+        choices=AnimalCount.CONDITIONS,
         widget=forms.RadioSelect,
         label="",
         required=False,
