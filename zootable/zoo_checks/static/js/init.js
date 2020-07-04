@@ -3,25 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var instances = M.Sidenav.init(elems, {});
 });
 
-document.querySelectorAll("input[type=radio]").forEach((elem) => {
-  elem.addEventListener("click", allowUncheck);
-  // only needed if elem can be pre-checked
-  elem.previous = elem.checked;
-});
-
-function allowUncheck(e) {
-  if (this.previous) {
-    this.checked = false;
-  }
-  // need to update previous on all elements of this group
-  // (either that or store the id of the checked element)
-  document
-    .querySelectorAll(`input[type=radio][name=${this.name}]`)
-    .forEach((elem) => {
-      elem.previous = elem.checked;
-    });
-}
-
 function change_tally_form() {
   const tally_date = document.getElementById("id_tally_date").value;
   if (tally_date != "") {
@@ -85,7 +66,7 @@ document
       // needs attention causes comment field to appear
       let comment_field =
         elem.parentElement.parentElement.parentElement.nextElementSibling;
-      if (elem.value === "NA" || elem.value === "AB") {
+      if (elem.value === "NA" || elem.value === "NS") {
         comment_field.style.display = "block";
       }
     });
@@ -156,18 +137,22 @@ document.addEventListener("DOMContentLoaded", function () {
 function count_species_animals_conditions(condition_radio_td_id) {
   // get the number of individuals in a species
   const input_selector = "td#" + condition_radio_td_id;
+
+  // total number of animals
   const elem_total = document.querySelectorAll(input_selector).length;
 
-  // get the number counted & checked
   const radio_selector =
-    "td#" + condition_radio_td_id + " .condition-radio input[type=radio]";
-  let cond_counted = 0;
-  document.querySelectorAll(radio_selector).forEach((elem) => {
-    if (elem.checked && elem.value !== "NS" && elem.value !== "") {
-      cond_counted += 1;
-    }
-  });
-  const not_seen = elem_total - cond_counted;
+    input_selector + " .condition-radio input[type=radio]:checked";
+
+  // number not_seen
+  const not_seen = document.querySelectorAll(radio_selector + '[value="NS"]')
+    .length;
+
+  // number counted (anything not "not seen" or unmarked)
+  const cond_counted = document.querySelectorAll(
+    radio_selector + ':not([value="NS"]):not([value=""])'
+  ).length;
+
   return [cond_counted, not_seen, elem_total];
 }
 
