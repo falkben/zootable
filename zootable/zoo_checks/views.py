@@ -296,6 +296,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
             "animals_formset": animals_formset,
             "formset_order": formset_order,
             "dateform": dateform,
+            "conditions": AnimalCount.CONDITIONS,
         },
     )
 

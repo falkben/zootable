@@ -1,14 +1,13 @@
+// initialization
+document.addEventListener("DOMContentLoaded", function () {
+  var elems = document.querySelectorAll("select");
+  var instances = M.FormSelect.init(elems, {});
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".sidenav");
   var instances = M.Sidenav.init(elems, {});
 });
-
-function change_tally_form() {
-  const tally_date = document.getElementById("id_tally_date").value;
-  if (tally_date != "") {
-    document.getElementById("datepicker_form").submit();
-  }
-}
 
 document.addEventListener("DOMContentLoaded", function () {
   var elems = document.querySelectorAll(".datepicker");
@@ -19,6 +18,18 @@ document.addEventListener("DOMContentLoaded", function () {
     autoClose: true,
   });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  var elems = document.querySelectorAll(".tooltipped");
+  var instances = M.Tooltip.init(elems, {});
+});
+
+function change_tally_form() {
+  const tally_date = document.getElementById("id_tally_date").value;
+  if (tally_date != "") {
+    document.getElementById("datepicker_form").submit();
+  }
+}
 
 // this overwrites the init for all datepicker's above
 document.addEventListener("DOMContentLoaded", function () {
@@ -129,11 +140,6 @@ document
     });
   });
 
-document.addEventListener("DOMContentLoaded", function () {
-  var elems = document.querySelectorAll(".tooltipped");
-  var instances = M.Tooltip.init(elems, {});
-});
-
 function count_species_animals_conditions(condition_radio_td_id) {
   // get the number of individuals in a species
   const input_selector = "td#" + condition_radio_td_id;
@@ -156,36 +162,38 @@ function count_species_animals_conditions(condition_radio_td_id) {
   return [cond_counted, not_seen, elem_total];
 }
 
+function update_species_count_w_condition(elem) {
+  // elem (input radio) > label > span > div > td
+  // td.id gets us the species selector
+  const condition_radio_td_id =
+    elem.parentElement.parentElement.parentElement.parentElement.id;
+
+  // we count the radio buttons
+  const [cond_counted, not_seen, elem_total] = count_species_animals_conditions(
+    condition_radio_td_id
+  );
+
+  // we go up to the form in order to get the species count input text box
+  const species_form_id = condition_radio_td_id.replace(
+    "_animal_condition_form",
+    "_form"
+  );
+  const q_sel = "td#" + species_form_id + " p input";
+  const species_input = document.querySelector(q_sel);
+
+  const current_tally = parseInt(species_input.value);
+  if (current_tally > elem_total - not_seen) {
+    species_input.value = elem_total - not_seen;
+  } else if (current_tally < cond_counted) {
+    species_input.value = cond_counted;
+  }
+}
+
 document
   .querySelectorAll(".tally-table-body .condition-radio input[type=radio]")
   .forEach((elem) => {
     elem.addEventListener("click", function (e) {
-      // elem (input radio) > label > span > div > td
-      // td.id gets us the species selector
-      const condition_radio_td_id =
-        elem.parentElement.parentElement.parentElement.parentElement.id;
-
-      // we count the radio buttons
-      const [
-        cond_counted,
-        not_seen,
-        elem_total,
-      ] = count_species_animals_conditions(condition_radio_td_id);
-
-      // we go up to the form in order to get the species count input text box
-      const species_form_id = condition_radio_td_id.replace(
-        "_animal_condition_form",
-        "_form"
-      );
-      const q_sel = "td#" + species_form_id + " p input";
-      const species_input = document.querySelector(q_sel);
-
-      const current_tally = parseInt(species_input.value);
-      if (current_tally > elem_total - not_seen) {
-        species_input.value = elem_total - not_seen;
-      } else if (current_tally < cond_counted) {
-        species_input.value = cond_counted;
-      }
+      update_species_count_w_condition(elem);
     });
   });
 
@@ -194,3 +202,30 @@ document.querySelectorAll(".msg").forEach((elem) => {
     elem.style.display = "none";
   });
 });
+
+function fill_conditions(selectObject) {
+  const species_id = selectObject.id.replace("condition-fill-", "");
+  const cond_val = selectObject.value;
+
+  // protect against unlikely scenario that they somehow selected the fill descriptor option
+  if (cond_val !== "fill") {
+    const selector_string =
+      "td#species_" +
+      species_id +
+      "_animal_condition_form div.fieldWrapper.condition-radio input[type=radio]" +
+      "[value='" +
+      cond_val +
+      "']";
+
+    let radio_elems = document.querySelectorAll(selector_string);
+    // wanted for loop instead of forEach because we update species count on only last radio button changed
+    for (var i = 0; i < radio_elems.length; i++) {
+      radio_elems[i].checked = 1;
+      if (i == radio_elems.length - 1) {
+        update_species_count_w_condition(radio_elems[i]);
+      }
+    }
+
+    selectObject.value = "fill";
+  }
+}
