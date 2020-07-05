@@ -22,7 +22,7 @@
             {% csrf_token %}
             Edit tally on date
             <div class="input-field inline">
-                <input id="id_tally_date" name="tally_date" type="text" class="datepicker inline" 
+                <input id="id_tally_date" name="tally_date" type="text" class="datepicker inline"
                     style="width:10ch" options="format:yyyy-mm-dd'">
             </div>
             <button type="submit" class="hide btn btn-flat btn-small blue lighten-4">
@@ -69,7 +69,28 @@
                 {% include "group_form_snippet.html" with form=group_form_dict.form group=group_form_dict.group prior_counts=group_form_dict.prior_counts %}
             </tr>
         {% endfor %}
-        
+
+        {% if spec_dict.animalformset_index.0.0 %}
+            <tr>
+            <td></td>
+
+            <td>
+            <span class="input-field condition-fill">
+            <select class="condition-fill-select" onchange="fill_conditions(this)" id="condition-fill-{{spec_dict.species.id}}">
+                <option value="fill" disabled selected>Fill conditions</option>
+                {% for cond in conditions %}
+                    <option value="{{cond.0}}">{{cond.1}}</option>
+                {% endfor %}
+            </select>
+            </span>
+            </td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            </tr>
+        {% endif %}
+
         {% for anim, ff, prior_conditions in spec_dict.animalformset_index %}
             <tr>
             {% include "animal_form_snippet.html" with form=ff %}

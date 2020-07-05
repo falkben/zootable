@@ -64,10 +64,17 @@ def set_formset_order(
         spec_anim_index = list(
             range(anim_total, spec_anim_queryset.count() + anim_total)
         )
-        formset_dict[spec.id]["animalformset_index"] = zip(
-            spec_anim_queryset,
-            [animals_formset[i] for i in spec_anim_index],
-            [anim.prior_conditions(ref_date=dateday) for anim in spec_anim_queryset],
+        # zip to pack the animal, form, and prior condtions, but this is unwieldy
+        # todo: is there a better way?
+        formset_dict[spec.id]["animalformset_index"] = list(
+            zip(
+                spec_anim_queryset,
+                [animals_formset[i] for i in spec_anim_index],
+                [
+                    anim.prior_conditions(ref_date=dateday)
+                    for anim in spec_anim_queryset
+                ],
+            )
         )
         # updating total animals
         anim_total += spec_anim_queryset.count()

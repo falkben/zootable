@@ -22,25 +22,13 @@
 {% for pcond in prior_conditions %}
 <td>
     <p>
-    <span class=
-        {% if pcond.count and pcond.count.get_condition_display != "" %}
-            {% if pcond.count.condition == "BA" %}
-                "blue-text text-darken-2">
-                {{pcond.count.get_condition_display}}
-            {% elif pcond.count.condition == "SE" %}
-                "teal-text text-lighten-1">
-                {{pcond.count.get_condition_display}}
-            {% elif pcond.count.condition == "NA" %}
-                "red-text text-darken-2">
-                {{pcond.count.get_condition_display}}
-            {% else %}
-                "orange-text text-darken-2">
-                {{pcond.count.get_condition_display}}
-            {% endif %}
-        {% else %}
-            "grey-text text-lighten-1">
-                N/A
-        {% endif %}
+    {% if pcond.count %}
+        <span class="condition-{{pcond.count.condition}}">
+            {{pcond.count.get_condition_display}}
+    {% else %}
+        <span class="condition-">
+            Not Obs
+    {% endif %}
     </span>
     <a href="{% url 'edit_animal_count' animal=anim.accession_number year=pcond.day.year month=pcond.day.month day=pcond.day.day %}">
     <i class="material-icons tiny-small grey-text text-darken-4">edit</i>
