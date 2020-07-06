@@ -70,14 +70,14 @@
             </tr>
         {% endfor %}
 
-        {% if spec_dict.animalformset_index.0.0 %}
+        {% if spec_dict.animals.count > 1 %}
             <tr>
             <td></td>
 
             <td>
             <span class="input-field condition-fill">
             <select class="condition-fill-select" onchange="fill_conditions(this)" id="condition-fill-{{spec_dict.species.id}}">
-                <option value="fill" disabled selected>Fill conditions</option>
+                <option value="fill" disabled selected>Fill cond.</option>
                 {% for cond in conditions %}
                     <option value="{{cond.0}}">{{cond.1}}</option>
                 {% endfor %}
@@ -91,9 +91,9 @@
             </tr>
         {% endif %}
 
-        {% for anim, ff, prior_conditions in spec_dict.animalformset_index %}
+        {% for dd in spec_dict.animals_form_dict_list %}
             <tr>
-            {% include "animal_form_snippet.html" with form=ff %}
+            {% include "animal_form_snippet.html" with anim=dd.animal form=dd.form prior_conditions=dd.prior_conditions %}
             </tr>
         {% endfor %}
     {% endfor %}
