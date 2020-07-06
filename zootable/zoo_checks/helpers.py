@@ -39,12 +39,14 @@ def set_formset_order(
         formset_dict[spec.id] = {}
         formset_dict[spec.id]["species"] = spec
 
+        # species
         # NOTE: We could avoid the following when there's group's for that species since they are hidden
         formset_dict[spec.id]["formset"] = species_formset[ind]
         formset_dict[spec.id]["prior_counts"] = spec.prior_counts(
             enclosure, ref_date=dateday
         )
 
+        # groups
         spec_groups = enclosure_groups.filter(species=spec)
         formset_dict[spec.id]["group_forms"] = []
         for spec_group in spec_groups:
@@ -59,23 +61,29 @@ def set_formset_order(
                 }
             )
 
+        # animals
         spec_anim_queryset = enclosure_animals.filter(species=spec)
-        # creating an index into the animals_formset
+
+        # create an index into the animals_formset
         spec_anim_index = list(
             range(anim_total, spec_anim_queryset.count() + anim_total)
         )
-        # zip to pack the animal, form, and prior condtions, but this is unwieldy
-        # todo: is there a better way?
-        formset_dict[spec.id]["animalformset_index"] = list(
-            zip(
-                spec_anim_queryset,
-                [animals_formset[i] for i in spec_anim_index],
-                [
-                    anim.prior_conditions(ref_date=dateday)
-                    for anim in spec_anim_queryset
-                ],
+
+        # create a dictionary for each animal in a species with its form and prior conditions
+        animals_form_dict_list = []
+        for i, anim in enumerate(spec_anim_queryset):
+            animals_form_dict_list.append(
+                {
+                    "animal": anim,
+                    "form": animals_formset[spec_anim_index[i]],
+                    "prior_conditions": anim.prior_conditions(ref_date=dateday),
+                }
             )
-        )
+        formset_dict[spec.id]["animals_form_dict_list"] = animals_form_dict_list
+
+        # convenient to just have a list of animals in the species here
+        formset_dict[spec.id]["animals"] = spec_anim_queryset
+
         # updating total animals
         anim_total += spec_anim_queryset.count()
 
@@ -232,7 +240,7 @@ def clean_df(df):
         df = df.drop(columns=cols)
 
     # combining accession_number
-    cols = [f"animal__accession_number", f"group__accession_number"]
+    cols = ["animal__accession_number", "group__accession_number"]
     cols = [c for c in cols if c in df.columns]
     df["accession_number"] = df[cols].apply(
         lambda row: "".join(row.dropna().astype(int).astype(str)), axis=1
