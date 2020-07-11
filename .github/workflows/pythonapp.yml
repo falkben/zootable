@@ -23,13 +23,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
-      - name: Install system dependencies
-        run: |
-          sudo apt install libpq-dev
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -38,4 +35,11 @@ jobs:
       - name: Run migrations
         run: python zootable/manage.py migrate --noinput
       - name: Test with pytest
-        run: pytest zootable
+        run: |
+          pip install pytest pytest-django pytest-cov
+          pytest zootable --cov=zootable --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
