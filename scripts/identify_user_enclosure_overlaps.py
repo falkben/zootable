@@ -1,13 +1,10 @@
 """
-script which identifies common permissions between users/enclosures 
+script which identifies common permissions between users/enclosures
 prior to adding roles
 """
 
 
 import os
-import sys
-
-sys.path.append("zootable")
 
 import django  # noqa: E402
 from django.db.models import Q  # noqa: E402

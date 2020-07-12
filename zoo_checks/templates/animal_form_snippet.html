@@ -1,10 +1,13 @@
 <td>
-{% if anim.name %}<a href="{% url 'animal_counts' animal=anim.accession_number %}">{{anim.name}}</a>
-<em>({{anim.sex}})</em><br />{% endif %}
-{% if not anim.name %}<a href="{% url 'animal_counts' animal=anim.accession_number %}">{{anim.accession_number}}</a>
-<em>({{anim.sex}})</em>
+{% if anim.name %}
+    <a href="{% url 'animal_counts' animal=anim.accession_number %}">{{anim.name}}</a>
+    <em>({{anim.sex}})</em><br />
+{% endif %}
+{% if not anim.name %}
+    <a href="{% url 'animal_counts' animal=anim.accession_number %}">{{anim.accession_number}}</a>
+    <em>({{anim.sex}})</em>
 {% else %}
-{{anim.accession_number}}
+    {{anim.accession_number}}
 {% endif %}
 <br />{{anim.identifier}}
 </td>
