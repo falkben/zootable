@@ -1,2 +1,6 @@
 [run]
-omit = tests/*
+omit =
+    tests/*
+    */node_modules/*
+    manage.py
+source = .
