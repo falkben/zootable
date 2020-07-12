@@ -46,11 +46,12 @@ A working demo can be found [here](https://demo.zootable.com)
 ### Setup
 
 - Activate virtual environment
+  - `python -m venv venv`
+  - `. venv/bin/activate`
 - Install
   - `pip install -r requirements.txt`
-- Create `local_settings.py` with [required variables](zootable/mysite/settings.py)
-  - `zootable/mysite/local_settings.py`
-- From `zootable/`:
+- Create `local_settings.py` with [required variables](mysite/settings.py)
+  - `mysite/local_settings.py`
   - `python manage.py migrate`
 - `python manage.py createsuperuser`
 - Upload data
@@ -58,10 +59,14 @@ A working demo can be found [here](https://demo.zootable.com)
 
 ## Run
 
-from `zootable/`
-
 ```python
 python manage.py runserver
+```
+
+or (w/ `browser-sync`)
+
+```cmd
+npm start
 ```
 
 ## Deployment check
@@ -76,17 +81,9 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
    `pip install -e .`
 
-1. Run from root directory. Specify folder for django application:
+1. Run from root directory. Pytest settings in [pytest.ini](pytest.ini). Coverage settings in [.coveragerc](.coveragerc).
 
-   `pytest zootable`
-
-1. In vscode, enable pytest and add command line argument "zootable":
-
-   ```json
-   "python.testing.pytestArgs": [
-       "zootable"
-   ]
-   ```
+   `pytest`
 
 ## Heroku and database actions
 
@@ -119,7 +116,7 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 ### To clear sessions
 
 1. First log into heroku bash: `heroku run bash -a zootable`
-1. Next clear the sessions: `django-admin clearsessions --pythonpath zootable --settings=zootable.mysite.settings`
+1. Next clear the sessions: `django-admin clearsessions --settings=mysite.settings`
 
 Documentation on clearing session store: https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store
 

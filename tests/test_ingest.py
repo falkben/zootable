@@ -16,13 +16,13 @@ from zoo_checks.ingest import (
 )
 from zoo_checks.models import Animal, Enclosure, Group, Species
 
-INPUT_EXAMPLE = "zootable/test_data/example.xlsx"
-INPUT_EMPTY = "zootable/test_data/empty_data.xlsx"
-INPUT_WRONG_COL = "zootable/test_data/wrong_column.xlsx"
-INPUT_MALFORMED = "zootable/test_data/malformed.xlsx"
-INPUT_ACCESSIONS_BAD = "zootable/test_data/too_many_digits_access_num.xlsx"
-ONLY_GROUPS_EXAMPLE = "zootable/test_data/only_groups.xlsx"
-ONLY_ANIMALS_EXAMPLE = "zootable/test_data/only_animals.xlsx"
+INPUT_EXAMPLE = "test_data/example.xlsx"
+INPUT_EMPTY = "test_data/empty_data.xlsx"
+INPUT_WRONG_COL = "test_data/wrong_column.xlsx"
+INPUT_MALFORMED = "test_data/malformed.xlsx"
+INPUT_ACCESSIONS_BAD = "test_data/too_many_digits_access_num.xlsx"
+ONLY_GROUPS_EXAMPLE = "test_data/only_groups.xlsx"
+ONLY_ANIMALS_EXAMPLE = "test_data/only_animals.xlsx"
 
 
 def test_read_xlsx_data():
