@@ -5,9 +5,6 @@ python ingest_xlsx_data.py YOURFILE.xlsx
 
 import argparse
 import os
-import sys
-
-sys.path.append("zootable")
 
 import django
 

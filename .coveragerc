@@ -1,2 +1,6 @@
 [run]
-omit = zootable/tests/*
+omit =
+    tests/*
+    */node_modules/*
+    manage.py
+source = .
