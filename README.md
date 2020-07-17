@@ -51,6 +51,7 @@ A working demo can be found [here](https://demo.zootable.com)
   - `. venv/bin/activate`
 - Install
   - `pip install -r requirements.txt`
+  - `npm install`
 - Create `local_settings.py` with [required variables](mysite/settings.py)
   - `mysite/local_settings.py`
   - `python manage.py migrate`
@@ -78,13 +79,17 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 ## Test
 
-1. Install app ineditable mode:
+1. Install app in editable mode:
 
    `pip install -e .`
 
-1. Run from root directory. Pytest settings in [pytest.ini](pytest.ini). Coverage settings in [.coveragerc](.coveragerc).
+1. Run from root directory. Pytest settings in [pytest.ini](pytest.ini).
 
    `pytest`
+
+1. For coverage, coverage settings are in `.coveragerc` and run:
+
+   `pytest --cov=zoo_checks --cov-report=xml`
 
 ## Heroku and database actions
 
