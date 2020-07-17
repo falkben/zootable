@@ -1,6 +1,7 @@
 # Zootable
 
 ![Build Status](https://github.com/falkben/zootable/workflows/Python%20application/badge.svg)
+[![codecov](https://codecov.io/gh/falkben/zootable/branch/master/graph/badge.svg)](https://codecov.io/gh/falkben/zootable)
 
 Web app to tally zoo animals. See [zootable.com](https://zootable.com) for information.
 

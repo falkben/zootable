@@ -69,8 +69,8 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "default")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "app@zootable.com"
-DEFAULT_FROM_EMAIL = "no-reply-notifications@zootable.com"  # used for all other email
-SERVER_EMAIL = "server@zootable.com"  # used for email to ADMINS and MANAGERS
+DEFAULT_FROM_EMAIL = "app@zootable.com"  # used for all other email
+SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
 
 try:
     from .local_settings import *
