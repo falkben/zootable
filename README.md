@@ -126,6 +126,12 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 Documentation on clearing session store: https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store
 
+### Automatic database backups
+
+`heroku pg:backups:schedule DATABASE_URL --at '02:00 America/Los_Angeles' --app zootable`
+
+See: https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups
+
 ## Update all requirements
 
 [Pur](https://pypi.org/project/pur/)
