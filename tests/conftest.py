@@ -1,10 +1,10 @@
 """
-conftest.py is autodiscovered by pytest 
+conftest.py is autodiscovered by pytest
 https://docs.pytest.org/en/stable/fixture.html#conftest-py-sharing-fixture-functions
 """
 
 import pytest
-from django.utils.timezone import datetime
+from django.utils.timezone import datetime, localtime
 
 from zoo_checks.models import (
     Animal,
@@ -45,7 +45,7 @@ def species_base_count(
     db, species_base, user_base, enclosure_base, datetimecounted=None
 ):
     if datetimecounted is None:
-        datetimecounted = datetime.now()
+        datetimecounted = localtime()
     return SpeciesCount.objects.create(
         datetimecounted=datetimecounted,
         datecounted=datetimecounted.date(),
@@ -103,7 +103,7 @@ def animal_count_factory(
 @pytest.fixture
 def animal_count_A_BAR(db, animal_A, user_base, enclosure_base, datetimecounted=None):
     if datetimecounted is None:
-        datetimecounted = datetime.now()
+        datetimecounted = localtime()
     return animal_count_factory(
         datetimecounted, "BA", animal_A, user_base, enclosure_base
     )
@@ -153,7 +153,7 @@ def group_count_factory(
 @pytest.fixture
 def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
     if datetimecounted is None:
-        datetimecounted = datetime.now()
+        datetimecounted = localtime()
     return group_count_factory(
         datetimecounted,
         group_B,
@@ -163,6 +163,6 @@ def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
         count_seen=3,
         count_not_seen=0,
         count_bar=1,
-        needs_attn=2,
+        needs_attn=False,
         comment="",
     )

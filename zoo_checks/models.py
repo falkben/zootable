@@ -31,7 +31,7 @@ class Enclosure(models.Model):
 
         return (animal_species | group_species).distinct()
 
-    def accession_numbers(self):
+    def animals_groups(self):
         animals = self.animals.filter(active=True)
         groups = self.groups.filter(active=True)
 
@@ -41,7 +41,7 @@ class Enclosure(models.Model):
         if day is None:
             day = today_time()
 
-        animals, groups = self.accession_numbers()
+        animals, groups = self.animals_groups()
 
         # we don't care if we are getting the correct counts on the day
         # just the number of disctinct counts
@@ -67,9 +67,39 @@ class Enclosure(models.Model):
         return animal_counts.count() + group_counts.count()
 
     def accession_numbers_total(self):
-        animals, groups = self.accession_numbers()
+        animals, groups = self.animals_groups()
 
         return animals.count() + groups.count()
+
+    def animal_counts_on_day(self, day=None):
+        if day is None:
+            day = today_time()
+
+        return (
+            AnimalCount.objects.filter(
+                animal__active=True,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+                enclosure=self,
+            )
+            .order_by("animal__accession_number", "-datetimecounted")
+            .distinct("animal__accession_number")
+        )
+
+    def group_counts_on_day(self, day=None):
+        if day is None:
+            day = today_time()
+
+        return (
+            GroupCount.objects.filter(
+                group__active=True,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+                enclosure=self,
+            )
+            .order_by("group__accession_number", "-datetimecounted")
+            .distinct("group__accession_number")
+        )
 
     class Meta:
         ordering = [Upper("name")]
