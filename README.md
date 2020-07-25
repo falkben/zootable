@@ -46,26 +46,30 @@ A working demo can be found [here](https://demo.zootable.com)
 
 ### Setup
 
-- Activate virtual environment
+- Create & activate virtual environment
   - `python -m venv venv`
-  - `. venv/bin/activate`
+  - `. venv/bin/activate` (or activate.fish)
 - Install
-  - `pip install -r requirements.txt`
-  - `npm install`
+  - `pip install -e .[all]` (this installs pytest and debug toolbar)
+  - `npm install` (installs "hot reloading" `browser-sync`)
 - Create `local_settings.py` with [required variables](mysite/settings.py)
   - `mysite/local_settings.py`
+- Migrate database forward
   - `python manage.py migrate`
 - `python manage.py createsuperuser`
 - Upload data
-- From ./: `python zootable/scripts/ingest_xlsx_data.py DATA.xlsx`
+  - From ./: `python zootable/scripts/ingest_xlsx_data.py DATA.xlsx`
+  - Or can upload it from within the app once running
 
 ## Run
+
+Standard
 
 ```python
 python manage.py runserver
 ```
 
-or (w/ `browser-sync`)
+or w/ `browser-sync`
 
 ```cmd
 npm start
@@ -81,7 +85,7 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 1. Install app in editable mode:
 
-   `pip install -e .`
+   `pip install -e .[all]`
 
 1. Run from root directory. Pytest settings in [pytest.ini](pytest.ini).
 
@@ -105,7 +109,7 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 ### Local restore database from dump
 
-1. Possibly drop database before restore:
+1. Possibly drop local database before restore:
 
    1. `sudo -u postgres psql`
    1. `DROP DATABASE zootable;`
@@ -128,7 +132,7 @@ Documentation on clearing session store: https://docs.djangoproject.com/en/dev/t
 
 ### Automatic database backups
 
-`heroku pg:backups:schedule DATABASE_URL --at '02:00 America/Los_Angeles' --app zootable`
+`heroku pg:backups:schedule DATABASE_URL --at '02:00 America/New_York' --app zootable`
 
 See: https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups
 
