@@ -25,7 +25,7 @@ def user_base(db):
 
 @pytest.fixture
 def enclosure_base(db):
-    return Enclosure.objects.create(name="base")
+    return Enclosure.objects.create(name="base_enc")
 
 
 @pytest.fixture
@@ -40,15 +40,33 @@ def species_base(db):
     )
 
 
+def species_count_factory(
+    species: Species,
+    user: User,
+    enclosure: Enclosure,
+    count: int,
+    datetimecounted: datetime = None,
+) -> SpeciesCount:
+    if datetimecounted is None:
+        datetimecounted = localtime()
+    return SpeciesCount.objects.create(
+        datetimecounted=datetimecounted,
+        datecounted=datetimecounted.date(),
+        species=species,
+        user=user,
+        enclosure=enclosure,
+        count=count,
+    )
+
+
 @pytest.fixture
 def species_base_count(
     db, species_base, user_base, enclosure_base, datetimecounted=None
 ):
     if datetimecounted is None:
         datetimecounted = localtime()
-    return SpeciesCount.objects.create(
+    return species_count_factory(
         datetimecounted=datetimecounted,
-        datecounted=datetimecounted.date(),
         species=species_base,
         user=user_base,
         enclosure=enclosure_base,
@@ -82,13 +100,15 @@ def animal_A(db, species_base, enclosure_base):
 
 
 def animal_count_factory(
-    datetimecounted: datetime,
     condition: str,
     animal: Animal,
     user: User,
     enclosure: Enclosure,
+    datetimecounted: datetime = None,
     comment: str = "",
 ) -> AnimalCount:
+    if datetimecounted is None:
+        datetimecounted = localtime()
     return AnimalCount.objects.create(
         datetimecounted=datetimecounted,
         datecounted=datetimecounted.date(),
@@ -105,26 +125,46 @@ def animal_count_A_BAR(db, animal_A, user_base, enclosure_base, datetimecounted=
     if datetimecounted is None:
         datetimecounted = localtime()
     return animal_count_factory(
-        datetimecounted, "BA", animal_A, user_base, enclosure_base
+        "BA", animal_A, user_base, enclosure_base, datetimecounted
+    )
+
+
+def group_factory(
+    species: Species,
+    enclosure: Enclosure,
+    accession_number: str,
+    population_male: int,
+    population_female: int,
+    population_unknown: int,
+    population_total: int,
+    active: bool = True,
+) -> Group:
+    return Group.objects.create(
+        species=species,
+        enclosure=enclosure,
+        accession_number=accession_number,
+        population_male=population_male,
+        population_female=population_female,
+        population_unknown=population_unknown,
+        population_total=population_total,
+        active=active,
     )
 
 
 @pytest.fixture
 def group_B(db, enclosure_base, species_base):
-    return Group.objects.create(
-        active=True,
+    return group_factory(
+        species=species_base,
+        enclosure=enclosure_base,
         accession_number="654321",
         population_male=1,
         population_female=2,
         population_unknown=3,
         population_total=6,
-        species=species_base,
-        enclosure=enclosure_base,
     )
 
 
 def group_count_factory(
-    datetimecounted: datetime,
     group: Group,
     user: User,
     enclosure: Enclosure,
@@ -132,9 +172,12 @@ def group_count_factory(
     count_seen: int,
     count_not_seen: int,
     count_bar: int,
-    needs_attn: bool,
+    needs_attn: bool = False,
+    datetimecounted: datetime = None,
     comment: str = "",
 ) -> GroupCount:
+    if datetimecounted is None:
+        datetimecounted = localtime()
     return GroupCount.objects.create(
         group=group,
         datetimecounted=datetimecounted,
@@ -155,7 +198,6 @@ def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
     if datetimecounted is None:
         datetimecounted = localtime()
     return group_count_factory(
-        datetimecounted,
         group_B,
         user_base,
         enclosure_base,
@@ -165,4 +207,5 @@ def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
         count_bar=1,
         needs_attn=False,
         comment="",
+        datetimecounted=datetimecounted,
     )
