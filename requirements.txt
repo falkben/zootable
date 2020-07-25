@@ -10,3 +10,4 @@ psycopg2==2.8.5
 django-extensions==3.0.3  # using for auto-slug field
 django-cloudflare-push @ git+https://github.com/falkben/django-cloudflare-push@fix-module-not-found
 XlsxWriter==1.2.9
+django-debug-toolbar

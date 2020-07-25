@@ -50,7 +50,7 @@ A working demo can be found [here](https://demo.zootable.com)
   - `python -m venv venv`
   - `. venv/bin/activate` (or activate.fish)
 - Install
-  - `pip install -e .[all]` (this installs pytest and debug toolbar)
+  - `pip install -e .[test]` (this installs pytest)
   - `npm install` (installs "hot reloading" `browser-sync`)
 - Create `local_settings.py` with [required variables](mysite/settings.py)
   - `mysite/local_settings.py`
@@ -82,10 +82,6 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 `python manage.py check --deploy`
 
 ## Test
-
-1. Install app in editable mode:
-
-   `pip install -e .[all]`
 
 1. Run from root directory. Pytest settings in [pytest.ini](pytest.ini).
 
