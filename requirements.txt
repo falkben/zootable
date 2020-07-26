@@ -5,7 +5,7 @@ uvicorn==0.11.6
 pandas==1.0.5
 xlrd==1.2.0
 django_heroku==0.3.1
-whitenoise==5.1.0
+whitenoise[brotli]==5.1.0
 psycopg2==2.8.5
 django-extensions==3.0.3  # using for auto-slug field
 django-cloudflare-push @ git+https://github.com/falkben/django-cloudflare-push@fix-module-not-found
