@@ -3,8 +3,10 @@ conftest.py is autodiscovered by pytest
 https://docs.pytest.org/en/stable/fixture.html#conftest-py-sharing-fixture-functions
 """
 
+import string
+
 import pytest
-from django.utils.timezone import datetime, localtime
+from django.utils.timezone import datetime, localtime, timedelta
 
 from zoo_checks.models import (
     Animal,
@@ -209,3 +211,101 @@ def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
         comment="",
         datetimecounted=datetimecounted,
     )
+
+
+@pytest.fixture
+def create_many_counts(
+    db, species_base, user_base,
+):
+    """
+    sets up a large number of counts for testing
+    returns the counts created as well as the enclosure
+    """
+
+    # closure
+    def _create_many_counts(
+        access_start: int = 100000,
+        num_enc: int = 7,
+        num_anim: int = 4,
+        num_species: int = 5,
+    ):
+        access_nums = iter(
+            range(access_start, num_enc * num_anim * num_species + access_start + 1)
+        )
+        spec_count_val = 42
+        group_count_val = (6, 1, 2, 3)
+        anim_count_cond = "BA"
+        alph = string.ascii_lowercase
+
+        s_cts, a_cts, g_cts, enc_list = [], [], [], []
+        # create some test data
+        for i in range(num_enc):
+            enc_name = f"enc_{alph[i]}"
+            enc = Enclosure.objects.create(name=enc_name)
+            enc_list.append(enc)
+
+            # create counts for the enc
+            for k in range(num_anim):
+                id = f"anim_{enc_name}_{alph[i]}"
+                m_f = "MF"[k % 2]  # alternate
+                anim = animal_factory(id, id, m_f, next(access_nums), enc, species_base)
+                a_cts.append(
+                    animal_count_factory(anim_count_cond, anim, user_base, enc)
+                )
+
+                # adding some counts on diff days
+                for delta_day in (-3, -2, -1, 1, 2):
+                    animal_count_factory(
+                        "NA",
+                        anim,
+                        user_base,
+                        enc,
+                        localtime() + timedelta(days=1) * delta_day,
+                    )
+
+            for k in range(num_species):
+                id = f"id_{enc_name}_{alph[k]}"
+                spec = Species.objects.create(
+                    common_name=f"common_{id}",
+                    class_name=f"class_base{id}",
+                    order_name=f"order_base{id}",
+                    family_name=f"family_{id}",
+                    genus_name=f"genus_{id}",
+                    species_name=f"species_{id}",
+                )
+                s_cts.append(
+                    species_count_factory(spec, user_base, enc, spec_count_val)
+                )
+
+                # adding some counts on diff days
+                for delta_day in (-3, -2, -1, 1, 2):
+                    species_count_factory(
+                        spec,
+                        user_base,
+                        enc,
+                        100,
+                        localtime() + timedelta(days=1) * delta_day,
+                    )
+
+                group = group_factory(spec, enc, next(access_nums), 10, 10, 10, 30)
+                g_cts.append(
+                    group_count_factory(group, user_base, enc, *group_count_val)
+                )
+
+                # adding some counts on diff days
+                for delta_day in (-3, -2, -1, 1, 2):
+                    group_count_factory(
+                        group,
+                        user_base,
+                        enc,
+                        10,
+                        10,
+                        0,
+                        0,
+                        True,
+                        localtime() + timedelta(days=1) * delta_day,
+                    )
+
+        return a_cts, s_cts, g_cts, enc_list
+
+    return _create_many_counts

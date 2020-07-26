@@ -84,117 +84,100 @@ def test_group_counts_on_day(
 
 
 @pytest.mark.django_db
-def test_counts_many_enclosures(species_base, user_base, django_assert_num_queries):
-    # setup
+def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_queries):
+    """
+    Tests that we can pull out correct counts
+    tests the content of the counts
+    """
     access_start = 100000
     num_enc = 7
     num_anim = 4
-    num_groups = 5
-    access_nums = iter(
-        range(access_start, num_enc * num_anim * num_groups + access_start + 1)
+    num_species = num_groups = 5
+
+    a_cts, s_cts, g_cts, enc_list = create_many_counts(
+        access_start=access_start,
+        num_enc=num_enc,
+        num_anim=num_anim,
+        num_species=num_species,
     )
-    spec_count_val = 42
-    group_count_val = (6, 1, 2, 3)
-    anim_count_cond = "BA"
-    alph = string.ascii_lowercase
-
-    counts, enc_list = [], []
-    # create some test data
-    for i in range(num_enc):
-        enc_name = f"enc_{alph[i]}"
-        enc = Enclosure.objects.create(name=enc_name)
-        enc_list.append(enc)
-
-        # create counts for the enc
-        for k in range(num_anim):
-            id = f"anim_{enc_name}_{alph[i]}"
-            m_f = "MF"[k % 2]  # alternate
-            anim = animal_factory(id, id, m_f, next(access_nums), enc, species_base)
-            counts.append(animal_count_factory(anim_count_cond, anim, user_base, enc))
-
-            # adding some counts on diff days
-            for delta_day in (-3, -2, -1, 1, 2):
-                animal_count_factory(
-                    "NA",
-                    anim,
-                    user_base,
-                    enc,
-                    localtime() + timedelta(days=1) * delta_day,
-                )
-
-        for k in range(num_groups):
-            id = f"id_{enc_name}_{alph[k]}"
-            spec = Species.objects.create(
-                common_name=f"common_{id}",
-                class_name=f"class_base{id}",
-                order_name=f"order_base{id}",
-                family_name=f"family_{id}",
-                genus_name=f"genus_{id}",
-                species_name=f"species_{id}",
-            )
-            counts.append(species_count_factory(spec, user_base, enc, spec_count_val))
-
-            # adding some counts on diff days
-            for delta_day in (-3, -2, -1, 1, 2):
-                species_count_factory(
-                    spec,
-                    user_base,
-                    enc,
-                    100,
-                    localtime() + timedelta(days=1) * delta_day,
-                )
-
-            group = group_factory(spec, enc, next(access_nums), 10, 10, 10, 30)
-            counts.append(group_count_factory(group, user_base, enc, *group_count_val))
-
-            # adding some counts on diff days
-            for delta_day in (-3, -2, -1, 1, 2):
-                group_count_factory(
-                    group,
-                    user_base,
-                    enc,
-                    10,
-                    10,
-                    0,
-                    0,
-                    True,
-                    localtime() + timedelta(days=1) * delta_day,
-                )
+    counts = a_cts + s_cts + g_cts
 
     assert len(counts) == num_enc * (num_anim + num_groups * 2)
 
     with django_assert_num_queries(3):
-        all_counts = Enclosure.all_counts(enc_list)
+        counts_tuple = Enclosure.all_counts(enc_list)
+        species_counts, animal_counts, group_counts = (list(ct) for ct in counts_tuple)
 
-    # assertions
+    # assert counts
+    assert len(species_counts) == num_species * num_enc
+    assert len(group_counts) == num_groups * num_enc
+    assert len(animal_counts) == num_anim * num_enc
+
+    # this would fail if the orders were different so we're implicitly checking that too
+    assert species_counts == s_cts
+    assert group_counts == g_cts
+    assert animal_counts == a_cts
+
+    assert all(c.user == user_base for c in species_counts)
+    assert all(c.count == 42 for c in species_counts)
+
+    assert all(c.user == user_base for c in animal_counts)
+    assert all(c.condition == "BA" for c in animal_counts)
+
+    assert all(c.user == user_base for c in group_counts)
+    assert all(c.count_total == 6 for c in group_counts)
+
+
+def test_enclosure_counts_to_dict(create_many_counts, species_base):
+    """
+    Tests the dictionary creation from list of counts
+    Tests the structure of the dict
+    """
+    access_start = 100000
+    num_enc = 7
+    num_anim = 4
+    num_species = num_groups = 5
+
+    a_cts, s_cts, g_cts, enc_list = create_many_counts(
+        access_start=access_start,
+        num_enc=num_enc,
+        num_anim=num_anim,
+        num_species=num_species,
+    )
+
+    species_counts, animal_counts, group_counts = Enclosure.all_counts(enc_list)
+    all_counts_dict = Enclosure.enclosure_counts_to_dict(
+        enc_list, species_counts, animal_counts, group_counts
+    )
+
+    # assert structure of dict
     for enc in enc_list:
-        enc_dict = all_counts[enc.name]
+        enc_dict = all_counts_dict[enc.name]
 
         # species
         enc_spec_dict = enc_dict["species_counts"]
-        assert len(enc_spec_dict) == num_groups
-        for _, ct in enc_spec_dict.items():
-            assert ct.count == spec_count_val
+        assert len(enc_spec_dict) == num_species
+        assert all([ct in s_cts for _, ct in enc_spec_dict.items()])
+        for s, ct in enc_spec_dict.items():
+            assert ct.species == s
             assert ct.species in enc.species()
             assert ct.datecounted == localtime().date()
 
         # animals
         enc_anim_dict = enc_dict["animal_counts"]
         assert len(enc_anim_dict) == num_anim
-        for _, ct in enc_anim_dict.items():
-            assert ct.condition == anim_count_cond
+        assert all([ct in a_cts for _, ct in enc_anim_dict.items()])
+        for a, ct in enc_anim_dict.items():
+            assert ct.animal == a
             assert ct.animal in enc.animals.all()
             assert ct.animal.species == species_base
             assert ct.datecounted == localtime().date()
 
         enc_group_dict = enc_dict["group_counts"]
-        for _, ct in enc_group_dict.items():
-            assert (
-                ct.count_total,
-                ct.count_seen,
-                ct.count_not_seen,
-                ct.count_bar,
-            ) == group_count_val
+        assert len(enc_group_dict) == num_groups
+        assert all([ct in g_cts for _, ct in enc_group_dict.items()])
+        for g, ct in enc_group_dict.items():
+            assert ct.group == g
             assert ct.group in enc.groups.all()
             assert ct.group.species in enc.species()
             assert ct.datecounted == localtime().date()

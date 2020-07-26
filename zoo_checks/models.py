@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from itertools import chain
 from typing import List
@@ -84,7 +85,7 @@ class Enclosure(models.Model):
         )
 
     @classmethod
-    def all_counts(cls, enclosures: List, day: datetime = None) -> dict:
+    def all_counts(cls, enclosures: List, day: datetime = None) -> tuple:
         """
         from a list of enclosures gets the counts for each enclosure
         returns a dictionary in the form
@@ -105,7 +106,7 @@ class Enclosure(models.Model):
         # we use select related here because we need to get to those relationships
         # in order to build the return dict
         # without select related, each of those would be a separate database call
-        group_counts = list(
+        group_counts = (
             GroupCount.objects.filter(
                 enclosure__in=enclosures,
                 group__active=True,
@@ -117,7 +118,7 @@ class Enclosure(models.Model):
             .distinct("group__accession_number")
         )
 
-        animal_counts = list(
+        animal_counts = (
             AnimalCount.objects.filter(
                 enclosure__in=enclosures,
                 animal__active=True,
@@ -129,7 +130,7 @@ class Enclosure(models.Model):
             .distinct("animal__accession_number")
         )
 
-        species_counts = list(
+        species_counts = (
             SpeciesCount.objects.filter(
                 enclosure__in=enclosures,
                 datetimecounted__gte=day,
@@ -140,25 +141,29 @@ class Enclosure(models.Model):
             .distinct("species__common_name")
         )
 
-        # parse the counts into a dict
+        return species_counts, animal_counts, group_counts
+
+    @classmethod
+    def enclosure_counts_to_dict(
+        cls, enclosures: List, species_counts, animal_counts, group_counts
+    ):
+        # repackage enclosure counts into a dict
+
+        def create_counts_dict(counts):
+            counts_dict = defaultdict(list)
+            [counts_dict[c.enclosure].append(c) for c in counts]
+            return counts_dict
+
+        enc_spec_ct_dict = create_counts_dict(species_counts)
+        enc_anim_ct_dict = create_counts_dict(animal_counts)
+        enc_group_ct_dict = create_counts_dict(group_counts)
+
         counts_dict = {}
         for enclosure in enclosures:
             counts_dict[enclosure.name] = {
-                "species_counts": {
-                    c.species.common_name: c
-                    for c in species_counts
-                    if c.enclosure == enclosure
-                },
-                "animal_counts": {
-                    c.animal.accession_number: c
-                    for c in animal_counts
-                    if c.enclosure == enclosure
-                },
-                "group_counts": {
-                    c.group.accession_number: c
-                    for c in group_counts
-                    if c.enclosure == enclosure
-                },
+                "species_counts": {c.species: c for c in enc_spec_ct_dict[enclosure]},
+                "animal_counts": {c.animal: c for c in enc_anim_ct_dict[enclosure]},
+                "group_counts": {c.group: c for c in enc_group_ct_dict[enclosure]},
             }
 
         return counts_dict
