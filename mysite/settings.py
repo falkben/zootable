@@ -114,7 +114,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_cloudflare_push.middleware.push_middleware",
 ]
 
 ROOT_URLCONF = "mysite.urls"
