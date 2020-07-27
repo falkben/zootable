@@ -1,18 +1,9 @@
 """ test models """
 
-import string
-from datetime import timedelta
 
 import pytest
 from django.utils.timezone import localtime
 
-from tests.conftest import (
-    animal_count_factory,
-    animal_factory,
-    group_count_factory,
-    group_factory,
-    species_count_factory,
-)
 from zoo_checks.models import Animal, AnimalCount, Enclosure, Group, GroupCount, Species
 
 
@@ -89,16 +80,12 @@ def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_q
     Tests that we can pull out correct counts
     tests the content of the counts
     """
-    access_start = 100000
     num_enc = 7
     num_anim = 4
     num_species = num_groups = 5
 
     a_cts, s_cts, g_cts, enc_list = create_many_counts(
-        access_start=access_start,
-        num_enc=num_enc,
-        num_anim=num_anim,
-        num_species=num_species,
+        num_enc=num_enc, num_anim=num_anim, num_species=num_species,
     )
     counts = a_cts + s_cts + g_cts
 
@@ -113,10 +100,11 @@ def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_q
     assert len(group_counts) == num_groups * num_enc
     assert len(animal_counts) == num_anim * num_enc
 
-    # this would fail if the orders were different so we're implicitly checking that too
-    assert species_counts == s_cts
-    assert group_counts == g_cts
-    assert animal_counts == a_cts
+    # the counts from db are ordered
+    # counts from all_counts are by creation order
+    assert set(species_counts) == set(s_cts)
+    assert set(group_counts) == set(g_cts)
+    assert set(animal_counts) == set(a_cts)
 
     assert all(c.user == user_base for c in species_counts)
     assert all(c.count == 42 for c in species_counts)
@@ -128,31 +116,32 @@ def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_q
     assert all(c.count_total == 6 for c in group_counts)
 
 
-def test_enclosure_counts_to_dict(create_many_counts, species_base):
+def test_enclosure_counts_to_dict(
+    create_many_counts, species_base, django_assert_num_queries
+):
     """
     Tests the dictionary creation from list of counts
     Tests the structure of the dict
     """
-    access_start = 100000
     num_enc = 7
     num_anim = 4
     num_species = num_groups = 5
 
     a_cts, s_cts, g_cts, enc_list = create_many_counts(
-        access_start=access_start,
-        num_enc=num_enc,
-        num_anim=num_anim,
-        num_species=num_species,
+        num_enc=num_enc, num_anim=num_anim, num_species=num_species,
     )
 
-    species_counts, animal_counts, group_counts = Enclosure.all_counts(enc_list)
-    all_counts_dict = Enclosure.enclosure_counts_to_dict(
-        enc_list, species_counts, animal_counts, group_counts
-    )
+    with django_assert_num_queries(3):
+        species_counts, animal_counts, group_counts = Enclosure.all_counts(enc_list)
+        all_counts_dict = Enclosure.enclosure_counts_to_dict(
+            enc_list, species_counts, animal_counts, group_counts
+        )
 
     # assert structure of dict
+    assert enc_list == list(all_counts_dict.keys())
+
     for enc in enc_list:
-        enc_dict = all_counts_dict[enc.name]
+        enc_dict = all_counts_dict[enc]
 
         # species
         enc_spec_dict = enc_dict["species_counts"]

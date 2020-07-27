@@ -3,6 +3,7 @@ conftest.py is autodiscovered by pytest
 https://docs.pytest.org/en/stable/fixture.html#conftest-py-sharing-fixture-functions
 """
 
+import random
 import string
 
 import pytest
@@ -14,6 +15,7 @@ from zoo_checks.models import (
     Enclosure,
     Group,
     GroupCount,
+    Role,
     Species,
     SpeciesCount,
     User,
@@ -22,12 +24,32 @@ from zoo_checks.models import (
 
 @pytest.fixture
 def user_base(db):
-    return User.objects.create_user("base")
+    return User.objects.create_user("base", first_name="base_first_name")
 
 
 @pytest.fixture
-def enclosure_base(db):
-    return Enclosure.objects.create(name="base_enc")
+def role_base(db, user_base):
+    role = Role.objects.create(name="role_base")
+    role.users.add(user_base)
+    role.save()
+    return role
+
+
+@pytest.fixture
+def enclosure_factory(db, role_base):
+    # closure
+    def _enclosure_factory(name):
+        enc = Enclosure.objects.create(name=name)
+        enc.roles.add(role_base)
+        enc.save()
+        return enc
+
+    return _enclosure_factory
+
+
+@pytest.fixture
+def enclosure_base(db, enclosure_factory):
+    return enclosure_factory("base_enc")
 
 
 @pytest.fixture
@@ -214,9 +236,7 @@ def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
 
 
 @pytest.fixture
-def create_many_counts(
-    db, species_base, user_base,
-):
+def create_many_counts(db, species_base, user_base, enclosure_factory):
     """
     sets up a large number of counts for testing
     returns the counts created as well as the enclosure
@@ -224,11 +244,9 @@ def create_many_counts(
 
     # closure
     def _create_many_counts(
-        access_start: int = 100000,
-        num_enc: int = 7,
-        num_anim: int = 4,
-        num_species: int = 5,
+        num_enc: int = 7, num_anim: int = 4, num_species: int = 5,
     ):
+        access_start = 100000
         access_nums = iter(
             range(access_start, num_enc * num_anim * num_species + access_start + 1)
         )
@@ -237,11 +255,13 @@ def create_many_counts(
         anim_count_cond = "BA"
         alph = string.ascii_lowercase
 
+        rand_alph_idx = random.sample(list(range(len(alph))), num_enc)
+
         s_cts, a_cts, g_cts, enc_list = [], [], [], []
         # create some test data
         for i in range(num_enc):
-            enc_name = f"enc_{alph[i]}"
-            enc = Enclosure.objects.create(name=enc_name)
+            enc_name = f"enc_{alph[rand_alph_idx[i]]}"
+            enc = enclosure_factory(enc_name)
             enc_list.append(enc)
 
             # create counts for the enc

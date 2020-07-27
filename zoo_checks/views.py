@@ -129,11 +129,14 @@ def home(request):
 
     roles = request.user.roles.all()
 
+    cts = Enclosure.all_counts(enclosures)
+    enclosure_cts_dict = Enclosure.enclosure_counts_to_dict(enclosures, *cts)
+
     return render(
         request,
         "home.html",
         {
-            "enclosures": enclosures,
+            "cts_dict": enclosure_cts_dict,
             "page_range": page_range,
             "roles": roles,
             "selected_role": role,

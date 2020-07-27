@@ -146,24 +146,44 @@ class Enclosure(models.Model):
     @classmethod
     def enclosure_counts_to_dict(
         cls, enclosures: List, species_counts, animal_counts, group_counts
-    ):
-        # repackage enclosure counts into a dict
+    ) -> dict:
+        """
+        repackage enclosure counts into dict for template render
+        dict order of enclosures is same as list order
+        we're not using defaultdict(list) here for 2 reasons:
+        1. we want an empty list for each enclosure
+        2. django templates have difficulty with defaultdict (can set default_factory to None)
+        """
 
-        def create_counts_dict(counts):
-            counts_dict = defaultdict(list)
+        def create_counts_dict(enclosures, counts):
+            counts_dict = {}
+            for enc in enclosures:
+                counts_dict[enc] = []
             [counts_dict[c.enclosure].append(c) for c in counts]
             return counts_dict
 
-        enc_spec_ct_dict = create_counts_dict(species_counts)
-        enc_anim_ct_dict = create_counts_dict(animal_counts)
-        enc_group_ct_dict = create_counts_dict(group_counts)
+        enc_spec_ct_dict = create_counts_dict(enclosures, species_counts)
+        enc_anim_ct_dict = create_counts_dict(enclosures, animal_counts)
+        enc_group_ct_dict = create_counts_dict(enclosures, group_counts)
+
+        def separate_conditions(counts):
+            cond_dict = {}
+            for cond in AnimalCount.CONDITIONS:
+                cond_dict[cond[0]] = []
+            [cond_dict[c.condition].append(c) for c in counts]
+            return cond_dict
 
         counts_dict = {}
-        for enclosure in enclosures:
-            counts_dict[enclosure.name] = {
-                "species_counts": {c.species: c for c in enc_spec_ct_dict[enclosure]},
-                "animal_counts": {c.animal: c for c in enc_anim_ct_dict[enclosure]},
-                "group_counts": {c.group: c for c in enc_group_ct_dict[enclosure]},
+        for enc in enclosures:
+            enc_species_counts = {c.species: c for c in enc_spec_ct_dict[enc]}
+            enc_anim_counts = {c.animal: c for c in enc_anim_ct_dict[enc]}
+            enc_group_counts = {c.group: c for c in enc_group_ct_dict[enc]}
+            counts_dict[enc] = {
+                "species_counts": enc_species_counts,
+                "animal_counts": enc_anim_counts,
+                "animal_conditions": separate_conditions(enc_anim_ct_dict[enc]),
+                "group_counts": enc_group_counts,
+                "total_counts": len(enc_anim_counts) + len(enc_group_counts),
             }
 
         return counts_dict
