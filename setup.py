@@ -1,9 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
-testing = ["pytest", "pytest-django", "pytest-cov", "pytest-sugar"]
+with open("requirements-test.txt") as f:
+    testing = f.read().splitlines()
 
 setup(
     name="zootable",
