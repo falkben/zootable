@@ -199,6 +199,8 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000  # we were triggering this at default 1000
+
 SITE_ID = 1
 
 ACCOUNT_EMAIL_REQUIRED = True
