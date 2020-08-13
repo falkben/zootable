@@ -1,3 +1,4 @@
+from datetime import datetime
 from itertools import chain
 
 from django.contrib.auth.models import User
@@ -31,7 +32,7 @@ class Enclosure(models.Model):
 
         return (animal_species | group_species).distinct()
 
-    def accession_numbers(self):
+    def animals_groups(self):
         animals = self.animals.filter(active=True)
         groups = self.groups.filter(active=True)
 
@@ -41,35 +42,86 @@ class Enclosure(models.Model):
         if day is None:
             day = today_time()
 
-        animals, groups = self.accession_numbers()
+        animal_counts = self.animal_counts_on_day(day=day)
+        group_counts = self.group_counts_on_day(day=day)
 
-        # we don't care if we are getting the correct counts on the day
-        # just the number of disctinct counts
-        animal_counts = (
+        return animal_counts.count() + group_counts.count()
+
+    def accession_numbers_total(self):
+        animals, groups = self.animals_groups()
+
+        return animals.count() + groups.count()
+
+    def animal_counts_on_day(self, day=None):
+        if day is None:
+            day = today_time()
+
+        return (
             AnimalCount.objects.filter(
-                animal__in=animals,
+                animal__active=True,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
+                enclosure=self,
             )
             .order_by("animal__accession_number", "-datetimecounted")
             .distinct("animal__accession_number")
         )
-        group_counts = (
+
+    def group_counts_on_day(self, day=None):
+        if day is None:
+            day = today_time()
+
+        return (
             GroupCount.objects.filter(
-                group__in=groups,
+                group__active=True,
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
+                enclosure=self,
             )
             .order_by("group__accession_number", "-datetimecounted")
             .distinct("group__accession_number")
         )
 
-        return animal_counts.count() + group_counts.count()
+    @classmethod
+    def all_counts(cls, enclosures, day: datetime = None) -> tuple:
+        """
+        from a queryset of enclosures gets the counts for each enclosure
+        This does only 2 queries to the database (one for each type of count)
+        If we need species counts could be added here
+        """
 
-    def accession_numbers_total(self):
-        animals, groups = self.accession_numbers()
+        if day is None:
+            day = today_time()
 
-        return animals.count() + groups.count()
+        # make the queries
+        # we use select related here because we need to get to those relationships
+        # in order to build the return dict
+        # without select related, each of those would be a separate database call
+        group_counts = (
+            GroupCount.objects.filter(
+                enclosure__in=enclosures,
+                group__active=True,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .select_related("group", "enclosure")
+            .order_by("group__accession_number", "-datetimecounted")
+            .distinct("group__accession_number")
+        )
+
+        animal_counts = (
+            AnimalCount.objects.filter(
+                enclosure__in=enclosures,
+                animal__active=True,
+                datetimecounted__gte=day,
+                datetimecounted__lt=day + timezone.timedelta(days=1),
+            )
+            .select_related("animal", "enclosure")
+            .order_by("animal__accession_number", "-datetimecounted")
+            .distinct("animal__accession_number")
+        )
+
+        return animal_counts, group_counts
 
     class Meta:
         ordering = [Upper("name")]
@@ -397,10 +449,13 @@ class AnimalCount(Count):
     ABSENT = "NS"  # used to be not seen
     NOT_OBSERVED = ""
 
-    CONDITIONS = [
+    OBSERVED_CONDITIONS = [
         (BAR, "BAR"),
         (SEEN, "Seen"),
         (NEEDSATTENTION, "Attn"),
+    ]
+
+    CONDITIONS = OBSERVED_CONDITIONS + [
         (ABSENT, "Absent"),
         (NOT_OBSERVED, "Not Obs"),
     ]

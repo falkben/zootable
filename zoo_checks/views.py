@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import pandas as pd
@@ -7,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -41,7 +42,6 @@ from .models import (
     Species,
     SpeciesCount,
 )
-import logging
 
 baselogger = logging.getLogger("zootable")
 logger = baselogger.getChild(__name__)
@@ -59,7 +59,7 @@ def get_accessible_enclosures(request):
     return enclosures
 
 
-def redirect_if_not_permitted(request, enclosure):
+def redirect_if_not_permitted(request, enclosure) -> bool:
     """
     Returns
     -------
@@ -75,6 +75,86 @@ def redirect_if_not_permitted(request, enclosure):
         request, f"You do not have permissions to access enclosure {enclosure.name}"
     )
     return True
+
+
+def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
+    """
+    repackage enclosure counts into dict for template render
+    dict order of enclosures is same as list/query order
+    we're not using defaultdict(list) because django templates have difficulty with defaultdict
+    """
+
+    def create_counts_dict(enclosures, counts) -> dict:
+        """ Takes a list/queryset of counts and enclosures
+
+        Returns a dictionary
+
+        - keys: enclosures
+        - values: list of counts belonging to the enclosure
+
+        We do this (once) in order to be able to iterate over counts for each enclosure
+        """
+        counts_dict = {}
+        for enc in enclosures:
+            counts_dict[enc] = []
+        [counts_dict[c.enclosure].append(c) for c in counts]
+        return counts_dict
+
+    def separate_conditions(counts) -> dict:
+        """
+        Arguments: Animal counts
+
+        Returns: dictionary
+
+        - keys: condition names
+        - values: list of counts
+        """
+        cond_dict = {}
+        for cond in AnimalCount.CONDITIONS:
+            cond_dict[cond[1]] = []  # init to empty list
+        [cond_dict[c.get_condition_display()].append(c) for c in counts]
+        return cond_dict
+
+    def separate_group_count_attributes(counts) -> dict:
+        """
+        Arguments: Group counts (typically w/in an enclosure)
+
+        Returns: dictionary
+
+        - keys: Seen, BAR, Needs Attn
+        - values: sum of group counts within each key
+        """
+        count_dict = {}
+        count_dict["Seen"] = sum([c.count_seen for c in counts])
+        count_dict["BAR"] = sum([c.count_bar for c in counts])
+        count_dict["Needs Attn"] = sum([c.needs_attn for c in counts])
+        return count_dict
+
+    enc_anim_ct_dict = create_counts_dict(enclosures, animal_counts)
+    enc_group_ct_dict = create_counts_dict(enclosures, group_counts)
+    counts_dict = {}
+    for enc in enclosures:
+        enc_anim_counts_sum = sum(
+            [
+                c.condition in [o_c[0] for o_c in AnimalCount.OBSERVED_CONDITIONS]
+                for c in enc_anim_ct_dict[enc]
+            ]
+        )
+        enc_group_counts_sum = sum(
+            [c.count_seen + c.count_bar for c in enc_group_ct_dict[enc]]
+        )
+        total_groups = sum([g.population_total for g in enc.groups.all()])
+
+        counts_dict[enc] = {
+            "animal_count_total": enc_anim_counts_sum,
+            "animal_conditions": separate_conditions(enc_anim_ct_dict[enc]),
+            "group_counts": separate_group_count_attributes(enc_group_ct_dict[enc]),
+            "group_count_total": enc_group_counts_sum,
+            "total_animals": enc.animals.count(),
+            "total_groups": total_groups,
+        }
+
+    return counts_dict
 
 
 """ views """
@@ -118,9 +198,17 @@ def home(request):
         else:
             role = None
 
-    enclosures_query = enclosures_query.filter(query).distinct()
+    # prefetching in order to build up the info displayed for each enclosure
+    groups_prefetch = Prefetch("groups", queryset=Group.objects.filter(active=True))
+    animals_prefetch = Prefetch("animals", queryset=Animal.objects.filter(active=True))
 
-    paginator = Paginator(enclosures_query, 20)
+    enclosures_query = (
+        enclosures_query.prefetch_related(groups_prefetch, animals_prefetch)
+        .filter(query)
+        .distinct()
+    )
+
+    paginator = Paginator(enclosures_query, 10)
     page = request.GET.get("page", 1)
     enclosures = paginator.get_page(page)
     page_range = range(
@@ -129,11 +217,15 @@ def home(request):
 
     roles = request.user.roles.all()
 
+    cts = Enclosure.all_counts(enclosures)
+    enclosure_cts_dict = enclosure_counts_to_dict(enclosures, *cts)
+
     return render(
         request,
         "home.html",
         {
             "enclosures": enclosures,
+            "cts_dict": enclosure_cts_dict,
             "page_range": page_range,
             "roles": roles,
             "selected_role": role,

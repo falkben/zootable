@@ -17,5 +17,5 @@
     "concurrently": "^5.2.0",
     "node-sass": "^4.14.1"
   },
-  "license": "GNU AFFERO GENERAL PUBLIC LICENSE Version 3"
+  "license": "AGPL-3.0-or-later"
 }

@@ -97,6 +97,21 @@ main {
   color: rgba(0, 0, 0, 1);
 }
 
+/* format of enclosure listing */
+.enclosure_list td,
+.enclosure_list th {
+  vertical-align: middle;
+}
+
+.encl_list_detailed_table {
+  margin-top: 1rem;
+}
+
+.encl_list_detailed_table td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
 /* format of tally table */
 table {
   margin-bottom: 1rem;

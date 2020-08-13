@@ -229,3 +229,13 @@ function fill_conditions(selectObject) {
     selectObject.value = "fill";
   }
 }
+
+function display_detail_table(selector_string) {
+  // used to show/hide the detail table on enclosure listing
+  const table_elem = document.getElementById(selector_string);
+  if (table_elem.style.display === "none") {
+    table_elem.style.display = "block";
+  } else {
+    table_elem.style.display = "none";
+  }
+}

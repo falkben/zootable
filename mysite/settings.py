@@ -55,7 +55,7 @@ ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com"]
 TIME_ZONE = "America/New_York"
 
 # security options suggested from `python manage.py check --deploy`
-# SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True  # SSL termination issues btwn cloudflare and heroku with this set to True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = "DENY"
@@ -69,8 +69,8 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "default")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "app@zootable.com"
-DEFAULT_FROM_EMAIL = "no-reply-notifications@zootable.com"  # used for all other email
-SERVER_EMAIL = "server@zootable.com"  # used for email to ADMINS and MANAGERS
+DEFAULT_FROM_EMAIL = "app@zootable.com"  # used for all other email
+SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
 
 try:
     from .local_settings import *
@@ -114,7 +114,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_cloudflare_push.middleware.push_middleware",
 ]
 
 ROOT_URLCONF = "mysite.urls"
