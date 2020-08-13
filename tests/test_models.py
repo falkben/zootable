@@ -90,23 +90,19 @@ def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_q
 
     assert len(counts) == num_enc * (num_anim + num_groups * 2)
 
-    with django_assert_num_queries(3):
+    with django_assert_num_queries(2):
         counts_tuple = Enclosure.all_counts(enc_list)
-        species_counts, animal_counts, group_counts = (list(ct) for ct in counts_tuple)
+        # forces the queries to evaluate
+        animal_counts, group_counts = (list(ct) for ct in counts_tuple)
 
     # assert counts
-    assert len(species_counts) == num_species * num_enc
     assert len(group_counts) == num_groups * num_enc
     assert len(animal_counts) == num_anim * num_enc
 
     # the counts from db are ordered
     # counts from all_counts are by creation order
-    assert set(species_counts) == set(s_cts)
     assert set(group_counts) == set(g_cts)
     assert set(animal_counts) == set(a_cts)
-
-    assert all(c.user == user_base for c in species_counts)
-    assert all(c.count == 42 for c in species_counts)
 
     assert all(c.user == user_base for c in animal_counts)
     assert all(c.condition == "BA" for c in animal_counts)
