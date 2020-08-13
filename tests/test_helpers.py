@@ -1,9 +1,8 @@
 import pandas as pd
 import pytest
 from django.utils import timezone
-
 from zoo_checks.helpers import clean_df, qs_to_df
-from zoo_checks.models import Animal, Enclosure, Group, Species, GroupCount
+from zoo_checks.models import Animal, Enclosure, Group, GroupCount, Species
 
 
 @pytest.mark.django_db
