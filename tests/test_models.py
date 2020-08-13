@@ -3,7 +3,6 @@
 
 import pytest
 from django.utils.timezone import localtime
-
 from zoo_checks.models import Animal, AnimalCount, Enclosure, Group, GroupCount, Species
 
 
@@ -131,42 +130,30 @@ def test_enclosure_counts_to_dict(
         num_enc=num_enc, num_anim=num_anim, num_species=num_species,
     )
 
-    with django_assert_num_queries(3):
-        species_counts, animal_counts, group_counts = Enclosure.all_counts(enc_list)
+    # create a query similar to how we build it in the view
+    encl_q = Enclosure.objects.filter(name__in=enc_list).prefetch_related(
+        "animals", "groups"
+    )
+    with django_assert_num_queries(5):
+        # 3 for enclosures, groups, animals (w/ prefetch related)
+        # 2 for animal_counts and group_counts
+
+        animal_counts, group_counts = Enclosure.all_counts(encl_q)
         all_counts_dict = Enclosure.enclosure_counts_to_dict(
-            enc_list, species_counts, animal_counts, group_counts
+            encl_q, animal_counts, group_counts
         )
 
-    # assert structure of dict
-    assert enc_list == list(all_counts_dict.keys())
+    # assert dict keys present in original query
+    assert list(encl_q) == list(all_counts_dict.keys())
 
+    # assert dict structure
     for enc in enc_list:
         enc_dict = all_counts_dict[enc]
 
-        # species
-        enc_spec_dict = enc_dict["species_counts"]
-        assert len(enc_spec_dict) == num_species
-        assert all([ct in s_cts for _, ct in enc_spec_dict.items()])
-        for s, ct in enc_spec_dict.items():
-            assert ct.species == s
-            assert ct.species in enc.species()
-            assert ct.datecounted == localtime().date()
-
-        # animals
-        enc_anim_dict = enc_dict["animal_counts"]
-        assert len(enc_anim_dict) == num_anim
-        assert all([ct in a_cts for _, ct in enc_anim_dict.items()])
-        for a, ct in enc_anim_dict.items():
-            assert ct.animal == a
-            assert ct.animal in enc.animals.all()
-            assert ct.animal.species == species_base
-            assert ct.datecounted == localtime().date()
-
-        enc_group_dict = enc_dict["group_counts"]
-        assert len(enc_group_dict) == num_groups
-        assert all([ct in g_cts for _, ct in enc_group_dict.items()])
-        for g, ct in enc_group_dict.items():
-            assert ct.group == g
-            assert ct.group in enc.groups.all()
-            assert ct.group.species in enc.species()
-            assert ct.datecounted == localtime().date()
+        # todo
+        # animal_count_total
+        # animal_conditions
+        # group_counts
+        # group_count_total
+        # total_animals
+        # total_groups

@@ -86,7 +86,8 @@ class Enclosure(models.Model):
     def all_counts(cls, enclosures, day: datetime = None) -> tuple:
         """
         from a queryset of enclosures gets the counts for each enclosure
-        This does only 3 queries to the database (one for each type of count)
+        This does only 2 queries to the database (one for each type of count)
+        If we need species counts could be added here
         """
 
         if day is None:
@@ -120,29 +121,15 @@ class Enclosure(models.Model):
             .distinct("animal__accession_number")
         )
 
-        species_counts = (
-            SpeciesCount.objects.filter(
-                enclosure__in=enclosures,
-                datetimecounted__gte=day,
-                datetimecounted__lt=day + timezone.timedelta(days=1),
-            )
-            .select_related("species", "enclosure")
-            .order_by("species__common_name", "-datetimecounted")
-            .distinct("species__common_name")
-        )
-
-        return species_counts, animal_counts, group_counts
+        return animal_counts, group_counts
 
     @classmethod
-    def enclosure_counts_to_dict(
-        cls, enclosures, species_counts, animal_counts, group_counts
-    ) -> dict:
+    def enclosure_counts_to_dict(cls, enclosures, animal_counts, group_counts) -> dict:
         """
         repackage enclosure counts into dict for template render
-        dict order of enclosures is same as list order
-        we're not using defaultdict(list) here for 2 reasons:
-        1. we want an empty list for each enclosure
-        2. django templates have difficulty with defaultdict (can set default_factory to None)
+        dict order of enclosures is same as list/query order
+        we're not using defaultdict(list) because
+        django templates have difficulty with defaultdict (can set default_factory to None)
         """
 
         def create_counts_dict(enclosures, counts):
@@ -151,9 +138,6 @@ class Enclosure(models.Model):
                 counts_dict[enc] = []
             [counts_dict[c.enclosure].append(c) for c in counts]
             return counts_dict
-
-        enc_anim_ct_dict = create_counts_dict(enclosures, animal_counts)
-        enc_group_ct_dict = create_counts_dict(enclosures, group_counts)
 
         def separate_conditions(counts):
             cond_dict = {}
@@ -164,39 +148,33 @@ class Enclosure(models.Model):
 
         def separate_group_count_attributes(counts):
             count_dict = {}
-            attributes = [
-                ("Seen", "count_seen"),
-                ("BAR", "count_bar"),
-                ("Needs Attn", "needs_attn"),
-            ]
-            for attr in attributes:
-                count_dict[attr[0]] = sum([getattr(c, attr[1]) for c in counts])
+            count_dict["Seen"] = sum([c.count_seen for c in counts])
+            count_dict["BAR"] = sum([c.count_bar for c in counts])
+            count_dict["Needs Attn"] = sum([c.needs_attn for c in counts])
             return count_dict
 
+        enc_anim_ct_dict = create_counts_dict(enclosures, animal_counts)
+        enc_group_ct_dict = create_counts_dict(enclosures, group_counts)
         counts_dict = {}
         for enc in enclosures:
-            enc_anim_counts = {c.animal: c for c in enc_anim_ct_dict[enc]}
+            enc_anim_counts = [c for c in enc_anim_ct_dict[enc]]
             enc_anim_counts_sum = sum(
                 [
                     c.condition in [o_c[0] for o_c in AnimalCount.OBSERVED_CONDITIONS]
-                    for c in enc_anim_counts.values()
+                    for c in enc_anim_counts
                 ]
             )
-            enc_group_counts = {c.group: c for c in enc_group_ct_dict[enc]}
             enc_group_counts_sum = sum(
-                [c.count_seen + c.count_bar for c in enc_group_counts.values()]
+                [c.count_seen + c.count_bar for c in enc_group_ct_dict[enc]]
             )
-            total_animals = enc.animals.count()
             total_groups = sum([g.population_total for g in enc.groups.all()])
 
             counts_dict[enc] = {
                 "animal_count_total": enc_anim_counts_sum,
                 "animal_conditions": separate_conditions(enc_anim_ct_dict[enc]),
-                "group_counts": separate_group_count_attributes(
-                    enc_group_counts.values()
-                ),
+                "group_counts": separate_group_count_attributes(enc_group_ct_dict[enc]),
                 "group_count_total": enc_group_counts_sum,
-                "total_animals": total_animals,
+                "total_animals": enc.animals.count(),
                 "total_groups": total_groups,
             }
 

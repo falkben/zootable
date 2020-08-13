@@ -29,4 +29,4 @@ def test_home_counts(client, create_many_counts, user_base):
     response = client.get(url)
 
     assert response.status_code == 200
-    assert "<h3>Enclosures</h3>" in response.content.decode()
+    assert "Individuals" in response.content.decode()
