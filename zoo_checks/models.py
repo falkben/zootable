@@ -152,7 +152,6 @@ class Enclosure(models.Model):
             [counts_dict[c.enclosure].append(c) for c in counts]
             return counts_dict
 
-        enc_spec_ct_dict = create_counts_dict(enclosures, species_counts)
         enc_anim_ct_dict = create_counts_dict(enclosures, animal_counts)
         enc_group_ct_dict = create_counts_dict(enclosures, group_counts)
 
@@ -176,7 +175,6 @@ class Enclosure(models.Model):
 
         counts_dict = {}
         for enc in enclosures:
-            enc_species_counts = {c.species: c for c in enc_spec_ct_dict[enc]}
             enc_anim_counts = {c.animal: c for c in enc_anim_ct_dict[enc]}
             enc_anim_counts_sum = sum(
                 [
@@ -192,19 +190,14 @@ class Enclosure(models.Model):
             total_groups = sum([g.population_total for g in enc.groups.all()])
 
             counts_dict[enc] = {
-                "species_count_total": sum(
-                    [c.count for c in enc_species_counts.values()]
-                ),
                 "animal_count_total": enc_anim_counts_sum,
                 "animal_conditions": separate_conditions(enc_anim_ct_dict[enc]),
                 "group_counts": separate_group_count_attributes(
                     enc_group_counts.values()
                 ),
                 "group_count_total": enc_group_counts_sum,
-                "total_counts": enc_anim_counts_sum + enc_group_counts_sum,
                 "total_animals": total_animals,
                 "total_groups": total_groups,
-                "total_species": total_animals + total_groups,
             }
 
         return counts_dict

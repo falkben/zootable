@@ -55,7 +55,7 @@ ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com"]
 TIME_ZONE = "America/New_York"
 
 # security options suggested from `python manage.py check --deploy`
-# SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True  # SSL termination issues btwn cloudflare and heroku with this set to True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = "DENY"

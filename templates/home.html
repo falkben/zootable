@@ -4,102 +4,83 @@
 
 {% block content %}
 
-<div class="row">
-  <div class="col s7">
-    <h3>Enclosures</h3>
-    <ul class="enclosure-listing">
+<div class="row" style="margin-top: 10px">
+  <div class="col s8">
+  {% if cts_dict.keys %}
+    <table class="striped centered enclosure_list">
+      <thead>
+        <th></th>
+        <th></th>
+        <th>Individuals</th>
+        <th>Groups</th>
+      </thead>
+    
     {% for enclosure, encl_counts_dict in cts_dict.items %}
-      <li class="row">
-        <h6 class="center">
-          <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.slug %}">
-            {{enclosure}}
-          </a>
-        </h6>
+      <tr>
+        <td style="text-align:right">
+          <b>{{enclosure}}</b>
+        </td>
 
-        <table class="centered">
-          <thead>
-            <th></th>
-            <th>Counts</th>
-            <th>Total</th>
-          </thead>
+        <td style="text-align:right">
+        <a class="btn-small" href="{% url 'count' enclosure.slug %}">
+          <i class="small material-icons">chevron_right</i>
+        </a>
+        </td>
 
+        <td>
           {% if enclosure.animals.all|length > 0 %}
-          <tr>
-            <td class="right">
-              <a onclick="display_detail_table('{{enclosure.slug}}_conditions_table')" href="javascript:;">
-                Animals
-              </a>
-            </td>
-            <td>{{encl_counts_dict.animal_count_total}}</td>
-            <td>{{encl_counts_dict.total_animals}}</td>
-          </tr>
-          {% endif %}
+            <a onclick="display_detail_table('{{enclosure.slug}}_conditions_table')" href="javascript:;">
+              {{encl_counts_dict.animal_count_total}}
+              / {{encl_counts_dict.total_animals}}
+            </a>
 
-          {% if enclosure.groups.all|length > 0 %}
-          <tr>
-            <td class="right">
-              <a onclick="display_detail_table('{{enclosure.slug}}_group_table')" href="javascript:;">
-                Groups
-              </a>
-            </td>
-            <td>{{encl_counts_dict.group_count_total}}</td>
-            <td>{{encl_counts_dict.total_groups}}</td>
-          </tr>
-          {% endif %}
-
-          <tr>
-            <td class="right">Species</td>
-            <td>{{encl_counts_dict.species_count_total}}</td>
-            <td>{{encl_counts_dict.total_species}}</td>
-          </tr>
-        </table>
-
-        <div style="display:none" id="{{enclosure.slug}}_conditions_table">
-          <h6 class="center">Animal info</h6>
-          <table class="centered">
-            <thead>
-              <tr>
-              {% for cond in encl_counts_dict.animal_conditions.keys %}
-                <th>{{cond}}</th>
-              {% endfor %}
-              </tr>
-            </thead>
-            <tr>
+            <span style="display:none" id="{{enclosure.slug}}_conditions_table">
+              <table class="encl_list_detailed_table">
               {% for cond, cond_cts in encl_counts_dict.animal_conditions.items %}
-                <td>{{ cond_cts|length }}</td>
-              {% endfor %}
-            </tr>
-          </table>
-        </div>
-
-        <div style="display:none" id="{{enclosure.slug}}_group_table">
-          <h6 class="center">Group info</h6>
-          <table class="centered">
-            <thead>
               <tr>
-              {% for k in encl_counts_dict.group_counts.keys %}
-                <th>{{k}}</th>
-              {% endfor %}
+                <td><b>{{cond}}</b></td>
+                <td>{{cond_cts|length}}</td>
               </tr>
-            </thead>
-            <tr>
-              {% for k, v in encl_counts_dict.group_counts.items %}
-                <td>{{ v }}</td>
               {% endfor %}
-            </tr>
-          </table>
-        </div>
-      </li>
-    {% empty %}
-      <div class="errorlist">
-        No enclosures. Contact a manager to be added to a role
-      </div>
+              </table>
+            </span>
+          {% else %}
+            — / —
+          {% endif %}
+        </td>
+
+        <td>
+          {% if enclosure.groups.all|length > 0 %}
+            <a onclick="display_detail_table('{{enclosure.slug}}_group_table')" href="javascript:;">
+              {{encl_counts_dict.group_count_total}}
+              / {{encl_counts_dict.total_groups}}
+            </a>
+
+            <span style="display:none" id="{{enclosure.slug}}_group_table">
+            <table class="encl_list_detailed_table">
+              {% for k, v in encl_counts_dict.group_counts.items %}
+                <tr>
+                <td><b>{{k}}</b></td>
+                <td>{{v}}</td>
+                </tr>
+              {% endfor %}
+            </table>
+          {% else %}
+            — / —
+          {% endif %}
+        </td>
+      </tr>
     {% endfor %}
-    </ul>
+    </table>
+  {% else %}
+    <div class="errorlist">
+      No enclosures. Contact a manager to be added to a role
+    </div>
+  {% endif %}
   </div>
 
-{% if roles %}
-  <div class="col s5 m4 right pin-top" style="margin-top: 42px">
+  {% if roles %}
+  <div class="col s4 m4 right pin-top">
     <div class="collection with-header black-text">
 
       <div class="collection-header blue darken-4 white-text" style="border: 0px">
@@ -119,11 +100,10 @@
         " style="border: 0px">{{role.name}}</a>
       {% endfor %}
     </div>
+  {% endif %}
   </div>
-{% endif %}
+</div>
 
 {% include "paginate_counts.html" with page_items=enclosures %}
-
-</div>
 
 {% endblock %}

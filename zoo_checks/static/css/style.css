@@ -98,21 +98,18 @@ main {
 }
 
 /* format of enclosure listing */
-ul.enclosure-listing > li {
-  padding: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  border-radius: 2px;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-    0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+.enclosure_list td,
+.enclosure_list th {
+  vertical-align: middle;
 }
 
-ul.enclosure-listing > li:nth-child(odd) {
-  background: #e8f5e9;
+.encl_list_detailed_table {
+  margin-top: 1rem;
 }
 
-ul.enclosure-listing > li:nth-child(even) {
-  background: #def;
+.encl_list_detailed_table td {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 /* format of tally table */
