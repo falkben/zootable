@@ -250,11 +250,15 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
     else:
         count_today = False
 
-    enclosure_animals = enclosure.animals.filter(active=True).order_by(
-        "species__common_name", "name", "accession_number"
+    enclosure_animals = (
+        enclosure.animals.filter(active=True)
+        .order_by("species__common_name", "name", "accession_number")
+        .select_related("species")
     )
-    enclosure_groups = enclosure.groups.filter(active=True).order_by(
-        "species__common_name", "accession_number"
+    enclosure_groups = (
+        enclosure.groups.filter(active=True)
+        .order_by("species__common_name", "accession_number")
+        .select_related("species")
     )
 
     enclosure_species = enclosure.species().order_by("common_name")
