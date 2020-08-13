@@ -84,21 +84,46 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     we're not using defaultdict(list) because django templates have difficulty with defaultdict
     """
 
-    def create_counts_dict(enclosures, counts):
+    def create_counts_dict(enclosures, counts) -> dict:
+        """ Takes a list/queryset of counts and enclosures
+
+        Returns a dictionary
+
+        - keys: enclosures
+        - values: list of counts belonging to the enclosure
+
+        We do this (once) in order to be able to iterate over counts for each enclosure
+        """
         counts_dict = {}
         for enc in enclosures:
             counts_dict[enc] = []
         [counts_dict[c.enclosure].append(c) for c in counts]
         return counts_dict
 
-    def separate_conditions(counts):
+    def separate_conditions(counts) -> dict:
+        """
+        Arguments: Animal counts
+
+        Returns: dictionary
+
+        - keys: condition names
+        - values: list of counts
+        """
         cond_dict = {}
         for cond in AnimalCount.CONDITIONS:
             cond_dict[cond[1]] = []  # init to empty list
         [cond_dict[c.get_condition_display()].append(c) for c in counts]
         return cond_dict
 
-    def separate_group_count_attributes(counts):
+    def separate_group_count_attributes(counts) -> dict:
+        """
+        Arguments: Group counts (typically w/in an enclosure)
+
+        Returns: dictionary
+
+        - keys: Seen, BAR, Needs Attn
+        - values: sum of group counts within each key
+        """
         count_dict = {}
         count_dict["Seen"] = sum([c.count_seen for c in counts])
         count_dict["BAR"] = sum([c.count_bar for c in counts])
@@ -109,11 +134,10 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     enc_group_ct_dict = create_counts_dict(enclosures, group_counts)
     counts_dict = {}
     for enc in enclosures:
-        enc_anim_counts = [c for c in enc_anim_ct_dict[enc]]
         enc_anim_counts_sum = sum(
             [
                 c.condition in [o_c[0] for o_c in AnimalCount.OBSERVED_CONDITIONS]
-                for c in enc_anim_counts
+                for c in enc_anim_ct_dict[enc]
             ]
         )
         enc_group_counts_sum = sum(

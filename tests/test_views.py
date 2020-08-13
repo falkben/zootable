@@ -1,5 +1,5 @@
 from django.urls import reverse
-from zoo_checks.models import Enclosure
+from zoo_checks.models import AnimalCount, Enclosure
 from zoo_checks.views import enclosure_counts_to_dict
 
 
@@ -34,9 +34,7 @@ def test_home_counts(client, create_many_counts, user_base):
     assert "Individuals" in response.content.decode()
 
 
-def test_enclosure_counts_to_dict(
-    create_many_counts, species_base, django_assert_num_queries
-):
+def test_enclosure_counts_to_dict(create_many_counts, django_assert_num_queries):
     """
     Tests the dictionary creation from list of counts
     Tests the structure of the dict
@@ -45,7 +43,7 @@ def test_enclosure_counts_to_dict(
     num_anim = 4
     num_species = num_groups = 5
 
-    a_cts, s_cts, g_cts, enc_list = create_many_counts(
+    _, _, _, enc_list = create_many_counts(
         num_enc=num_enc, num_anim=num_anim, num_species=num_species,
     )
 
@@ -67,10 +65,37 @@ def test_enclosure_counts_to_dict(
     for enc in enc_list:
         enc_dict = all_counts_dict[enc]
 
-        # todo
-        # animal_count_total
-        # animal_conditions
-        # group_counts
-        # group_count_total
-        # total_animals
-        # total_groups
+        keys = {
+            "animal_count_total",
+            "animal_conditions",
+            "group_counts",
+            "group_count_total",
+            "total_animals",
+            "total_groups",
+        }
+        assert set(enc_dict.keys()) == keys
+
+        assert enc_dict["animal_count_total"] == num_anim
+        assert enc_dict["total_animals"] == num_anim
+
+        # (1+3) Seen/BAR from input to group_count_factory
+        assert enc_dict["group_count_total"] == num_groups * (1 + 3)
+
+        # pop total = 30
+        assert enc_dict["total_groups"] == num_groups * 30
+
+        assert list(enc_dict["animal_conditions"].keys()) == [
+            c[1] for c in AnimalCount.CONDITIONS
+        ]
+        assert all(
+            [
+                all([isinstance(c, AnimalCount) for c in c_l])
+                for c_l in enc_dict["animal_conditions"].values()
+            ]
+        )
+
+        assert list(enc_dict["group_counts"].keys()) == ["Seen", "BAR", "Needs Attn"]
+        # These values come from the factory inputs to create group_counts
+        assert enc_dict["group_counts"]["Seen"] == num_groups
+        assert enc_dict["group_counts"]["BAR"] == num_groups * 3
+        assert enc_dict["group_counts"]["Needs Attn"] == 0
