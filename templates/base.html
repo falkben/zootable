@@ -18,13 +18,11 @@
   
   <main>
     <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="msg msg-{% if message.tags %}{{ message.tags }}{% endif %} z-depth-3">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
+      {% for message in messages %}
+        <div class="msg msg-{% if message.tags %}{{ message.tags }}{% endif %} z-depth-3">
+          {{ message }}
+        </div>
+      {% endfor %}
 
       {% block content %}
       {% endblock %}

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import pandas as pd
@@ -7,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -41,7 +42,6 @@ from .models import (
     Species,
     SpeciesCount,
 )
-import logging
 
 baselogger = logging.getLogger("zootable")
 logger = baselogger.getChild(__name__)
@@ -118,9 +118,17 @@ def home(request):
         else:
             role = None
 
-    enclosures_query = enclosures_query.filter(query).distinct()
+    # prefetching in order to build up the info displayed for each enclosure
+    groups_prefetch = Prefetch("groups", queryset=Group.objects.filter(active=True))
+    animals_prefetch = Prefetch("animals", queryset=Animal.objects.filter(active=True))
 
-    paginator = Paginator(enclosures_query, 20)
+    enclosures_query = (
+        enclosures_query.prefetch_related(groups_prefetch, animals_prefetch)
+        .filter(query)
+        .distinct()
+    )
+
+    paginator = Paginator(enclosures_query, 10)
     page = request.GET.get("page", 1)
     enclosures = paginator.get_page(page)
     page_range = range(
@@ -136,6 +144,7 @@ def home(request):
         request,
         "home.html",
         {
+            "enclosures": enclosures,
             "cts_dict": enclosure_cts_dict,
             "page_range": page_range,
             "roles": roles,

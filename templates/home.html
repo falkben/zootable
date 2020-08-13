@@ -5,37 +5,97 @@
 {% block content %}
 
 <div class="row">
-
   <div class="col s7">
-
-    {% if cts_dict.keys %}
-
-      <h3>Enclosures</h3>
-      {% for enclosure, encl_counts_dict in cts_dict.items %}
-        <p>
+    <h3>Enclosures</h3>
+    <ul class="enclosure-listing">
+    {% for enclosure, encl_counts_dict in cts_dict.items %}
+      <li class="row">
+        <h6 class="center">
           <a class="waves-effect waves-light btn" href="{% url 'count' enclosure.slug %}">
             {{enclosure}}
           </a>
-        </p>
+        </h6>
 
-        {% for cond, cond_cts in encl_counts_dict.animal_conditions.items %}
-          <p>
-            Condition: {{ cond }}<br />
-            Number: {{ cond_cts|length }}
-          </p>
-        {% endfor %}
+        <table class="centered">
+          <thead>
+            <th></th>
+            <th>Counts</th>
+            <th>Total</th>
+          </thead>
 
-        <p>Counted: {{encl_counts_dict.total_counts}}</p>
-      {% endfor %}
+          {% if enclosure.animals.all|length > 0 %}
+          <tr>
+            <td class="right">
+              <a onclick="display_detail_table('{{enclosure.slug}}_conditions_table')" href="javascript:;">
+                Animals
+              </a>
+            </td>
+            <td>{{encl_counts_dict.animal_count_total}}</td>
+            <td>{{encl_counts_dict.total_animals}}</td>
+          </tr>
+          {% endif %}
 
-    {% else %}
+          {% if enclosure.groups.all|length > 0 %}
+          <tr>
+            <td class="right">
+              <a onclick="display_detail_table('{{enclosure.slug}}_group_table')" href="javascript:;">
+                Groups
+              </a>
+            </td>
+            <td>{{encl_counts_dict.group_count_total}}</td>
+            <td>{{encl_counts_dict.total_groups}}</td>
+          </tr>
+          {% endif %}
 
+          <tr>
+            <td class="right">Species</td>
+            <td>{{encl_counts_dict.species_count_total}}</td>
+            <td>{{encl_counts_dict.total_species}}</td>
+          </tr>
+        </table>
+
+        <div style="display:none" id="{{enclosure.slug}}_conditions_table">
+          <h6 class="center">Animal info</h6>
+          <table class="centered">
+            <thead>
+              <tr>
+              {% for cond in encl_counts_dict.animal_conditions.keys %}
+                <th>{{cond}}</th>
+              {% endfor %}
+              </tr>
+            </thead>
+            <tr>
+              {% for cond, cond_cts in encl_counts_dict.animal_conditions.items %}
+                <td>{{ cond_cts|length }}</td>
+              {% endfor %}
+            </tr>
+          </table>
+        </div>
+
+        <div style="display:none" id="{{enclosure.slug}}_group_table">
+          <h6 class="center">Group info</h6>
+          <table class="centered">
+            <thead>
+              <tr>
+              {% for k in encl_counts_dict.group_counts.keys %}
+                <th>{{k}}</th>
+              {% endfor %}
+              </tr>
+            </thead>
+            <tr>
+              {% for k, v in encl_counts_dict.group_counts.items %}
+                <td>{{ v }}</td>
+              {% endfor %}
+            </tr>
+          </table>
+        </div>
+      </li>
+    {% empty %}
       <div class="errorlist">
-      No enclosures. Contact a manager to be added to a role
+        No enclosures. Contact a manager to be added to a role
       </div>
-
-    {% endif%}
-
+    {% endfor %}
+    </ul>
   </div>
 
 {% if roles %}

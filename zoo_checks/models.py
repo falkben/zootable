@@ -1,7 +1,5 @@
-from collections import defaultdict
 from datetime import datetime
 from itertools import chain
-from typing import List
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -85,18 +83,10 @@ class Enclosure(models.Model):
         )
 
     @classmethod
-    def all_counts(cls, enclosures: List, day: datetime = None) -> tuple:
+    def all_counts(cls, enclosures, day: datetime = None) -> tuple:
         """
-        from a list of enclosures gets the counts for each enclosure
-        returns a dictionary in the form
+        from a queryset of enclosures gets the counts for each enclosure
         This does only 3 queries to the database (one for each type of count)
-        {
-            ENCLOSURE_NAME: {
-                "species_counts": {"species_common_name": count, ...},
-                "animal_counts": {"animal_accession_number": count, ...},
-                "group_counts": {"group_accession_number": count, ...}
-            }
-        }
         """
 
         if day is None:
@@ -145,7 +135,7 @@ class Enclosure(models.Model):
 
     @classmethod
     def enclosure_counts_to_dict(
-        cls, enclosures: List, species_counts, animal_counts, group_counts
+        cls, enclosures, species_counts, animal_counts, group_counts
     ) -> dict:
         """
         repackage enclosure counts into dict for template render
@@ -169,21 +159,52 @@ class Enclosure(models.Model):
         def separate_conditions(counts):
             cond_dict = {}
             for cond in AnimalCount.CONDITIONS:
-                cond_dict[cond[0]] = []
-            [cond_dict[c.condition].append(c) for c in counts]
+                cond_dict[cond[1]] = []  # init to empty list
+            [cond_dict[c.get_condition_display()].append(c) for c in counts]
             return cond_dict
+
+        def separate_group_count_attributes(counts):
+            count_dict = {}
+            attributes = [
+                ("Seen", "count_seen"),
+                ("BAR", "count_bar"),
+                ("Needs Attn", "needs_attn"),
+            ]
+            for attr in attributes:
+                count_dict[attr[0]] = sum([getattr(c, attr[1]) for c in counts])
+            return count_dict
 
         counts_dict = {}
         for enc in enclosures:
             enc_species_counts = {c.species: c for c in enc_spec_ct_dict[enc]}
             enc_anim_counts = {c.animal: c for c in enc_anim_ct_dict[enc]}
+            enc_anim_counts_sum = sum(
+                [
+                    c.condition in [o_c[0] for o_c in AnimalCount.OBSERVED_CONDITIONS]
+                    for c in enc_anim_counts.values()
+                ]
+            )
             enc_group_counts = {c.group: c for c in enc_group_ct_dict[enc]}
+            enc_group_counts_sum = sum(
+                [c.count_seen + c.count_bar for c in enc_group_counts.values()]
+            )
+            total_animals = enc.animals.count()
+            total_groups = sum([g.population_total for g in enc.groups.all()])
+
             counts_dict[enc] = {
-                "species_counts": enc_species_counts,
-                "animal_counts": enc_anim_counts,
+                "species_count_total": sum(
+                    [c.count for c in enc_species_counts.values()]
+                ),
+                "animal_count_total": enc_anim_counts_sum,
                 "animal_conditions": separate_conditions(enc_anim_ct_dict[enc]),
-                "group_counts": enc_group_counts,
-                "total_counts": len(enc_anim_counts) + len(enc_group_counts),
+                "group_counts": separate_group_count_attributes(
+                    enc_group_counts.values()
+                ),
+                "group_count_total": enc_group_counts_sum,
+                "total_counts": enc_anim_counts_sum + enc_group_counts_sum,
+                "total_animals": total_animals,
+                "total_groups": total_groups,
+                "total_species": total_animals + total_groups,
             }
 
         return counts_dict
@@ -514,10 +535,13 @@ class AnimalCount(Count):
     ABSENT = "NS"  # used to be not seen
     NOT_OBSERVED = ""
 
-    CONDITIONS = [
+    OBSERVED_CONDITIONS = [
         (BAR, "BAR"),
         (SEEN, "Seen"),
         (NEEDSATTENTION, "Attn"),
+    ]
+
+    CONDITIONS = OBSERVED_CONDITIONS + [
         (ABSENT, "Absent"),
         (NOT_OBSERVED, "Not Obs"),
     ]
