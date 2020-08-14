@@ -123,6 +123,17 @@ def animal_A(db, species_base, enclosure_base):
     return animal_factory("A_name", "A_id", "M", "123456", enclosure_base, species_base)
 
 
+@pytest.fixture
+def animal_B_enc(db, species_base, enclosure_factory):
+    # closure
+    def _animal_B_enc(enclosure_name):
+
+        enc = enclosure_factory(enclosure_name)
+        return animal_factory("B_name", "B_id", "F", "111555", enc, species_base)
+
+    return _animal_B_enc
+
+
 def animal_count_factory(
     condition: str,
     animal: Animal,
