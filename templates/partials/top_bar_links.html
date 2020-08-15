@@ -1,7 +1,8 @@
 {% if user.is_authenticated %}
     <li>
         <a href="{% url 'account_management' %}">
-            <i class="material-icons left hide-on-med-and-down">person</i>{{ user.first_name }}
+            <i class="material-icons left hide-on-med-and-down" title="Account">person</i>
+            {{ user.first_name }}
         </a>
     </li>
     {% if user.is_staff %}
@@ -9,13 +10,22 @@
         Admin
     </a>
     </li>
-    <li><a href="{% url 'ingest_form' %}">
-        Upload
-    </a>
+    <li>
+        <a href="{% url 'ingest_form' %}">
+            <i class="material-icons" title="Upload">cloud_upload</i>
+        </a>
     </li>
     {% endif %}
-    <li><a href="{% url 'export' %}">Export</a></li>
-    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+    <li>
+        <a href="{% url 'export' %}">
+            <i class="material-icons" title="Export">cloud_download</i>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'account_logout' %}">
+            <i class="material-icons" title="Logout">exit_to_app</i>
+        </a>
+    </li>
 {% else %}
     <li><a href="{% url 'account_login' %}">Login</a></li>
     <li><a href="{% url 'account_signup' %}">Sign up</a></li>
