@@ -18,7 +18,9 @@
     {% for enclosure, encl_counts_dict in cts_dict.items %}
       <tr>
         <td style="text-align:right">
-          <b>{{enclosure}}</b>
+          <a class="black-text" href="{% url 'count' enclosure.slug %}">
+            <b>{{enclosure}}</b>
+          </a>
         </td>
 
         <td style="text-align:right">
