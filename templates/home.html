@@ -14,7 +14,7 @@
         <th>Individuals</th>
         <th>Groups</th>
       </thead>
-    
+
     {% for enclosure, encl_counts_dict in cts_dict.items %}
       <tr>
         <td style="text-align:right">
@@ -22,7 +22,7 @@
         </td>
 
         <td style="text-align:right">
-        <a class="btn-small" href="{% url 'count' enclosure.slug %}">
+        <a class="btn-floating btn-small" href="{% url 'count' enclosure.slug %}">
           <i class="small material-icons">chevron_right</i>
         </a>
         </td>

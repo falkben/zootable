@@ -41,6 +41,7 @@ from .models import (
     Role,
     Species,
     SpeciesCount,
+    User,
 )
 
 baselogger = logging.getLogger("zootable")
@@ -49,17 +50,17 @@ logger = baselogger.getChild(__name__)
 """ helpers that need models """
 
 
-def get_accessible_enclosures(request):
+def get_accessible_enclosures(user: User):
     # superuser sees all enclosures
-    if not request.user.is_superuser:
-        enclosures = Enclosure.objects.filter(roles__in=request.user.roles.all())
+    if not user.is_superuser:
+        enclosures = Enclosure.objects.filter(roles__in=user.roles.all())
     else:
         enclosures = Enclosure.objects.all()
 
     return enclosures
 
 
-def redirect_if_not_permitted(request, enclosure) -> bool:
+def redirect_if_not_permitted(request, enclosure: Enclosure) -> bool:
     """
     Returns
     -------
@@ -164,7 +165,7 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
 # TODO: logins may not be sufficient - user a part of a group?
 # TODO: add pagination
 def home(request):
-    enclosures_query = get_accessible_enclosures(request)
+    enclosures_query = get_accessible_enclosures(request.user)
 
     # only show enclosures that have active animals/groups
     query = Q(animals__active=True) | Q(groups__active=True)
@@ -435,7 +436,7 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
 
-    count = species.get_count_day(enclosure, day=dateday)
+    count = species.count_on_day(enclosure, day=dateday)
     init_form = {
         "count": 0 if count is None else count.count,
         "species": species,
@@ -480,14 +481,16 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
 
 @login_required
 def edit_group_count(request, group, year, month, day):
-    group = get_object_or_404(Group, accession_number=group)
+    group = get_object_or_404(
+        Group.objects.select_related("enclosure", "species"), accession_number=group
+    )
     enclosure = group.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
-    count = group.get_count_day(day=dateday)
+    count = group.count_on_day(day=dateday)
     init_form = {
         "count_seen": 0 if count is None else count.count_seen,
         "count_bar": 0 if count is None else count.count_bar,
@@ -536,14 +539,18 @@ def edit_group_count(request, group, year, month, day):
 
 @login_required
 def animal_counts(request, animal):
-    animal_obj = get_object_or_404(Animal, accession_number=animal)
+    animal_obj = get_object_or_404(
+        Animal.objects.select_related("enclosure", "species"), accession_number=animal
+    )
     enclosure = animal_obj.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
-    animal_counts_query = AnimalCount.objects.filter(animal=animal_obj).order_by(
-        "-datetimecounted", "-id"
+    animal_counts_query = (
+        AnimalCount.objects.filter(animal=animal_obj)
+        .select_related("user")
+        .order_by("-datetimecounted", "-id")
     )
 
     paginator = Paginator(animal_counts_query, 10)
@@ -587,14 +594,18 @@ def animal_counts(request, animal):
 
 @login_required
 def group_counts(request, group):
-    group = get_object_or_404(Group, accession_number=group)
+    group = get_object_or_404(
+        Group.objects.select_related("enclosure", "species"), accession_number=group
+    )
     enclosure = group.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
-    group_counts_query = GroupCount.objects.filter(group=group).order_by(
-        "-datetimecounted", "-id"
+    group_counts_query = (
+        GroupCount.objects.filter(group=group)
+        .select_related("user")
+        .order_by("-datetimecounted", "-id")
     )
 
     paginator = Paginator(group_counts_query, 10)
@@ -650,9 +661,11 @@ def species_counts(request, species_slug, enclosure_slug):
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
-    counts_query = SpeciesCount.objects.filter(
-        species=obj, enclosure=enclosure
-    ).order_by("-datetimecounted", "-id")
+    counts_query = (
+        SpeciesCount.objects.filter(species=obj, enclosure=enclosure)
+        .select_related("user")
+        .order_by("-datetimecounted", "-id")
+    )
 
     paginator = Paginator(counts_query, 10)
     page = request.GET.get("page", 1)
@@ -696,7 +709,9 @@ def species_counts(request, species_slug, enclosure_slug):
 
 @login_required
 def edit_animal_count(request, animal, year, month, day):
-    animal = get_object_or_404(Animal, accession_number=animal)
+    animal = get_object_or_404(
+        Animal.objects.select_related("enclosure", "species"), accession_number=animal
+    )
     enclosure = animal.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
@@ -809,7 +824,7 @@ def confirm_upload(request):
 
 @login_required
 def export(request):
-    accessible_enclosures = get_accessible_enclosures(request)
+    accessible_enclosures = get_accessible_enclosures(request.user)
 
     if request.method == "POST":
         form = ExportForm(request.POST)

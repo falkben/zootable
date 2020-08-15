@@ -1,6 +1,6 @@
 from django.urls import reverse
 from zoo_checks.models import AnimalCount, Enclosure
-from zoo_checks.views import enclosure_counts_to_dict
+from zoo_checks.views import enclosure_counts_to_dict, get_accessible_enclosures
 
 
 def test_home(client, user_base):
@@ -35,6 +35,19 @@ def test_home_counts(client, create_many_counts, user_base):
     assert list(response.context["roles"]) == list(user_base.roles.all())
     assert response.context["selected_role"] is None
     assert "Individuals" in response.content.decode()
+
+
+def test_get_accessible_enclosures(user_base, enclosure_base):
+    enclosures = get_accessible_enclosures(user_base)
+    assert list(enclosures) == [enclosure_base]
+
+    # todo: test when user is admin w/ mult. enclosures
+
+
+def test_redirect_if_not_permitted():
+    # todo: redirect if not permitted needs the request
+    # redirect_if_not_permitted(request, enclosure)
+    ...
 
 
 def test_enclosure_counts_to_dict(create_many_counts, django_assert_num_queries):
