@@ -9,6 +9,7 @@ def test_home(client, user_base):
     response = client.get(url)
 
     assert response.status_code == 200
+    assert response.context["selected_role"] is None
     assert user_base.first_name in response.content.decode()
     assert (
         "No enclosures. Contact a manager to be added to a role"
@@ -31,6 +32,8 @@ def test_home_counts(client, create_many_counts, user_base):
     response = client.get(url)
 
     assert response.status_code == 200
+    assert list(response.context["roles"]) == list(user_base.roles.all())
+    assert response.context["selected_role"] is None
     assert "Individuals" in response.content.decode()
 
 
