@@ -37,11 +37,24 @@ def test_home_counts(client, create_many_counts, user_base):
     assert "Individuals" in response.content.decode()
 
 
-def test_get_accessible_enclosures(user_base, enclosure_base):
+def test_get_accessible_enclosures(
+    user_base, enclosure_base, enclosure_factory, user_super
+):
     enclosures = get_accessible_enclosures(user_base)
     assert list(enclosures) == [enclosure_base]
 
-    # todo: test when user is admin w/ mult. enclosures
+    # create a bunch of enclosures, but don't assign to role
+    enc_set = {enclosure_base}
+    for i in range(10):
+        enc_set.add(enclosure_factory(str(i), role=None))
+
+    # super user should get all the enclosures
+    enclosures_super = get_accessible_enclosures(user_super)
+    assert set(enclosures_super) == enc_set
+
+    # regular user should still have the same single enclosure
+    enclosures = get_accessible_enclosures(user_base)
+    assert list(enclosures) == [enclosure_base]
 
 
 def test_redirect_if_not_permitted():

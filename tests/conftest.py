@@ -5,6 +5,7 @@ https://docs.pytest.org/en/stable/fixture.html#conftest-py-sharing-fixture-funct
 
 import random
 import string
+from typing import Optional
 
 import pytest
 from django.utils.timezone import datetime, localtime, timedelta
@@ -28,6 +29,11 @@ def user_base(db):
 
 
 @pytest.fixture
+def user_super(db):
+    return User.objects.create_superuser("super", first_name="super_first_name")
+
+
+@pytest.fixture
 def role_base(db, user_base):
     role = Role.objects.create(name="role_base")
     role.users.add(user_base)
@@ -38,10 +44,11 @@ def role_base(db, user_base):
 @pytest.fixture
 def enclosure_factory(db, role_base):
     # closure
-    def _enclosure_factory(name):
+    def _enclosure_factory(name, role: Optional[Enclosure] = role_base):
         enc = Enclosure.objects.create(name=name)
-        enc.roles.add(role_base)
-        enc.save()
+        if role is not None:
+            enc.roles.add(role)
+            enc.save()
         return enc
 
     return _enclosure_factory

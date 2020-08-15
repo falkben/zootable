@@ -75,6 +75,9 @@ def redirect_if_not_permitted(request, enclosure: Enclosure) -> bool:
     messages.error(
         request, f"You do not have permissions to access enclosure {enclosure.name}"
     )
+    logger.error(
+        f"Insufficient permissions to access enclosure {enclosure.name}, user: {request.user.username}"
+    )
     return True
 
 
@@ -329,6 +332,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                     save_form_in_formset(form)
 
             messages.success(request, "Saved")
+            logger.info("Saved counts")
             return redirect(
                 "count",
                 enclosure_slug=enclosure.slug,
@@ -355,6 +359,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
             )
 
             messages.error(request, "There was an error processing the form")
+            logger.error("Error in processing the form")
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -421,6 +426,7 @@ def tally_date_handler(request, enclosure_slug):
             )
         else:
             messages.error(request, "Error in date entered")
+            logger.error("Error in date entered")
 
     # if it's a GET: just redirect back to count method
     return redirect("count", enclosure_slug=enclosure_slug)
@@ -772,6 +778,7 @@ def ingest_form(request):
                 changesets = handle_upload(request.FILES["file"])
             except Exception as e:
                 messages.error(request, e)
+                logger.error("Error during data ingest")
                 return redirect("ingest_form")
 
             request.session["changesets"] = changesets
@@ -805,6 +812,7 @@ def confirm_upload(request):
             ingest_changesets(changesets)
         except Exception as e:
             messages.error(request, e)
+            logger.error("error during data upload")
             return redirect("ingest_form")
 
         # clearing the changesets
@@ -812,6 +820,7 @@ def confirm_upload(request):
         request.session.pop("upload_file", None)
 
         messages.success(request, "Saved")
+        logger.info("Uploaded data")
 
         return redirect("home")
 
@@ -880,6 +889,7 @@ def export(request):
 
             if df_merge.empty:
                 messages.error(request, "No data in range")
+                logger.error("no data to ingest")
                 return redirect("export")
 
             df_merge_clean = clean_df(df_merge)
