@@ -43,6 +43,50 @@ def test_home_counts(client, create_many_counts, user_base):
     assert "Individuals" in response.content.decode()
 
 
+def test_count():
+    pass
+
+
+def test_tally_date_handler():
+    pass
+
+
+def test_edit_species_count():
+    pass
+
+
+def test_edit_group_count():
+    pass
+
+
+def test_animal_counts():
+    pass
+
+
+def test_group_counts():
+    pass
+
+
+def test_species_counts():
+    pass
+
+
+def test_edit_animal_count():
+    pass
+
+
+def test_ingest_form():
+    pass
+
+
+def test_confirm_upload():
+    pass
+
+
+def test_export():
+    pass
+
+
 def test_get_accessible_enclosures(
     user_base, enclosure_base, enclosure_factory, user_super
 ):
