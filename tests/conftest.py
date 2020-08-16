@@ -118,18 +118,21 @@ def species_count_factory(
 
 
 @pytest.fixture
-def species_base_count(
-    db, species_base, user_base, enclosure_base, datetimecounted=None
-):
-    if datetimecounted is None:
-        datetimecounted = localtime()
-    return species_count_factory(
-        datetimecounted=datetimecounted,
-        species=species_base,
-        user=user_base,
-        enclosure=enclosure_base,
-        count=100,
-    )
+def species_base_count(db, species_base, user_base, enclosure_base):
+
+    # closure
+    def _species_base_count(datetimecounted=None):
+        if datetimecounted is None:
+            datetimecounted = localtime()
+        return species_count_factory(
+            datetimecounted=datetimecounted,
+            species=species_base,
+            user=user_base,
+            enclosure=enclosure_base,
+            count=100,
+        )
+
+    return _species_base_count
 
 
 def animal_factory(

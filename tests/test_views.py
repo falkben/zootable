@@ -93,8 +93,45 @@ def test_tally_date_handler(client, enclosure_base, user_base):
     SimpleTestCase().assertRedirects(resp, f"/count/{enclosure_base.slug}/")
 
 
-def test_edit_species_count():
-    pass
+def test_edit_species_count(
+    client,
+    user_base,
+    species_base,
+    enclosure_base,
+    enclosure_factory,
+    species_base_count,
+):
+    client.force_login(user_base)
+
+    # todo: timezone ...?
+    yesterday_time = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday = yesterday_time.date()
+
+    enc_not_permit = enclosure_factory("not_permit", None)
+
+    # not permitted
+    resp = client.get(
+        f"/edit_species_count/{species_base.slug}/{enc_not_permit.name}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+    )
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(resp, "/")
+
+    count = species_base_count(yesterday_time)
+
+    # GET
+    resp = client.get(
+        f"/edit_species_count/{species_base.slug}/{enclosure_base.name}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+    )
+    assert resp.status_code == 200
+    assert resp.context["species"] == species_base
+    assert resp.context["enclosure"] == enclosure_base
+    assert resp.context["dateday"].year == yesterday.year
+    assert resp.context["dateday"].month == yesterday.month
+    assert resp.context["dateday"].day == yesterday.day
+    assert resp.context["count"] == count
+    # todo: assert form
+
+    # todo: POST
 
 
 def test_edit_group_count():
