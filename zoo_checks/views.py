@@ -1,9 +1,6 @@
 import logging
-from datetime import datetime
 
 import pandas as pd
-import pytz
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
@@ -416,11 +413,8 @@ def tally_date_handler(request, enclosure_slug):
     if request.method == "POST":
         form = TallyDateForm(request.POST)
         if form.is_valid():
-            tzinfo = pytz.timezone(settings.TIME_ZONE)
+            target_date = form.cleaned_data["tally_date"]
 
-            target_date = datetime.combine(
-                form.cleaned_data["tally_date"], datetime.min.time(), tzinfo=tzinfo
-            )
             return redirect(
                 "count",
                 enclosure_slug=enclosure_slug,
