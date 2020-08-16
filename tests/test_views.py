@@ -1,6 +1,12 @@
 from django.urls import reverse
+
 from zoo_checks.models import AnimalCount, Enclosure
-from zoo_checks.views import enclosure_counts_to_dict, get_accessible_enclosures
+from zoo_checks.views import (
+    enclosure_counts_to_dict,
+    get_accessible_enclosures,
+    get_selected_role,
+    redirect_if_not_permitted,
+)
 
 
 def test_home(client, user_base):
@@ -57,10 +63,57 @@ def test_get_accessible_enclosures(
     assert list(enclosures) == [enclosure_base]
 
 
-def test_redirect_if_not_permitted():
-    # todo: redirect if not permitted needs the request
-    # redirect_if_not_permitted(request, enclosure)
-    ...
+def test_redirect_if_not_permitted(
+    rf_get_factory, enclosure_factory, enclosure_base, user_super
+):
+    request = rf_get_factory("/count/")
+    forbidden_enc = enclosure_factory("forbidden_enc", role=None)
+
+    # test if user doesn't have role that includes enclosure (True)
+    assert redirect_if_not_permitted(request, forbidden_enc)
+
+    # test if user has role that includes enclosure (False)
+    assert not redirect_if_not_permitted(request, enclosure_base)
+
+    # test if user is superuser (False)
+    request.user = user_super
+    assert not redirect_if_not_permitted(request, enclosure_base)
+    assert not redirect_if_not_permitted(request, forbidden_enc)
+
+
+def test_selected_role(rf_get_factory, role_base):
+
+    # test view all query param returns None and clears session
+    request = rf_get_factory("/home/?view_all=true")
+    request.session["selected_role"] = "role_base"
+    selected_role = get_selected_role(request)
+    assert selected_role is None
+    assert request.session.get("selected_role") is None
+
+    # test role in session & no query params returns session role
+    request = rf_get_factory("/home/")
+    request.session["selected_role"] = "role_base"
+    selected_role = get_selected_role(request)
+    assert selected_role == role_base
+    assert request.session.get("selected_role") == "role_base"
+
+    # test role query param returns role and sets session
+    request = rf_get_factory("/home/?role=role_base")
+    selected_role = get_selected_role(request)
+    assert selected_role == role_base
+    assert request.session.get("selected_role") == "role_base"
+
+    # test role query param and different session query param returns query param role and sets session
+    request = rf_get_factory("/home/?role=role_base")
+    request.session["selected_role"] = "diff_role"
+    selected_role = get_selected_role(request)
+    assert selected_role == role_base
+    assert request.session.get("selected_role") == "role_base"
+
+    # test absence of all of these return None
+    request = rf_get_factory("/home/")
+    selected_role = get_selected_role(request)
+    assert selected_role is None
 
 
 def test_enclosure_counts_to_dict(create_many_counts, django_assert_num_queries):

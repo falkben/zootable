@@ -8,6 +8,8 @@ import string
 from typing import Optional
 
 import pytest
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.utils.timezone import datetime, localtime, timedelta
 
 from zoo_checks.models import (
@@ -21,6 +23,31 @@ from zoo_checks.models import (
     SpeciesCount,
     User,
 )
+
+
+@pytest.fixture
+def rf_get_factory(rf, user_base):
+    """ request factory factory
+    adds session and messages "middleware" to the request object """
+
+    def _rf_get_factory(url: str, user: Optional[User] = user_base):
+        request = rf.get(url)
+
+        if user is not None:
+            request.user = user
+
+        # adding session
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+
+        # adding messages
+        messages = FallbackStorage(request)
+        setattr(request, "_messages", messages)
+
+        return request
+
+    return _rf_get_factory
 
 
 @pytest.fixture

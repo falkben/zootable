@@ -161,23 +161,11 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     return counts_dict
 
 
-""" views """
-
-
-@login_required
-# TODO: logins may not be sufficient - user a part of a group?
-# TODO: add pagination
-def home(request):
-    enclosures_query = get_accessible_enclosures(request.user)
-
-    # only show enclosures that have active animals/groups
-    query = Q(animals__active=True) | Q(groups__active=True)
-
+def get_selected_role(request):
     # user requests view all
-    view_all_param = request.GET.get("view_all", False)
-    if view_all_param:
-        role = None
+    if request.GET.get("view_all", False):
         request.session.pop("selected_role", None)
+        return
 
     # might have a default selected role in session
     # or might be requesting a selected role
@@ -190,17 +178,33 @@ def home(request):
 
         if role_name is not None:
             try:
-                role = Role.objects.get(slug=role_name)
-                query = query & Q(roles=role)
                 request.session["selected_role"] = role_name
+                return Role.objects.get(slug=role_name)
             except ObjectDoesNotExist:
                 # role probably changed or bad query
                 messages.info(request, "Selected role not found")
-                role = None
                 request.session.pop("selected_role", None)
                 logger.info(f"role not found and removed from session: {role_name}")
+                return
         else:
-            role = None
+            return
+
+
+""" views """
+
+
+@login_required
+# TODO: logins may not be sufficient - user a part of a group?
+# TODO: add pagination
+def home(request):
+    enclosures_query = get_accessible_enclosures(request.user)
+
+    # only show enclosures that have active animals/groups
+    query = Q(animals__active=True) | Q(groups__active=True)
+
+    selected_role = get_selected_role(request)
+    if selected_role is not None:
+        query = query & Q(roles=selected_role)
 
     # prefetching in order to build up the info displayed for each enclosure
     groups_prefetch = Prefetch("groups", queryset=Group.objects.filter(active=True))
@@ -232,7 +236,7 @@ def home(request):
             "cts_dict": enclosure_cts_dict,
             "page_range": page_range,
             "roles": roles,
-            "selected_role": role,
+            "selected_role": selected_role,
         },
     )
 
