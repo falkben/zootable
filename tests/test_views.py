@@ -1,3 +1,6 @@
+import datetime
+
+from django.test import SimpleTestCase
 from django.urls import reverse
 
 from zoo_checks.models import AnimalCount, Enclosure
@@ -47,8 +50,47 @@ def test_count():
     pass
 
 
-def test_tally_date_handler():
-    pass
+def test_tally_date_handler(client, enclosure_base, user_base):
+    client.force_login(user_base)
+
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+
+    resp = client.post(f"/tally_date_handler/{enclosure_base.slug}")
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(resp, f"/count/{enclosure_base.slug}/")
+
+    resp = client.get(f"/tally_date_handler/{enclosure_base.slug}")
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(resp, f"/count/{enclosure_base.slug}/")
+
+    resp = client.post(
+        f"/tally_date_handler/{enclosure_base.slug}",
+        {"tally_date": f"{yesterday.month}/{yesterday.day}/{yesterday.year}"},
+    )
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(
+        resp,
+        f"/count/{enclosure_base.slug}/{yesterday.year}/{yesterday.month}/{yesterday.day}/",
+    )
+
+    resp = client.post(
+        f"/tally_date_handler/{enclosure_base.slug}", {"tally_date": "not_a_date"},
+    )
+    assert resp.status_code == 302
+    # normally this would be in resp.context but context is None since we're doing a redirect
+    messages = list(resp.wsgi_request._messages)
+    assert messages[0].message == "Error in date entered"
+    SimpleTestCase().assertRedirects(resp, f"/count/{enclosure_base.slug}/")
+
+    resp = client.post(
+        f"/tally_date_handler/{enclosure_base.slug}",
+        {"tally_date": f"{tomorrow.month}/{tomorrow.day}/{tomorrow.year}"},
+    )
+    assert resp.status_code == 302
+    messages = list(resp.wsgi_request._messages)
+    assert messages[0].message == "Error in date entered"
+    SimpleTestCase().assertRedirects(resp, f"/count/{enclosure_base.slug}/")
 
 
 def test_edit_species_count():
