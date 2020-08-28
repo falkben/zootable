@@ -11,7 +11,6 @@ import pytest
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.utils.timezone import datetime, localtime, timedelta
-
 from zoo_checks.models import (
     Animal,
     AnimalCount,
@@ -51,8 +50,16 @@ def rf_get_factory(rf, user_base):
 
 
 @pytest.fixture
-def user_base(db):
-    return User.objects.create_user("base", first_name="base_first_name")
+def user_factory(db):
+    def _user_factory(name: str, first_name: str = ""):
+        return User.objects.create_user(name, first_name=first_name)
+
+    return _user_factory
+
+
+@pytest.fixture
+def user_base(user_factory):
+    return user_factory("base", first_name="base_first_name")
 
 
 @pytest.fixture
@@ -193,12 +200,20 @@ def animal_count_factory(
 
 
 @pytest.fixture
-def animal_count_A_BAR(db, animal_A, user_base, enclosure_base, datetimecounted=None):
-    if datetimecounted is None:
-        datetimecounted = localtime()
-    return animal_count_factory(
-        "BA", animal_A, user_base, enclosure_base, datetimecounted
-    )
+def animal_count_A_BAR_datetime_factory(db, animal_A, user_base, enclosure_base):
+    def _animal_count_A_BAR(datetimecounted=None):
+        if datetimecounted is None:
+            datetimecounted = localtime()
+        return animal_count_factory(
+            "BA", animal_A, user_base, enclosure_base, datetimecounted
+        )
+
+    return _animal_count_A_BAR
+
+
+@pytest.fixture
+def animal_count_A_BAR(animal_count_A_BAR_datetime_factory):
+    return animal_count_A_BAR_datetime_factory()
 
 
 def group_factory(
@@ -266,21 +281,29 @@ def group_count_factory(
 
 
 @pytest.fixture
-def group_B_count(db, group_B, user_base, enclosure_base, datetimecounted=None):
-    if datetimecounted is None:
-        datetimecounted = localtime()
-    return group_count_factory(
-        group_B,
-        user_base,
-        enclosure_base,
-        count_total=6,
-        count_seen=3,
-        count_not_seen=0,
-        count_bar=1,
-        needs_attn=False,
-        comment="",
-        datetimecounted=datetimecounted,
-    )
+def group_B_count_datetime_factory(db, group_B, user_base, enclosure_base):
+    def _group_B_count(datetimecounted=None):
+        if datetimecounted is None:
+            datetimecounted = localtime()
+        return group_count_factory(
+            group_B,
+            user_base,
+            enclosure_base,
+            count_total=6,
+            count_seen=3,
+            count_not_seen=0,
+            count_bar=1,
+            needs_attn=False,
+            comment="",
+            datetimecounted=datetimecounted,
+        )
+
+    return _group_B_count
+
+
+@pytest.fixture
+def group_B_count(group_B_count_datetime_factory):
+    return group_B_count_datetime_factory()
 
 
 @pytest.fixture

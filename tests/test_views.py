@@ -2,7 +2,6 @@ import datetime
 
 from django.test import SimpleTestCase
 from django.urls import reverse
-
 from zoo_checks.models import AnimalCount, Enclosure
 from zoo_checks.views import (
     enclosure_counts_to_dict,
@@ -142,8 +141,28 @@ def test_animal_counts():
     pass
 
 
-def test_group_counts():
-    pass
+def test_group_counts(
+    client, group_B, group_B_count_datetime_factory, user_base, user_factory
+):
+
+    # todo: check not permitted
+    rando = user_factory("rando")
+    client.force_login(rando)
+    url = reverse("group_counts", args=[group_B.accession_number])
+    response = client.get(url)
+    assert response.status_code == 302  # redirect to home
+
+    for d in range(120):
+        group_B_count_datetime_factory(
+            datetime.datetime.now() - datetime.timedelta(days=d)
+        )
+
+    client.force_login(user_base)
+    url = reverse("group_counts", args=[group_B.accession_number])
+    response = client.get(url)
+    assert response.status_code == 200
+
+    # todo: pagination, chart, template content
 
 
 def test_species_counts():
