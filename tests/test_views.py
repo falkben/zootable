@@ -2,6 +2,7 @@ import datetime
 
 from django.test import SimpleTestCase
 from django.urls import reverse
+from django.utils import timezone
 from zoo_checks.models import AnimalCount, Enclosure
 from zoo_checks.views import (
     enclosure_counts_to_dict,
@@ -32,7 +33,9 @@ def test_home_counts(client, create_many_counts, user_base):
     num_species = 5
 
     create_many_counts(
-        num_enc=num_enc, num_anim=num_anim, num_species=num_species,
+        num_enc=num_enc,
+        num_anim=num_anim,
+        num_species=num_species,
     )
 
     client.force_login(user_base)
@@ -74,7 +77,8 @@ def test_tally_date_handler(client, enclosure_base, user_base):
     )
 
     resp = client.post(
-        f"/tally_date_handler/{enclosure_base.slug}", {"tally_date": "not_a_date"},
+        f"/tally_date_handler/{enclosure_base.slug}",
+        {"tally_date": "not_a_date"},
     )
     assert resp.status_code == 302
     # normally this would be in resp.context but context is None since we're doing a redirect
@@ -152,15 +156,21 @@ def test_group_counts(
     response = client.get(url)
     assert response.status_code == 302  # redirect to home
 
+    counts = []
     for d in range(120):
-        group_B_count_datetime_factory(
-            datetime.datetime.now() - datetime.timedelta(days=d)
+        counts.append(
+            group_B_count_datetime_factory(
+                timezone.localtime() - datetime.timedelta(days=d)
+            )
         )
 
     client.force_login(user_base)
     url = reverse("group_counts", args=[group_B.accession_number])
     response = client.get(url)
     assert response.status_code == 200
+
+    assert response.context["group"] == group_B
+    assert list(response.context["counts"]) == counts[:10]
 
     # todo: pagination, chart, template content
 
@@ -268,7 +278,9 @@ def test_enclosure_counts_to_dict(create_many_counts, django_assert_num_queries)
     num_species = num_groups = 5
 
     _, _, _, enc_list = create_many_counts(
-        num_enc=num_enc, num_anim=num_anim, num_species=num_species,
+        num_enc=num_enc,
+        num_anim=num_anim,
+        num_species=num_species,
     )
 
     # create a query similar to how we build it in the view
