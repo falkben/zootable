@@ -146,10 +146,16 @@ def test_animal_counts():
 
 
 def test_group_counts(
-    client, group_B, group_B_count_datetime_factory, user_base, user_factory
+    client,
+    group_B,
+    group_B_count_datetime_factory,
+    user_base,
+    user_factory,
+    enclosure_base,
 ):
+    num_counts = 120
 
-    # todo: check not permitted
+    # test perms
     rando = user_factory("rando")
     client.force_login(rando)
     url = reverse("group_counts", args=[group_B.accession_number])
@@ -157,22 +163,33 @@ def test_group_counts(
     assert response.status_code == 302  # redirect to home
 
     counts = []
-    for d in range(120):
+    for d in range(num_counts):
         counts.append(
             group_B_count_datetime_factory(
                 timezone.localtime() - datetime.timedelta(days=d)
             )
         )
 
+    # test some counts w/ context
     client.force_login(user_base)
     url = reverse("group_counts", args=[group_B.accession_number])
     response = client.get(url)
     assert response.status_code == 200
-
     assert response.context["group"] == group_B
+    assert response.context["enclosure"] == enclosure_base
     assert list(response.context["counts"]) == counts[:10]
+    assert response.context["page_range"][0] == 1
+    assert response.context["page_range"][-1] == 1 + 5
 
-    # todo: pagination, chart, template content
+    # test pagination
+    url = "{}{}".format(
+        reverse("group_counts", args=[group_B.accession_number]), f"?page={2}"
+    )
+    response = client.get(url)
+    assert response.status_code == 200
+    assert list(response.context["counts"]) == counts[10:20]
+    assert response.context["page_range"][0] == 1
+    assert response.context["page_range"][-1] == 2 + 5
 
 
 def test_species_counts():
