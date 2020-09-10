@@ -26,8 +26,8 @@ from zoo_checks.models import (
 
 @pytest.fixture
 def rf_get_factory(rf, user_base):
-    """ request factory factory
-    adds session and messages "middleware" to the request object """
+    """request factory factory
+    adds session and messages "middleware" to the request object"""
 
     def _rf_get_factory(url: str, user: Optional[User] = user_base):
         request = rf.get(url)
@@ -216,33 +216,35 @@ def animal_count_A_BAR(animal_count_A_BAR_datetime_factory):
     return animal_count_A_BAR_datetime_factory()
 
 
-def group_factory(
-    species: Species,
-    enclosure: Enclosure,
-    accession_number: str,
-    population_male: int,
-    population_female: int,
-    population_unknown: int,
-    population_total: int,
-    active: bool = True,
-) -> Group:
-    return Group.objects.create(
-        species=species,
-        enclosure=enclosure,
-        accession_number=accession_number,
-        population_male=population_male,
-        population_female=population_female,
-        population_unknown=population_unknown,
-        population_total=population_total,
-        active=active,
-    )
+@pytest.fixture
+def group_factory(db, enclosure_base, species_base):
+    def _group_factory(
+        accession_number: str,
+        population_male: int,
+        population_female: int,
+        population_unknown: int,
+        population_total: int,
+        enclosure: Enclosure = enclosure_base,
+        species: Species = species_base,
+        active: bool = True,
+    ) -> Group:
+        return Group.objects.create(
+            species=species,
+            enclosure=enclosure,
+            accession_number=accession_number,
+            population_male=population_male,
+            population_female=population_female,
+            population_unknown=population_unknown,
+            population_total=population_total,
+            active=active,
+        )
+
+    return _group_factory
 
 
 @pytest.fixture
-def group_B(db, enclosure_base, species_base):
+def group_B(db, group_factory):
     return group_factory(
-        species=species_base,
-        enclosure=enclosure_base,
         accession_number="654321",
         population_male=1,
         population_female=2,
@@ -307,7 +309,7 @@ def group_B_count(group_B_count_datetime_factory):
 
 
 @pytest.fixture
-def create_many_counts(db, species_base, user_base, enclosure_factory):
+def create_many_counts(db, species_base, user_base, enclosure_factory, group_factory):
     """
     sets up a large number of counts for testing
     returns the counts created as well as the enclosure
@@ -315,7 +317,9 @@ def create_many_counts(db, species_base, user_base, enclosure_factory):
 
     # closure
     def _create_many_counts(
-        num_enc: int = 7, num_anim: int = 4, num_species: int = 5,
+        num_enc: int = 7,
+        num_anim: int = 4,
+        num_species: int = 5,
     ):
         access_start = 100000
         access_nums = iter(
@@ -378,7 +382,7 @@ def create_many_counts(db, species_base, user_base, enclosure_factory):
                         localtime() + timedelta(days=1) * delta_day,
                     )
 
-                group = group_factory(spec, enc, next(access_nums), 10, 10, 10, 30)
+                group = group_factory(next(access_nums), 10, 10, 10, 30)
                 g_cts.append(
                     group_count_factory(group, user_base, enc, *group_count_val)
                 )

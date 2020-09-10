@@ -1,4 +1,5 @@
 import datetime
+from random import randint
 
 from django.test import SimpleTestCase
 from django.urls import reverse
@@ -132,13 +133,85 @@ def test_edit_species_count(
     assert resp.context["dateday"].month == yesterday.month
     assert resp.context["dateday"].day == yesterday.day
     assert resp.context["count"] == count
-    # todo: assert form
+    # todo: test form
 
-    # todo: POST
+    # POST
+    post_data = {
+        "count": randint(1, 400),
+        "species": species_base.id,
+        "enclosure": enclosure_base.id,
+    }
+    resp = client.post(
+        f"/edit_species_count/{species_base.slug}/{enclosure_base.name}/{yesterday.year}/{yesterday.month}/{yesterday.day}/",
+        data=post_data,
+        follow=True,
+    )
+    assert resp.status_code == 200
+    assert resp.redirect_chain == [(f"/count/{enclosure_base.slug}/", 302)]
+    assert species_base.counts.latest("datetimecounted").count == post_data["count"]
 
 
-def test_edit_group_count():
-    pass
+def test_edit_group_count(
+    client,
+    user_base,
+    group_B,
+    group_factory,
+    enclosure_base,
+    enclosure_factory,
+    group_B_count_datetime_factory,
+):
+    client.force_login(user_base)
+
+    # todo: timezone ...?
+    yesterday_time = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday = yesterday_time.date()
+
+    enc_not_permit = enclosure_factory("not_permit", None)
+    group_not_permit = group_factory("abc123", 5, 4, 3, 12, enclosure=enc_not_permit)
+
+    # not permitted
+    resp = client.get(
+        f"/edit_group_count/{group_not_permit.accession_number}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+    )
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(resp, "/")
+
+    count = group_B_count_datetime_factory(yesterday_time)
+
+    # GET
+    resp = client.get(
+        f"/edit_group_count/{group_B.accession_number}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+    )
+    assert resp.status_code == 200
+    assert resp.context["count"] == count
+    assert resp.context["group"] == group_B
+    assert resp.context["enclosure"] == enclosure_base
+    assert resp.context["dateday"].year == yesterday.year
+    assert resp.context["dateday"].month == yesterday.month
+    assert resp.context["dateday"].day == yesterday.day
+    # todo: test form
+
+    # POST
+    post_data = {
+        "count_seen": randint(1, 400),
+        "enclosure": enclosure_base.id,
+        "count_bar": randint(1, 400),
+        "comment": "this is a randomly generated count",
+        "group": group_B.id,
+        "count_total": randint(1, 400),
+        "needs_attn": False,
+    }
+    resp = client.post(
+        f"/edit_group_count/{group_B.accession_number}/{yesterday.year}/{yesterday.month}/{yesterday.day}/",
+        data=post_data,
+        follow=True,
+    )
+    assert resp.status_code == 200
+    assert resp.redirect_chain == [(f"/count/{enclosure_base.slug}/", 302)]
+
+    latest_count = group_B.counts.latest("datetimecounted")
+    assert latest_count.count_seen == post_data["count_seen"]
+    assert latest_count.count_bar == post_data["count_bar"]
 
 
 def test_animal_counts():
