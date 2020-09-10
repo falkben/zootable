@@ -382,7 +382,9 @@ def create_many_counts(db, species_base, user_base, enclosure_factory, group_fac
                         localtime() + timedelta(days=1) * delta_day,
                     )
 
-                group = group_factory(next(access_nums), 10, 10, 10, 30)
+                group = group_factory(
+                    next(access_nums), 10, 10, 10, 30, species=spec, enclosure=enc
+                )
                 g_cts.append(
                     group_count_factory(group, user_base, enc, *group_count_val)
                 )

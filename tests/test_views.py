@@ -192,13 +192,16 @@ def test_edit_group_count(
     # todo: test form
 
     # POST
+    count_bar = randint(1, 400)
+    count_seen = count_bar + randint(5, 25)
+    count_total = count_bar + count_seen
     post_data = {
-        "count_seen": randint(1, 400),
+        "count_seen": count_seen,
         "enclosure": enclosure_base.id,
-        "count_bar": randint(1, 400),
+        "count_bar": count_bar,
         "comment": "this is a randomly generated count",
         "group": group_B.id,
-        "count_total": randint(1, 400),
+        "count_total": count_total,
         "needs_attn": False,
     }
     resp = client.post(
