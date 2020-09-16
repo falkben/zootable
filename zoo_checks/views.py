@@ -14,6 +14,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from zoo_checks.ingest import TRACKS_REQ_COLS
+
 from .forms import (
     AnimalCountForm,
     ExportForm,
@@ -52,7 +54,9 @@ logger = baselogger.getChild(__name__)
 def get_accessible_enclosures(request):
     # superuser sees all enclosures
     if not request.user.is_superuser:
-        enclosures = Enclosure.objects.filter(roles__in=request.user.roles.all())
+        enclosures = Enclosure.objects.filter(
+            roles__in=request.user.roles.all()
+        ).distinct()
     else:
         enclosures = Enclosure.objects.all()
 
@@ -85,7 +89,7 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     """
 
     def create_counts_dict(enclosures, counts) -> dict:
-        """ Takes a list/queryset of counts and enclosures
+        """Takes a list/queryset of counts and enclosures
 
         Returns a dictionary
 
@@ -295,7 +299,9 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
         # TODO: Test to make sure we are editing the correct animal counts
         animals_formset = AnimalCountFormset(
-            request.POST, initial=init_anim, prefix="animals_formset",
+            request.POST,
+            initial=init_anim,
+            prefix="animals_formset",
         )
 
         # check whether it's valid:
@@ -362,7 +368,8 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
         )
         groups_formset = GroupCountFormset(initial=init_group, prefix="groups_formset")
         animals_formset = AnimalCountFormset(
-            initial=init_anim, prefix="animals_formset",
+            initial=init_anim,
+            prefix="animals_formset",
         )
         (
             formset_order,
@@ -399,8 +406,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
 @login_required
 def tally_date_handler(request, enclosure_slug):
-    """ Called from tally page to change date tally
-    """
+    """Called from tally page to change date tally"""
 
     # if it's a POST: pull out the date from the cleaned data then send it to "count"
     if request.method == "POST":
@@ -770,7 +776,9 @@ def ingest_form(request):
         request.session.pop("changesets", None)
         request.session.pop("upload_file", None)
 
-    return render(request, "upload_form.html", {"form": form})
+    return render(
+        request, "upload_form.html", {"form": form, "req_cols": TRACKS_REQ_COLS}
+    )
 
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)

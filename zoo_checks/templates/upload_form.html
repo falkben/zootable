@@ -6,28 +6,18 @@
 
 <h3>Upload</h3>
 
+<p>Upload accession numbers from Excel into zootable</p>
+
 <form action="{% url 'ingest_form' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-
-    <h4>Upload data from xlsx file</h4>
     <ul class="browser-default">
       <li>For each enclosure in the file, the data is expected to be complete
       <li>Missing groups/individuals for any included enclosures will be treated as "inactive" and will not show on count forms
       <li>The following columns should exist:
         <div class="flex-items">
-          <span>Enclosure</span>
-          <span>Accession</span>
-          <span>Common</span>
-          <span>Class</span>
-          <span>Order</span>
-          <span>Family</span>
-          <span>GSS</span>
-          <span>Species</span>
-          <span>Sex</span>
-          <span>Identifiers</span>
-          <span>Population _Male</span>
-          <span>Population _Female</span>
-          <span>Population _Unknown</span>
+          {% for col in req_cols %}
+          <span>{{col}}</span>
+          {% endfor %}
         </div>
     </ul>
 
