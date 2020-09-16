@@ -26,8 +26,7 @@ def set_formset_order(
     animals_formset,
     dateday,
 ):
-    """Creates an order to display the formsets
-    """
+    """Creates an order to display the formsets"""
 
     # to set the order
     formset_dict = {}
@@ -156,8 +155,7 @@ def get_init_anim_count_form(enclosure_animals, counts):
 
 
 def qs_to_df(qs, fields):
-    """Takes a queryset and outputs a dataframe
-    """
+    """Takes a queryset and outputs a dataframe"""
 
     field_names = []
     field_name_constructor = "{}__{}"
@@ -200,8 +198,7 @@ def qs_to_df(qs, fields):
 
 
 def clean_df(df):
-    """cleans the counts dataframe for export to excel
-    """
+    """cleans the counts dataframe for export to excel"""
 
     if "id" in df.columns:
         df = df.drop(columns=["id"])
@@ -243,7 +240,7 @@ def clean_df(df):
     cols = ["animal__accession_number", "group__accession_number"]
     cols = [c for c in cols if c in df.columns]
     df["accession_number"] = df[cols].apply(
-        lambda row: "".join(row.dropna().astype(int).astype(str)), axis=1
+        lambda row: "".join(row.dropna().astype(str)), axis=1
     )
     df = df.drop(columns=cols)
 
