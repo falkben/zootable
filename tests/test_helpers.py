@@ -7,8 +7,7 @@ from zoo_checks.models import Animal, Enclosure, Group, GroupCount, Species
 
 @pytest.mark.django_db
 def test_qs_to_df():
-    """ Tests the conversion of a queryset to a dataframe
-    """
+    """Tests the conversion of a queryset to a dataframe"""
 
     # pattern:
     # testdata: dict
@@ -81,8 +80,22 @@ def test_qs_to_df():
     _check_dataframe(gp_count_data, GroupCount)
 
 
-def test_clean_df():
+@pytest.mark.parametrize("anim_accession", [123456, "F2345G"])
+def test_clean_df(anim_accession):
     timestamp = timezone.localtime()
+
+    # df should contain:
+    """
+    'id', 'datetimecounted', 'datecounted', 'user__username', 'enclosure__name', 'condition',
+    'comment', 'animal__accession_number', 'animal__species__class_name',
+    'animal__species__order_name', 'animal__species__family_name', 'animal__species__genus_name',
+    'animal__species__species_name', 'animal__species__common_name', 'count_total', 'count_seen',
+    'count_not_seen', 'count_bar', 'needs_attn', 'group__accession_number',
+    'group__species__class_name', 'group__species__order_name', 'group__species__family_name',
+    'group__species__genus_name', 'group__species__species_name', 'group__species__common_name',
+    'count', 'species__class_name', 'species__order_name', 'species__family_name',
+    'species__genus_name', 'species__species_name', 'species__common_name'
+    """
     test_data = [
         {
             "id": 1637,
@@ -91,6 +104,7 @@ def test_clean_df():
             "enclosure__name": "encl_test_name",
             "condition": "SE",
             "datecounted": timestamp.date(),
+            "animal__accession_number": anim_accession,
         }
     ]
     test_df = pd.DataFrame(test_data)
