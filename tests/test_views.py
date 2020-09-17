@@ -49,8 +49,31 @@ def test_home_counts(client, create_many_counts, user_base):
     assert "Individuals" in response.content.decode()
 
 
-def test_count():
-    pass
+def test_count(
+    client, user_base, enclosure_base, animal_A, animal_count_A_BAR, group_B
+):
+    client.force_login(user_base)
+
+    # GET
+
+    resp = client.get(f"/count/{enclosure_base.slug}/")
+    assert resp.context["enclosure"] == enclosure_base
+    assert resp.context["conditions"] == AnimalCount.CONDITIONS
+
+    # untested context:
+    # "dateday": dateday,
+    # "species_formset": species_formset,
+    # "groups_formset": groups_formset,
+    # "animals_formset": animals_formset,
+    # "formset_order": formset_order,
+    # "dateform": dateform,
+    # "conditions": AnimalCount.CONDITIONS,
+
+    # test a different date
+
+    # create some counts
+
+    # POST
 
 
 def test_tally_date_handler(client, enclosure_base, user_base):

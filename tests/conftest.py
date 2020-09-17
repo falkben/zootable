@@ -259,44 +259,45 @@ def group_B(db, group_factory):
     )
 
 
-def group_count_factory(
-    group: Group,
-    user: User,
-    enclosure: Enclosure,
-    count_total: int,
-    count_seen: int,
-    count_not_seen: int,
-    count_bar: int,
-    needs_attn: bool = False,
-    datetimecounted: datetime = None,
-    comment: str = "",
-) -> GroupCount:
-    if datetimecounted is None:
-        datetimecounted = localtime()
-    return GroupCount.objects.create(
-        group=group,
-        datetimecounted=datetimecounted,
-        datecounted=datetimecounted.date(),
-        user=user,
-        enclosure=enclosure,
-        count_total=count_total,
-        count_seen=count_seen,
-        count_not_seen=count_not_seen,
-        count_bar=count_bar,
-        needs_attn=needs_attn,
-        comment=comment,
-    )
+@pytest.fixture
+def group_count_factory(db, group_B, user_base, enclosure_base):
+    def _group_count_factory(
+        count_total: int,
+        count_seen: int,
+        count_not_seen: int,
+        count_bar: int,
+        needs_attn: bool = False,
+        datetimecounted: datetime = None,
+        comment: str = "",
+        group: Group = group_B,
+        user: User = user_base,
+        enclosure: Enclosure = enclosure_base,
+    ) -> GroupCount:
+        if datetimecounted is None:
+            datetimecounted = localtime()
+        return GroupCount.objects.create(
+            group=group,
+            datetimecounted=datetimecounted,
+            datecounted=datetimecounted.date(),
+            user=user,
+            enclosure=enclosure,
+            count_total=count_total,
+            count_seen=count_seen,
+            count_not_seen=count_not_seen,
+            count_bar=count_bar,
+            needs_attn=needs_attn,
+            comment=comment,
+        )
+
+    return _group_count_factory
 
 
 @pytest.fixture
-def group_B_count_datetime_factory(db, group_B, user_base, enclosure_base):
+def group_B_count_datetime_factory(db, group_count_factory):
     def _group_B_count(datetimecounted=None):
         if datetimecounted is None:
             datetimecounted = localtime()
         return group_count_factory(
-            group_B,
-            user_base,
-            enclosure_base,
             count_total=6,
             count_seen=3,
             count_not_seen=0,
@@ -322,6 +323,7 @@ def create_many_counts(
     group_factory,
     animal_count_factory,
     animal_factory,
+    group_count_factory,
 ):
     """
     sets up a large number of counts for testing
@@ -398,21 +400,20 @@ def create_many_counts(
                     next(access_nums), 10, 10, 10, 30, species=spec, enclosure=enc
                 )
                 g_cts.append(
-                    group_count_factory(group, user_base, enc, *group_count_val)
+                    group_count_factory(*group_count_val, group=group, enclosure=enc)
                 )
 
                 # adding some counts on diff days
                 for delta_day in (-3, -2, -1, 1, 2):
                     group_count_factory(
-                        group,
-                        user_base,
-                        enc,
                         10,
                         10,
                         0,
                         0,
                         True,
                         localtime() + timedelta(days=1) * delta_day,
+                        group=group,
+                        enclosure=enc,
                     )
 
         return a_cts, s_cts, g_cts, enc_list
