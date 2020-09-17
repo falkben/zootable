@@ -56,7 +56,7 @@ def test_accession_numbers_observed(
 
 
 def test_animal_counts_on_day(
-    enclosure_base, animal_count_A_BAR, django_assert_num_queries,
+    enclosure_base, animal_count_A_BAR, django_assert_num_queries
 ):
     with django_assert_num_queries(1):
         num_counts = enclosure_base.animal_counts_on_day().count()
@@ -64,9 +64,7 @@ def test_animal_counts_on_day(
     assert num_counts == 1
 
 
-def test_group_counts_on_day(
-    enclosure_base, group_B_count, django_assert_num_queries,
-):
+def test_group_counts_on_day(enclosure_base, group_B_count, django_assert_num_queries):
     with django_assert_num_queries(1):
         num_counts = enclosure_base.group_counts_on_day().count()
 
@@ -84,7 +82,7 @@ def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_q
     num_species = num_groups = 5
 
     a_cts, s_cts, g_cts, enc_list = create_many_counts(
-        num_enc=num_enc, num_anim=num_anim, num_species=num_species,
+        num_enc=num_enc, num_anim=num_anim, num_species=num_species
     )
     counts = a_cts + s_cts + g_cts
 

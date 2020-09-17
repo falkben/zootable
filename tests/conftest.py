@@ -142,71 +142,77 @@ def species_base_count(db, species_base, user_base, enclosure_base):
     return _species_base_count
 
 
-def animal_factory(
-    name: str,
-    identifier: str,
-    sex: str,
-    accession_number: str,
-    enclosure: Enclosure,
-    species: Species,
-    active: bool = True,
-) -> Animal:
-    return Animal.objects.create(
-        name=name,
-        identifier=identifier,
-        sex=sex,
-        accession_number=accession_number,
-        enclosure=enclosure,
-        species=species,
-        active=active,
-    )
+@pytest.fixture
+def animal_factory(db, enclosure_base, species_base):
+    def _animal_factory(
+        name: str,
+        identifier: str,
+        sex: str,
+        accession_number: str,
+        active: bool = True,
+        enclosure=enclosure_base,
+        species=species_base,
+    ) -> Animal:
+        return Animal.objects.create(
+            name=name,
+            identifier=identifier,
+            sex=sex,
+            accession_number=accession_number,
+            enclosure=enclosure,
+            species=species,
+            active=active,
+        )
+
+    return _animal_factory
 
 
 @pytest.fixture
-def animal_A(db, species_base, enclosure_base):
-    return animal_factory("A_name", "A_id", "M", "123456", enclosure_base, species_base)
+def animal_A(db, animal_factory):
+    return animal_factory("A_name", "A_id", "M", "123456")
 
 
 @pytest.fixture
-def animal_B_enc(db, species_base, enclosure_factory):
+def animal_B_enc(db, enclosure_factory, animal_factory):
     # closure
     def _animal_B_enc(enclosure_name):
 
         enc = enclosure_factory(enclosure_name)
-        return animal_factory("B_name", "B_id", "F", "111555", enc, species_base)
+        return animal_factory("B_name", "B_id", "F", "111555", enclosure=enc)
 
     return _animal_B_enc
 
 
-def animal_count_factory(
-    condition: str,
-    animal: Animal,
-    user: User,
-    enclosure: Enclosure,
-    datetimecounted: datetime = None,
-    comment: str = "",
-) -> AnimalCount:
-    if datetimecounted is None:
-        datetimecounted = localtime()
-    return AnimalCount.objects.create(
-        datetimecounted=datetimecounted,
-        datecounted=datetimecounted.date(),
-        condition=condition,
-        comment=comment,
-        animal=animal,
-        user=user,
-        enclosure=enclosure,
-    )
+@pytest.fixture
+def animal_count_factory(db, animal_A, user_base, enclosure_base):
+    def _animal_count_factory(
+        condition: str,
+        datetimecounted: datetime = None,
+        comment: str = "",
+        animal: Animal = animal_A,
+        user: User = user_base,
+        enclosure: Enclosure = enclosure_base,
+    ) -> AnimalCount:
+        if datetimecounted is None:
+            datetimecounted = localtime()
+        return AnimalCount.objects.create(
+            datetimecounted=datetimecounted,
+            datecounted=datetimecounted.date(),
+            condition=condition,
+            comment=comment,
+            animal=animal,
+            user=user,
+            enclosure=enclosure,
+        )
+
+    return _animal_count_factory
 
 
 @pytest.fixture
-def animal_count_A_BAR_datetime_factory(db, animal_A, user_base, enclosure_base):
-    def _animal_count_A_BAR(datetimecounted=None):
+def animal_count_A_BAR_datetime_factory(db, animal_count_factory):
+    def _animal_count_A_BAR(datetimecounted=None) -> AnimalCount:
         if datetimecounted is None:
             datetimecounted = localtime()
-        return animal_count_factory(
-            "BA", animal_A, user_base, enclosure_base, datetimecounted
-        )
+        return animal_count_factory("BA", datetimecounted)
 
     return _animal_count_A_BAR
 
@@ -309,7 +315,14 @@ def group_B_count(group_B_count_datetime_factory):
 
 
 @pytest.fixture
-def create_many_counts(db, species_base, user_base, enclosure_factory, group_factory):
+def create_many_counts(
+    db,
+    user_base,
+    enclosure_factory,
+    group_factory,
+    animal_count_factory,
+    animal_factory,
+):
     """
     sets up a large number of counts for testing
     returns the counts created as well as the enclosure
@@ -343,19 +356,18 @@ def create_many_counts(db, species_base, user_base, enclosure_factory, group_fac
             for k in range(num_anim):
                 id = f"anim_{enc_name}_{alph[i]}"
                 m_f = "MF"[k % 2]  # alternate
-                anim = animal_factory(id, id, m_f, next(access_nums), enc, species_base)
+                anim = animal_factory(id, id, m_f, next(access_nums), enclosure=enc)
                 a_cts.append(
-                    animal_count_factory(anim_count_cond, anim, user_base, enc)
+                    animal_count_factory(anim_count_cond, animal=anim, enclosure=enc)
                 )
 
                 # adding some counts on diff days
                 for delta_day in (-3, -2, -1, 1, 2):
                     animal_count_factory(
                         "NA",
-                        anim,
-                        user_base,
-                        enc,
                         localtime() + timedelta(days=1) * delta_day,
+                        animal=anim,
+                        enclosure=enc,
                     )
 
             for k in range(num_species):
