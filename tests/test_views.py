@@ -16,14 +16,14 @@ from zoo_checks.views import (
 def test_home(client, user_base):
     client.force_login(user_base)
     url = reverse("home")
-    response = client.get(url)
+    resp = client.get(url)
 
-    assert response.status_code == 200
-    assert response.context["selected_role"] is None
-    assert user_base.first_name in response.content.decode()
+    assert resp.status_code == 200
+    assert resp.context["selected_role"] is None
+    assert user_base.first_name in resp.content.decode()
     assert (
         "No enclosures. Contact a manager to be added to a role"
-        in response.content.decode()
+        in resp.content.decode()
     )
 
 
@@ -41,12 +41,12 @@ def test_home_counts(client, create_many_counts, user_base):
 
     client.force_login(user_base)
     url = reverse("home")
-    response = client.get(url)
+    resp = client.get(url)
 
-    assert response.status_code == 200
-    assert list(response.context["roles"]) == list(user_base.roles.all())
-    assert response.context["selected_role"] is None
-    assert "Individuals" in response.content.decode()
+    assert resp.status_code == 200
+    assert list(resp.context["roles"]) == list(user_base.roles.all())
+    assert resp.context["selected_role"] is None
+    assert "Individuals" in resp.content.decode()
 
 
 def test_count(
@@ -73,6 +73,7 @@ def test_count(
 
     # create some counts
 
+    # todo:
     # POST
 
 
@@ -156,7 +157,7 @@ def test_edit_species_count(
     assert resp.context["dateday"].month == yesterday.month
     assert resp.context["dateday"].day == yesterday.day
     assert resp.context["count"] == count
-    # todo: test form
+    # todo: form context
 
     # POST
     post_data = {
@@ -212,7 +213,7 @@ def test_edit_group_count(
     assert resp.context["dateday"].year == yesterday.year
     assert resp.context["dateday"].month == yesterday.month
     assert resp.context["dateday"].day == yesterday.day
-    # todo: test form
+    # todo: form context
 
     # POST
     count_bar = randint(1, 400)
@@ -240,8 +241,60 @@ def test_edit_group_count(
     assert latest_count.count_bar == post_data["count_bar"]
 
 
-def test_animal_counts():
-    pass
+def test_animal_counts(
+    client,
+    animal_A,
+    animal_count_factory,
+    user_base,
+    user_factory,
+    enclosure_base,
+):
+
+    num_counts = 100
+
+    rando_user = user_factory("rando")
+    client.force_login(rando_user)
+    url = reverse("animal_counts", args=[animal_A.accession_number])
+    resp = client.get(url)
+    assert resp.status_code == 302
+    messages = list(resp.wsgi_request._messages)
+    assert (
+        messages[0].message
+        == f"You do not have permissions to access enclosure {animal_A.enclosure}"
+    )
+
+    counts = []
+    for d in range(num_counts):
+        counts.append(
+            animal_count_factory(
+                "BA",
+                timezone.localtime() - datetime.timedelta(days=d),
+                comment=f"test count on day {d}",
+            )
+        )
+
+    # test some counts w/ context
+    client.force_login(user_base)
+    url = reverse("animal_counts", args=[animal_A.accession_number])
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert resp.context["animal"] == animal_A
+    assert resp.context["enclosure"] == enclosure_base
+    assert list(resp.context["animal_counts"]) == counts[:10]
+    assert resp.context["page_range"][0] == 1
+    assert resp.context["page_range"][-1] == 1 + 5
+    # chart_data
+    # chart_labels
+
+    # test pagination
+    url = "{}{}".format(
+        reverse("animal_counts", args=[animal_A.accession_number]), f"?page={2}"
+    )
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert list(resp.context["animal_counts"]) == counts[10:20]
+    assert resp.context["page_range"][0] == 1
+    assert resp.context["page_range"][-1] == 2 + 5
 
 
 def test_group_counts(
@@ -255,11 +308,16 @@ def test_group_counts(
     num_counts = 120
 
     # test perms
-    rando = user_factory("rando")
-    client.force_login(rando)
+    rando_user = user_factory("rando")
+    client.force_login(rando_user)
     url = reverse("group_counts", args=[group_B.accession_number])
-    response = client.get(url)
-    assert response.status_code == 302  # redirect to home
+    resp = client.get(url)
+    assert resp.status_code == 302  # redirect to home
+    messages = list(resp.wsgi_request._messages)
+    assert (
+        messages[0].message
+        == f"You do not have permissions to access enclosure {group_B.enclosure}"
+    )
 
     counts = []
     for d in range(num_counts):
@@ -272,23 +330,23 @@ def test_group_counts(
     # test some counts w/ context
     client.force_login(user_base)
     url = reverse("group_counts", args=[group_B.accession_number])
-    response = client.get(url)
-    assert response.status_code == 200
-    assert response.context["group"] == group_B
-    assert response.context["enclosure"] == enclosure_base
-    assert list(response.context["counts"]) == counts[:10]
-    assert response.context["page_range"][0] == 1
-    assert response.context["page_range"][-1] == 1 + 5
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert resp.context["group"] == group_B
+    assert resp.context["enclosure"] == enclosure_base
+    assert list(resp.context["counts"]) == counts[:10]
+    assert resp.context["page_range"][0] == 1
+    assert resp.context["page_range"][-1] == 1 + 5
 
     # test pagination
     url = "{}{}".format(
         reverse("group_counts", args=[group_B.accession_number]), f"?page={2}"
     )
-    response = client.get(url)
-    assert response.status_code == 200
-    assert list(response.context["counts"]) == counts[10:20]
-    assert response.context["page_range"][0] == 1
-    assert response.context["page_range"][-1] == 2 + 5
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert list(resp.context["counts"]) == counts[10:20]
+    assert resp.context["page_range"][0] == 1
+    assert resp.context["page_range"][-1] == 2 + 5
 
 
 def test_species_counts():
