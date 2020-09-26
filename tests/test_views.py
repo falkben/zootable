@@ -268,6 +268,86 @@ def test_edit_group_count(
     assert latest_count.count_bar == post_data["count_bar"]
 
 
+def test_edit_animal_count(
+    client,
+    user_base,
+    enclosure_factory,
+    animal_factory,
+    animal_A,
+    enclosure_base,
+    animal_count_A_BAR_datetime_factory,
+):
+    client.force_login(user_base)
+
+    # todo: timezone ...?
+    yesterday_time = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday = yesterday_time.date()
+
+    enc_not_permit = enclosure_factory("not_permit", None)
+
+    anim_not_permit = animal_factory(
+        name="kermitthefrog",
+        identifier="green",
+        sex="m",
+        accession_number="abc123",
+        enclosure=enc_not_permit,
+    )
+
+    # not permitted
+    resp = client.get(
+        (
+            "/edit_animal_count/"
+            f"{anim_not_permit.accession_number}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        )
+    )
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(resp, "/")
+
+    count = animal_count_A_BAR_datetime_factory(yesterday_time)
+
+    # GET
+    resp = client.get(
+        (
+            "/edit_animal_count/"
+            f"{animal_A.accession_number}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        )
+    )
+    assert resp.status_code == 200
+    assert resp.context["count"] == count
+    assert resp.context["animal"] == animal_A
+    assert resp.context["enclosure"] == enclosure_base
+    assert resp.context["dateday"].year == yesterday.year
+    assert resp.context["dateday"].month == yesterday.month
+    assert resp.context["dateday"].day == yesterday.day
+    # todo: form context
+
+    # POST
+    post_data = {
+        "condition": "NA",
+        "comment": "this is a test count",
+        "animal": animal_A.id,
+        "enclosure": enclosure_base.id,
+    }
+    resp = client.post(
+        (
+            "/edit_animal_count/"
+            f"{animal_A.accession_number}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        ),
+        data=post_data,
+        follow=True,
+    )
+    assert resp.status_code == 200
+    assert resp.redirect_chain == [(f"/count/{enclosure_base.slug}/", 302)]
+
+    latest_count = animal_A.conditions.latest("datetimecounted")
+    assert latest_count.condition == "NA"
+    assert latest_count.comment == "this is a test count"
+    assert latest_count.enclosure == enclosure_base
+
+
 def test_animal_counts(
     client,
     animal_A,
@@ -417,10 +497,6 @@ def test_species_counts(
     # "chart_labels_line"
     # "chart_data_pie"
     # "chart_labels_pie"
-
-
-def test_edit_animal_count():
-    pass
 
 
 def test_ingest_form():
