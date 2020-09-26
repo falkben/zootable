@@ -4,6 +4,8 @@ from random import randint
 from django.test import SimpleTestCase
 from django.urls import reverse
 from django.utils import timezone
+
+from zoo_checks.ingest import TRACKS_REQ_COLS
 from zoo_checks.models import AnimalCount, Enclosure
 from zoo_checks.views import (
     enclosure_counts_to_dict,
@@ -499,15 +501,31 @@ def test_species_counts(
     # "chart_labels_pie"
 
 
-def test_ingest_form():
-    pass
+def test_ingest_form(client, user_base, user_super):
+    client.force_login(user_base)
+
+    url = reverse("ingest_form")
+    resp = client.get(url)
+    assert resp.status_code == 302
+    SimpleTestCase().assertRedirects(resp, "/accounts/login/", target_status_code=302)
+
+    client.force_login(user_super)
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert resp.context["req_cols"] == TRACKS_REQ_COLS
+
+    # todo: test session data manipulation (changesets/upload_file)
+
+    # TODO: POST
 
 
 def test_confirm_upload():
+    # /confirm_upload
     pass
 
 
 def test_export():
+    # /export
     pass
 
 
