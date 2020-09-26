@@ -68,7 +68,7 @@ def user_super(db):
 
 
 @pytest.fixture
-def role_base(db, user_base):
+def role_base(user_base):
     role = Role.objects.create(name="role_base")
     role.users.add(user_base)
     role.save()
@@ -76,7 +76,7 @@ def role_base(db, user_base):
 
 
 @pytest.fixture
-def enclosure_factory(db, role_base):
+def enclosure_factory(role_base):
     # closure
     def _enclosure_factory(name, role: Optional[Enclosure] = role_base):
         enc = Enclosure.objects.create(name=name)
@@ -89,61 +89,77 @@ def enclosure_factory(db, role_base):
 
 
 @pytest.fixture
-def enclosure_base(db, enclosure_factory):
+def enclosure_base(enclosure_factory):
     return enclosure_factory("base_enc")
 
 
 @pytest.fixture
-def species_base(db):
-    return Species.objects.create(
+def species_factory(db):
+    def _species_factory(
         common_name="common_base",
         class_name="class_base",
         order_name="order_base",
         family_name="family_base",
         genus_name="genus_base",
         species_name="species_base",
-    )
+    ):
+        return Species.objects.create(
+            common_name=common_name,
+            class_name=class_name,
+            order_name=order_name,
+            family_name=family_name,
+            genus_name=genus_name,
+            species_name=species_name,
+        )
 
-
-def species_count_factory(
-    species: Species,
-    user: User,
-    enclosure: Enclosure,
-    count: int,
-    datetimecounted: datetime = None,
-) -> SpeciesCount:
-    if datetimecounted is None:
-        datetimecounted = localtime()
-    return SpeciesCount.objects.create(
-        datetimecounted=datetimecounted,
-        datecounted=datetimecounted.date(),
-        species=species,
-        user=user,
-        enclosure=enclosure,
-        count=count,
-    )
+    return _species_factory
 
 
 @pytest.fixture
-def species_base_count(db, species_base, user_base, enclosure_base):
+def species_base(species_factory):
+    return species_factory()
+
+
+@pytest.fixture
+def species_count_factory(species_base, enclosure_base, user_base):
+    def _species_count_factory(
+        count: int,
+        user: User = user_base,
+        enclosure: Enclosure = enclosure_base,
+        species: Species = species_base,
+        datetimecounted: datetime = None,
+    ) -> SpeciesCount:
+        if datetimecounted is None:
+            datetimecounted = localtime()
+        return SpeciesCount.objects.create(
+            datetimecounted=datetimecounted,
+            datecounted=datetimecounted.date(),
+            species=species,
+            user=user,
+            enclosure=enclosure,
+            count=count,
+        )
+
+    return _species_count_factory
+
+
+@pytest.fixture
+def species_base_count(species_count_factory):
 
     # closure
     def _species_base_count(datetimecounted=None):
         if datetimecounted is None:
             datetimecounted = localtime()
         return species_count_factory(
-            datetimecounted=datetimecounted,
-            species=species_base,
-            user=user_base,
-            enclosure=enclosure_base,
             count=100,
+            datetimecounted=datetimecounted,
         )
 
     return _species_base_count
 
 
 @pytest.fixture
-def animal_factory(db, enclosure_base, species_base):
+def animal_factory(enclosure_base, species_base):
     def _animal_factory(
         name: str,
         identifier: str,
@@ -167,12 +183,12 @@ def animal_factory(db, enclosure_base, species_base):
 
 
 @pytest.fixture
-def animal_A(db, animal_factory):
+def animal_A(animal_factory):
     return animal_factory("A_name", "A_id", "M", "123456")
 
 
 @pytest.fixture
-def animal_B_enc(db, enclosure_factory, animal_factory):
+def animal_B_enc(enclosure_factory, animal_factory):
     # closure
     def _animal_B_enc(enclosure_name):
 
@@ -183,7 +199,7 @@ def animal_B_enc(db, enclosure_factory, animal_factory):
 
 
 @pytest.fixture
-def animal_count_factory(db, animal_A, user_base, enclosure_base):
+def animal_count_factory(animal_A, user_base, enclosure_base):
     def _animal_count_factory(
         condition: str,
         datetimecounted: datetime = None,
@@ -208,7 +224,7 @@ def animal_count_factory(db, animal_A, user_base, enclosure_base):
 
 
 @pytest.fixture
-def animal_count_A_BAR_datetime_factory(db, animal_count_factory):
+def animal_count_A_BAR_datetime_factory(animal_count_factory):
     def _animal_count_A_BAR(datetimecounted=None) -> AnimalCount:
         if datetimecounted is None:
             datetimecounted = localtime()
@@ -223,7 +239,7 @@ def animal_count_A_BAR(animal_count_A_BAR_datetime_factory):
 
 
 @pytest.fixture
-def group_factory(db, enclosure_base, species_base):
+def group_factory(enclosure_base, species_base):
     def _group_factory(
         accession_number: str,
         population_male: int,
@@ -249,7 +265,7 @@ def group_factory(db, enclosure_base, species_base):
 
 
 @pytest.fixture
-def group_B(db, group_factory):
+def group_B(group_factory):
     return group_factory(
         accession_number="654321",
         population_male=1,
@@ -260,7 +276,7 @@ def group_B(db, group_factory):
 
 
 @pytest.fixture
-def group_count_factory(db, group_B, user_base, enclosure_base):
+def group_count_factory(group_B, user_base, enclosure_base):
     def _group_count_factory(
         count_total: int,
         count_seen: int,
@@ -293,7 +309,7 @@ def group_count_factory(db, group_B, user_base, enclosure_base):
 
 
 @pytest.fixture
-def group_B_count_datetime_factory(db, group_count_factory):
+def group_B_count_datetime_factory(group_count_factory):
     def _group_B_count(datetimecounted=None):
         if datetimecounted is None:
             datetimecounted = localtime()
@@ -317,13 +333,12 @@ def group_B_count(group_B_count_datetime_factory):
 
 @pytest.fixture
 def create_many_counts(
-    db,
-    user_base,
     enclosure_factory,
     group_factory,
     animal_count_factory,
     animal_factory,
     group_count_factory,
+    species_count_factory,
 ):
     """
     sets up a large number of counts for testing
@@ -383,17 +398,16 @@ def create_many_counts(
                     species_name=f"species_{id}",
                 )
                 s_cts.append(
-                    species_count_factory(spec, user_base, enc, spec_count_val)
+                    species_count_factory(spec_count_val, species=spec, enclosure=enc)
                 )
 
                 # adding some counts on diff days
                 for delta_day in (-3, -2, -1, 1, 2):
                     species_count_factory(
-                        spec,
-                        user_base,
-                        enc,
                         100,
-                        localtime() + timedelta(days=1) * delta_day,
+                        species=spec,
+                        enclosure=enc,
+                        datetimecounted=localtime() + timedelta(days=1) * delta_day,
                     )
 
                 group = group_factory(

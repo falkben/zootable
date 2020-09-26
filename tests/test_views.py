@@ -98,7 +98,10 @@ def test_tally_date_handler(client, enclosure_base, user_base):
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(
         resp,
-        f"/count/{enclosure_base.slug}/{yesterday.year}/{yesterday.month}/{yesterday.day}/",
+        (
+            "/count/"
+            f"{enclosure_base.slug}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        ),
     )
 
     resp = client.post(
@@ -106,7 +109,7 @@ def test_tally_date_handler(client, enclosure_base, user_base):
         {"tally_date": "not_a_date"},
     )
     assert resp.status_code == 302
-    # normally this would be in resp.context but context is None since we're doing a redirect
+    # normally this is in resp.context but context is None since we're doing a redirect
     messages = list(resp.wsgi_request._messages)
     assert messages[0].message == "Error in date entered"
     SimpleTestCase().assertRedirects(resp, f"/count/{enclosure_base.slug}/")
@@ -139,7 +142,11 @@ def test_edit_species_count(
 
     # not permitted
     resp = client.get(
-        f"/edit_species_count/{species_base.slug}/{enc_not_permit.name}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        (
+            "/edit_species_count/"
+            f"{species_base.slug}/{enc_not_permit.name}"
+            f"/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        )
     )
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(resp, "/")
@@ -148,7 +155,11 @@ def test_edit_species_count(
 
     # GET
     resp = client.get(
-        f"/edit_species_count/{species_base.slug}/{enclosure_base.name}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        (
+            "/edit_species_count/"
+            f"{species_base.slug}/{enclosure_base.name}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        )
     )
     assert resp.status_code == 200
     assert resp.context["species"] == species_base
@@ -166,7 +177,11 @@ def test_edit_species_count(
         "enclosure": enclosure_base.id,
     }
     resp = client.post(
-        f"/edit_species_count/{species_base.slug}/{enclosure_base.name}/{yesterday.year}/{yesterday.month}/{yesterday.day}/",
+        (
+            "/edit_species_count/"
+            f"{species_base.slug}/{enclosure_base.name}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        ),
         data=post_data,
         follow=True,
     )
@@ -195,7 +210,11 @@ def test_edit_group_count(
 
     # not permitted
     resp = client.get(
-        f"/edit_group_count/{group_not_permit.accession_number}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        (
+            "/edit_group_count/"
+            f"{group_not_permit.accession_number}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        )
     )
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(resp, "/")
@@ -204,7 +223,11 @@ def test_edit_group_count(
 
     # GET
     resp = client.get(
-        f"/edit_group_count/{group_B.accession_number}/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        (
+            "/edit_group_count/"
+            f"{group_B.accession_number}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        )
     )
     assert resp.status_code == 200
     assert resp.context["count"] == count
@@ -229,7 +252,11 @@ def test_edit_group_count(
         "needs_attn": False,
     }
     resp = client.post(
-        f"/edit_group_count/{group_B.accession_number}/{yesterday.year}/{yesterday.month}/{yesterday.day}/",
+        (
+            "/edit_group_count/"
+            f"{group_B.accession_number}/"
+            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
+        ),
         data=post_data,
         follow=True,
     )
@@ -349,8 +376,47 @@ def test_group_counts(
     assert resp.context["page_range"][-1] == 2 + 5
 
 
-def test_species_counts():
-    pass
+def test_species_counts(
+    client, species_count_factory, species_base, user_base, user_factory, enclosure_base
+):
+    num_counts = 30
+
+    # test perms
+    rando_user = user_factory("rando")
+    client.force_login(rando_user)
+    url = reverse("species_counts", args=[species_base.slug, enclosure_base.slug])
+    # should redirect to home
+    resp = client.get(url)
+    assert resp.status_code == 302
+    messages = list(resp.wsgi_request._messages)
+    assert (
+        messages[0].message
+        == f"You do not have permissions to access enclosure {enclosure_base}"
+    )
+
+    # create some counts
+    counts = []
+    for d in range(num_counts):
+        counts.append(
+            species_count_factory(
+                50, datetimecounted=timezone.localtime() - datetime.timedelta(days=d)
+            )
+        )
+
+    # test some counts w/ context
+    client.force_login(user_base)
+    url = reverse("species_counts", args=[species_base.slug, enclosure_base.slug])
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert resp.context["obj"] == species_base
+    assert resp.context["enclosure"] == enclosure_base
+    assert list(resp.context["counts"]) == counts[:10]
+    assert resp.context["page_range"][0] == 1
+    assert resp.context["page_range"][-1] == 3
+    # "chart_data_line_total"
+    # "chart_labels_line"
+    # "chart_data_pie"
+    # "chart_labels_pie"
 
 
 def test_edit_animal_count():
@@ -429,7 +495,8 @@ def test_selected_role(rf_get_factory, role_base):
     assert selected_role == role_base
     assert request.session.get("selected_role") == "role_base"
 
-    # test role query param and different session query param returns query param role and sets session
+    # test role query param and diff session query param returns query param role and
+    # sets session
     request = rf_get_factory("/home/?role=role_base")
     request.session["selected_role"] = "diff_role"
     selected_role = get_selected_role(request)

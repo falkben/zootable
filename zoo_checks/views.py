@@ -75,7 +75,10 @@ def redirect_if_not_permitted(request, enclosure: Enclosure) -> bool:
         request, f"You do not have permissions to access enclosure {enclosure.name}"
     )
     logger.error(
-        f"Insufficient permissions to access enclosure {enclosure.name}, user: {request.user.username}"
+        (
+            "Insufficient permissions to access enclosure"
+            f" {enclosure.name}, user: {request.user.username}"
+        )
     )
     return True
 
@@ -84,7 +87,7 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     """
     repackage enclosure counts into dict for template render
     dict order of enclosures is same as list/query order
-    we're not using defaultdict(list) because django templates have difficulty with defaultdict
+    not using defaultdict(list) because django templates have difficulty with them
     """
 
     def create_counts_dict(enclosures, counts) -> dict:
@@ -320,7 +323,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                     instance = form.save(commit=False)
                     instance.user = request.user
 
-                    # if we're setting a count for a different day than today, set the date/datetime
+                    # if setting count for a diff day than today, set the date/datetime
                     if not count_today:
                         instance.datetimecounted = (
                             dateday
@@ -850,7 +853,7 @@ def export(request):
             start_date = form.cleaned_data["start_date"]
             end_date = form.cleaned_data["end_date"]
 
-            # TODO: these could be abstracted to a function that returns this for any model
+            # TODO: abstract to a function that returns this for any model?
             animal_counts = (
                 AnimalCount.objects.filter(
                     enclosure__in=enclosures,
@@ -900,21 +903,26 @@ def export(request):
 
             # create response object to save the data into
             response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "spreadsheetml.sheet"
+                )
             )
 
             enclosure_names = "_".join((enc.slug for enc in enclosures))
             start_date_str = start_date.strftime("%Y%m%d")
             end_date_str = end_date.strftime("%Y%m%d")
-            response[
-                "Content-Disposition"
-            ] = f'attachment; filename="zootable_export_{enclosure_names}_{start_date_str}_{end_date_str}.xlsx"'
+            response["Content-Disposition"] = (
+                "attachment; "
+                'filename="zootable_export_'
+                f'{enclosure_names}_{start_date_str}_{end_date_str}.xlsx"'
+            )
 
             # create xlsx object and put it into the response using pandas
             with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
                 df_merge_clean.to_excel(writer, sheet_name="Sheet1", index=False)
 
-            # TODO: (Fancy) redirect to home and have javascript serve the xlsx file from that page
+            # TODO: redirect to home w/ javascript serve xlsx file from that page
             # send it to the user
             return response
 
