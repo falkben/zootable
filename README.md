@@ -38,7 +38,7 @@ A working demo can be found [here](https://demo.zootable.com)
     - `psql=# grant all privileges on database zootable to zootable;`
 - Edit `/etc/postgresql/12/main/pg_hba.conf` and insert near the top
 
-  ```
+  ```cfg
   local   all             zootable                                trust
   ```
 
@@ -58,26 +58,26 @@ A working demo can be found [here](https://demo.zootable.com)
   - `python manage.py migrate`
 - `python manage.py createsuperuser`
 - Upload data
-  - From ./: `python zootable/scripts/ingest_xlsx_data.py DATA.xlsx`
+  - `python scripts/ingest_xlsx_data.py <DATA.xlsx>`
   - Or can upload it from within the app once running
 
 ## Run
 
 Standard
 
-```python
+```sh
 python manage.py runserver
 ```
 
 or w/ `browser-sync`
 
-```cmd
+```sh
 npm start
 ```
 
 ## Deployment check
 
-https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
+<https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/>
 
 `python manage.py check --deploy`
 
@@ -124,18 +124,18 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 1. First log into heroku bash: `heroku run bash -a zootable`
 1. Next clear the sessions: `django-admin clearsessions --settings=mysite.settings`
 
-Documentation on clearing session store: https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store
+Documentation on clearing session store: <https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store>
 
 ### Automatic database backups
 
 `heroku pg:backups:schedule DATABASE_URL --at '02:00 America/New_York' --app zootable`
 
-See: https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups
+See: <https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups>
 
 ## Update all requirements
 
 [Pur](https://pypi.org/project/pur/)
 
 1. `pip install pur`
-1. `pur -r requirements.txt`
-1. `pip install -r requirements.txt`
+1. `pur -r requirements.txt` (or `pur -r requirements-test.txt`)
+1. `pip install -e .` (or `pip install -e .[test]`)
