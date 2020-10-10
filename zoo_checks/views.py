@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -59,7 +59,7 @@ def get_accessible_enclosures(user: User):
     return enclosures
 
 
-def redirect_if_not_permitted(request, enclosure: Enclosure) -> bool:
+def redirect_if_not_permitted(request: HttpRequest, enclosure: Enclosure) -> bool:
     """
     Returns
     -------
@@ -163,7 +163,7 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     return counts_dict
 
 
-def get_selected_role(request):
+def get_selected_role(request: HttpRequest):
     # user requests view all
     if request.GET.get("view_all", False):
         request.session.pop("selected_role", None)
@@ -198,7 +198,7 @@ def get_selected_role(request):
 @login_required
 # TODO: logins may not be sufficient - user a part of a group?
 # TODO: add pagination
-def home(request):
+def home(request: HttpRequest):
     enclosures_query = get_accessible_enclosures(request.user)
 
     # only show enclosures that have active animals/groups
@@ -244,7 +244,7 @@ def home(request):
 
 
 @login_required
-def count(request, enclosure_slug, year=None, month=None, day=None):
+def count(request: HttpRequest, enclosure_slug, year=None, month=None, day=None):
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
     if redirect_if_not_permitted(request, enclosure):
@@ -413,7 +413,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
 
 @login_required
-def tally_date_handler(request, enclosure_slug):
+def tally_date_handler(request: HttpRequest, enclosure_slug):
     """Called from tally page to change date tally"""
 
     # if it's a POST: pull out the date from the cleaned data then send it to "count"
@@ -438,7 +438,9 @@ def tally_date_handler(request, enclosure_slug):
 
 
 @login_required
-def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
+def edit_species_count(
+    request: HttpRequest, species_slug, enclosure_slug, year, month, day
+):
     species = get_object_or_404(Species, slug=species_slug)
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
@@ -491,7 +493,7 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
 
 
 @login_required
-def edit_group_count(request, group, year, month, day):
+def edit_group_count(request: HttpRequest, group, year, month, day):
     group = get_object_or_404(
         Group.objects.select_related("enclosure", "species"), accession_number=group
     )
@@ -549,7 +551,7 @@ def edit_group_count(request, group, year, month, day):
 
 
 @login_required
-def animal_counts(request, animal):
+def animal_counts(request: HttpRequest, animal):
     animal_obj = get_object_or_404(
         Animal.objects.select_related("enclosure", "species"), accession_number=animal
     )
@@ -604,7 +606,7 @@ def animal_counts(request, animal):
 
 
 @login_required
-def group_counts(request, group):
+def group_counts(request: HttpRequest, group):
     group = get_object_or_404(
         Group.objects.select_related("enclosure", "species"), accession_number=group
     )
@@ -665,7 +667,7 @@ def group_counts(request, group):
 
 
 @login_required
-def species_counts(request, species_slug, enclosure_slug):
+def species_counts(request: HttpRequest, species_slug, enclosure_slug):
     obj = get_object_or_404(Species, slug=species_slug)
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
@@ -719,7 +721,7 @@ def species_counts(request, species_slug, enclosure_slug):
 
 
 @login_required
-def edit_animal_count(request, animal, year, month, day):
+def edit_animal_count(request: HttpRequest, animal, year, month, day):
     animal = get_object_or_404(
         Animal.objects.select_related("enclosure", "species"), accession_number=animal
     )
@@ -774,7 +776,8 @@ def edit_animal_count(request, animal, year, month, day):
 
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
-def ingest_form(request):
+def ingest_form(request: HttpRequest):
+    """ For for submitting excel files for ingest """
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -803,7 +806,8 @@ def ingest_form(request):
 
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
-def confirm_upload(request):
+def confirm_upload(request: HttpRequest):
+    """ after ingest form submit, show confirmation page before writing to db """
     changesets = request.session.get("changesets")
     upload_file = request.session.get("upload_file")
 
@@ -839,7 +843,8 @@ def confirm_upload(request):
 
 
 @login_required
-def export(request):
+def export(request: HttpRequest):
+    """ export counts to excel for user download w/ time range """
     accessible_enclosures = get_accessible_enclosures(request.user)
 
     if request.method == "POST":
@@ -927,7 +932,7 @@ def export(request):
             return response
 
     else:
-        form = ExportForm(initial={"num_days": 7})
+        form = ExportForm()
         form.fields["selected_enclosures"].queryset = accessible_enclosures
 
     return render(request, "export.html", {"form": form})

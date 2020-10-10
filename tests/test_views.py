@@ -521,12 +521,38 @@ def test_ingest_form(client, user_base, user_super):
 
 def test_confirm_upload():
     # /confirm_upload
+
+    # changesets and upload_file in session
+
+    # test GET
+
+    # test POST (writes changes to db)
     pass
 
 
-def test_export():
-    # /export
-    pass
+def test_export(client, user_base, enclosure_base, user_factory):
+
+    # GET
+
+    # user w/ no enclosures empty list of enclosures
+    rando_user = user_factory("rando")
+    client.force_login(rando_user)
+    resp = client.get("/export/")
+    assert resp.status_code == 200
+    assert list(resp.context["form"].fields["selected_enclosures"].queryset) == list(
+        Enclosure.objects.none()
+    )
+
+    # user_base has enclosure_base in list of options
+    client.force_login(user_base)
+    resp = client.get("/export/")
+    assert resp.status_code == 200
+    assert enclosure_base.name in resp.content.decode()
+    assert (
+        resp.context["form"].fields["selected_enclosures"].queryset[0] == enclosure_base
+    )
+
+    # POST
 
 
 def test_get_accessible_enclosures(
