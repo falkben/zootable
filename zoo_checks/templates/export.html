@@ -16,7 +16,8 @@
         <div class="col s12">
             Start date
             <div class="input-field inline">
-                <input id="id_start_date" name="start_date" type="text" class="datepicker inline" options="format:yyyy-mm-dd'">
+                <input id="id_start_date" name="start_date" type="text" class="datepicker"
+                {% if form.start_date.value %} value={{form.start_date.value}} {% endif %}>
             </div>
         </div>
     </div>
@@ -25,7 +26,8 @@
         <div class="col s12">
             End date
             <div class="input-field inline">
-                <input id="id_end_date" name="end_date" type="text" class="datepicker">
+                <input id="id_end_date" name="end_date" type="text" class="datepicker"
+                {% if form.end_date.value %} value={{form.end_date.value}} {% endif %}>
             </div>
         </div>
     </div>
@@ -38,7 +40,9 @@
             {% for option in form.selected_enclosures %}
                 <li>
                     <label for="{{option.id_for_label}}">
-                        <input id="{{option.id_for_label}}" name="{{option.data.name}}" value="{{option.data.value}}" type="checkbox" />
+                        <input id="{{option.id_for_label}}" name="{{option.data.name}}"
+                        value="{{option.data.value}}" type="checkbox"
+                        {% if option.data.attrs.checked %}checked="checked"{% endif %} />
                         <span>{{option.choice_label}}</span>
                     </label>
                 </li>
@@ -54,4 +58,13 @@
     </div>
 </form>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function(event) {
+    set_date_value_on_element('#id_start_date', "{{form.start_date.value}}");
+    set_date_value_on_element('#id_end_date', "{{form.end_date.value}}");
+});
+</script>
 {% endblock %}

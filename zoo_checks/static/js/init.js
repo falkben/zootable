@@ -241,3 +241,12 @@ function display_detail_table(selector_string) {
     }
   });
 }
+
+function set_date_value_on_element(selector_string, date) {
+  if (date != "None") {
+    var element = document.querySelector(selector_string);
+    var instance = M.Datepicker.getInstance(element);
+    instance.setDate(new Date(date));
+    instance.setInputValue(new Date(date));
+  }
+}

@@ -44,7 +44,7 @@ from .models import (
 )
 
 baselogger = logging.getLogger("zootable")
-logger = baselogger.getChild(__name__)
+LOGGER = baselogger.getChild(__name__)
 
 """ helpers that need models """
 
@@ -74,7 +74,7 @@ def redirect_if_not_permitted(request: HttpRequest, enclosure: Enclosure) -> boo
     messages.error(
         request, f"You do not have permissions to access enclosure {enclosure.name}"
     )
-    logger.error(
+    LOGGER.error(
         (
             "Insufficient permissions to access enclosure"
             f" {enclosure.name}, user: {request.user.username}"
@@ -186,7 +186,7 @@ def get_selected_role(request: HttpRequest):
                 # role probably changed or bad query
                 messages.info(request, "Selected role not found")
                 request.session.pop("selected_role", None)
-                logger.info(f"role not found and removed from session: {role_name}")
+                LOGGER.info(f"role not found and removed from session: {role_name}")
                 return
         else:
             return
@@ -340,7 +340,7 @@ def count(request: HttpRequest, enclosure_slug, year=None, month=None, day=None)
                     save_form_in_formset(form)
 
             messages.success(request, "Saved")
-            logger.info("Saved counts")
+            LOGGER.info("Saved counts")
             return redirect(
                 "count",
                 enclosure_slug=enclosure.slug,
@@ -367,7 +367,7 @@ def count(request: HttpRequest, enclosure_slug, year=None, month=None, day=None)
             )
 
             messages.error(request, "There was an error processing the form")
-            logger.error("Error in processing the form")
+            LOGGER.error("Error in processing the form")
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -431,7 +431,7 @@ def tally_date_handler(request: HttpRequest, enclosure_slug):
             )
         else:
             messages.error(request, "Error in date entered")
-            logger.error("Error in date entered")
+            LOGGER.error("Error in date entered")
 
     # if it's a GET: just redirect back to count method
     return redirect("count", enclosure_slug=enclosure_slug)
@@ -786,7 +786,7 @@ def ingest_form(request: HttpRequest):
                 changesets = handle_upload(request.FILES["file"])
             except Exception as e:
                 messages.error(request, e)
-                logger.error("Error during data ingest")
+                LOGGER.error("Error during data ingest")
                 return redirect("ingest_form")
 
             request.session["changesets"] = changesets
@@ -823,7 +823,7 @@ def confirm_upload(request: HttpRequest):
             ingest_changesets(changesets)
         except Exception as e:
             messages.error(request, e)
-            logger.error("error during data upload")
+            LOGGER.error("error during data upload")
             return redirect("ingest_form")
 
         # clearing the changesets
@@ -831,7 +831,7 @@ def confirm_upload(request: HttpRequest):
         request.session.pop("upload_file", None)
 
         messages.success(request, "Saved")
-        logger.info("Uploaded data")
+        LOGGER.info("Uploaded data")
 
         return redirect("home")
 
@@ -849,6 +849,7 @@ def export(request: HttpRequest):
 
     if request.method == "POST":
         form = ExportForm(request.POST)
+        form.fields["selected_enclosures"].queryset = accessible_enclosures
         if form.is_valid():
             selected_enclosures = form.cleaned_data["selected_enclosures"]
             # limit to only accessible enclosures
@@ -900,9 +901,9 @@ def export(request: HttpRequest):
             )
 
             if df_merge.empty:
-                messages.error(request, "No data in range")
-                logger.error("no data to ingest")
-                return redirect("export")
+                form.add_error(None, "No data in range")
+                LOGGER.error("no data to export")
+                return render(request, "export.html", {"form": form})
 
             df_merge_clean = clean_df(df_merge)
 
