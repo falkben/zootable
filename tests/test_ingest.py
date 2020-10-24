@@ -10,6 +10,7 @@ from zoo_checks.ingest import (
     create_species,
     find_animals_groups,
     get_changesets,
+    handle_upload,
     ingest_changesets,
     read_xlsx_data,
     validate_input,
@@ -173,6 +174,29 @@ def test_get_changesets():
     ]
     # only one group
     assert ["111112"] == gp_add_accession
+
+
+def test_handle_upload(animal_B_enc):
+    anim = animal_B_enc("enc1")  # enc in xlsx file
+
+    changeset = handle_upload(INPUT_EXAMPLE)
+    assert set(changeset.keys()) == {"enclosures", "animals", "groups"}
+
+    assert changeset["enclosures"] == ["enc1"]
+    assert len(changeset["animals"]) == 5  # 4 add and 1 del
+    assert len(changeset["groups"]) == 1
+    assert changeset["groups"][0]["action"] == "add"
+
+    assert len([c_a for c_a in changeset["animals"] if c_a["action"] == "add"]) == 4
+
+    # test that anim is removed
+    assert all(
+        [
+            c_a["object_kwargs"]["accession_number"] == anim.accession_number
+            for c_a in changeset["animals"]
+            if c_a["action"] == "del"
+        ]
+    )
 
 
 @pytest.mark.django_db

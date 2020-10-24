@@ -1,16 +1,13 @@
 import logging
-from datetime import datetime
 
 import pandas as pd
-import pytz
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -43,27 +40,26 @@ from .models import (
     Role,
     Species,
     SpeciesCount,
+    User,
 )
 
 baselogger = logging.getLogger("zootable")
-logger = baselogger.getChild(__name__)
+LOGGER = baselogger.getChild(__name__)
 
 """ helpers that need models """
 
 
-def get_accessible_enclosures(request):
+def get_accessible_enclosures(user: User):
     # superuser sees all enclosures
-    if not request.user.is_superuser:
-        enclosures = Enclosure.objects.filter(
-            roles__in=request.user.roles.all()
-        ).distinct()
+    if not user.is_superuser:
+        enclosures = Enclosure.objects.filter(roles__in=user.roles.all()).distinct()
     else:
         enclosures = Enclosure.objects.all()
 
     return enclosures
 
 
-def redirect_if_not_permitted(request, enclosure) -> bool:
+def redirect_if_not_permitted(request: HttpRequest, enclosure: Enclosure) -> bool:
     """
     Returns
     -------
@@ -78,6 +74,12 @@ def redirect_if_not_permitted(request, enclosure) -> bool:
     messages.error(
         request, f"You do not have permissions to access enclosure {enclosure.name}"
     )
+    LOGGER.error(
+        (
+            "Insufficient permissions to access enclosure"
+            f" {enclosure.name}, user: {request.user.username}"
+        )
+    )
     return True
 
 
@@ -85,7 +87,7 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     """
     repackage enclosure counts into dict for template render
     dict order of enclosures is same as list/query order
-    we're not using defaultdict(list) because django templates have difficulty with defaultdict
+    not using defaultdict(list) because django templates have difficulty with them
     """
 
     def create_counts_dict(enclosures, counts) -> dict:
@@ -161,23 +163,11 @@ def enclosure_counts_to_dict(enclosures, animal_counts, group_counts) -> dict:
     return counts_dict
 
 
-""" views """
-
-
-@login_required
-# TODO: logins may not be sufficient - user a part of a group?
-# TODO: add pagination
-def home(request):
-    enclosures_query = get_accessible_enclosures(request)
-
-    # only show enclosures that have active animals/groups
-    query = Q(animals__active=True) | Q(groups__active=True)
-
+def get_selected_role(request: HttpRequest):
     # user requests view all
-    view_all_param = request.GET.get("view_all", False)
-    if view_all_param:
-        role = None
+    if request.GET.get("view_all", False):
         request.session.pop("selected_role", None)
+        return
 
     # might have a default selected role in session
     # or might be requesting a selected role
@@ -190,17 +180,33 @@ def home(request):
 
         if role_name is not None:
             try:
-                role = Role.objects.get(slug=role_name)
-                query = query & Q(roles=role)
                 request.session["selected_role"] = role_name
+                return Role.objects.get(slug=role_name)
             except ObjectDoesNotExist:
                 # role probably changed or bad query
                 messages.info(request, "Selected role not found")
-                role = None
                 request.session.pop("selected_role", None)
-                logger.info(f"role not found and removed from session: {role_name}")
+                LOGGER.info(f"role not found and removed from session: {role_name}")
+                return
         else:
-            role = None
+            return
+
+
+""" views """
+
+
+@login_required
+# TODO: logins may not be sufficient - user a part of a group?
+# TODO: add pagination
+def home(request: HttpRequest):
+    enclosures_query = get_accessible_enclosures(request.user)
+
+    # only show enclosures that have active animals/groups
+    query = Q(animals__active=True) | Q(groups__active=True)
+
+    selected_role = get_selected_role(request)
+    if selected_role is not None:
+        query = query & Q(roles=selected_role)
 
     # prefetching in order to build up the info displayed for each enclosure
     groups_prefetch = Prefetch("groups", queryset=Group.objects.filter(active=True))
@@ -232,13 +238,13 @@ def home(request):
             "cts_dict": enclosure_cts_dict,
             "page_range": page_range,
             "roles": roles,
-            "selected_role": role,
+            "selected_role": selected_role,
         },
     )
 
 
 @login_required
-def count(request, enclosure_slug, year=None, month=None, day=None):
+def count(request: HttpRequest, enclosure_slug, year=None, month=None, day=None):
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
     if redirect_if_not_permitted(request, enclosure):
@@ -317,7 +323,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                     instance = form.save(commit=False)
                     instance.user = request.user
 
-                    # if we're setting a count for a different day than today, set the date/datetime
+                    # if setting count for a diff day than today, set the date/datetime
                     if not count_today:
                         instance.datetimecounted = (
                             dateday
@@ -334,6 +340,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
                     save_form_in_formset(form)
 
             messages.success(request, "Saved")
+            LOGGER.info("Saved counts")
             return redirect(
                 "count",
                 enclosure_slug=enclosure.slug,
@@ -360,6 +367,7 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
             )
 
             messages.error(request, "There was an error processing the form")
+            LOGGER.error("Error in processing the form")
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -405,18 +413,15 @@ def count(request, enclosure_slug, year=None, month=None, day=None):
 
 
 @login_required
-def tally_date_handler(request, enclosure_slug):
+def tally_date_handler(request: HttpRequest, enclosure_slug):
     """Called from tally page to change date tally"""
 
     # if it's a POST: pull out the date from the cleaned data then send it to "count"
     if request.method == "POST":
         form = TallyDateForm(request.POST)
         if form.is_valid():
-            tzinfo = pytz.timezone(settings.TIME_ZONE)
+            target_date = form.cleaned_data["tally_date"]
 
-            target_date = datetime.combine(
-                form.cleaned_data["tally_date"], datetime.min.time(), tzinfo=tzinfo
-            )
             return redirect(
                 "count",
                 enclosure_slug=enclosure_slug,
@@ -426,13 +431,16 @@ def tally_date_handler(request, enclosure_slug):
             )
         else:
             messages.error(request, "Error in date entered")
+            LOGGER.error("Error in date entered")
 
     # if it's a GET: just redirect back to count method
     return redirect("count", enclosure_slug=enclosure_slug)
 
 
 @login_required
-def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
+def edit_species_count(
+    request: HttpRequest, species_slug, enclosure_slug, year, month, day
+):
     species = get_object_or_404(Species, slug=species_slug)
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
@@ -441,7 +449,7 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
 
-    count = species.get_count_day(enclosure, day=dateday)
+    count = species.count_on_day(enclosure, day=dateday)
     init_form = {
         "count": 0 if count is None else count.count,
         "species": species,
@@ -485,15 +493,17 @@ def edit_species_count(request, species_slug, enclosure_slug, year, month, day):
 
 
 @login_required
-def edit_group_count(request, group, year, month, day):
-    group = get_object_or_404(Group, accession_number=group)
+def edit_group_count(request: HttpRequest, group, year, month, day):
+    group = get_object_or_404(
+        Group.objects.select_related("enclosure", "species"), accession_number=group
+    )
     enclosure = group.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
     dateday = timezone.make_aware(timezone.datetime(year, month, day))
-    count = group.get_count_day(day=dateday)
+    count = group.count_on_day(day=dateday)
     init_form = {
         "count_seen": 0 if count is None else count.count_seen,
         "count_bar": 0 if count is None else count.count_bar,
@@ -541,15 +551,19 @@ def edit_group_count(request, group, year, month, day):
 
 
 @login_required
-def animal_counts(request, animal):
-    animal_obj = get_object_or_404(Animal, accession_number=animal)
+def animal_counts(request: HttpRequest, animal):
+    animal_obj = get_object_or_404(
+        Animal.objects.select_related("enclosure", "species"), accession_number=animal
+    )
     enclosure = animal_obj.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
-    animal_counts_query = AnimalCount.objects.filter(animal=animal_obj).order_by(
-        "-datetimecounted", "-id"
+    animal_counts_query = (
+        AnimalCount.objects.filter(animal=animal_obj)
+        .select_related("user")
+        .order_by("-datetimecounted", "-id")
     )
 
     paginator = Paginator(animal_counts_query, 10)
@@ -592,15 +606,19 @@ def animal_counts(request, animal):
 
 
 @login_required
-def group_counts(request, group):
-    group = get_object_or_404(Group, accession_number=group)
+def group_counts(request: HttpRequest, group):
+    group = get_object_or_404(
+        Group.objects.select_related("enclosure", "species"), accession_number=group
+    )
     enclosure = group.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
-    group_counts_query = GroupCount.objects.filter(group=group).order_by(
-        "-datetimecounted", "-id"
+    group_counts_query = (
+        GroupCount.objects.filter(group=group)
+        .select_related("user")
+        .order_by("-datetimecounted", "-id")
     )
 
     paginator = Paginator(group_counts_query, 10)
@@ -649,16 +667,18 @@ def group_counts(request, group):
 
 
 @login_required
-def species_counts(request, species_slug, enclosure_slug):
+def species_counts(request: HttpRequest, species_slug, enclosure_slug):
     obj = get_object_or_404(Species, slug=species_slug)
     enclosure = get_object_or_404(Enclosure, slug=enclosure_slug)
 
     if redirect_if_not_permitted(request, enclosure):
         return redirect("home")
 
-    counts_query = SpeciesCount.objects.filter(
-        species=obj, enclosure=enclosure
-    ).order_by("-datetimecounted", "-id")
+    counts_query = (
+        SpeciesCount.objects.filter(species=obj, enclosure=enclosure)
+        .select_related("user")
+        .order_by("-datetimecounted", "-id")
+    )
 
     paginator = Paginator(counts_query, 10)
     page = request.GET.get("page", 1)
@@ -701,8 +721,10 @@ def species_counts(request, species_slug, enclosure_slug):
 
 
 @login_required
-def edit_animal_count(request, animal, year, month, day):
-    animal = get_object_or_404(Animal, accession_number=animal)
+def edit_animal_count(request: HttpRequest, animal, year, month, day):
+    animal = get_object_or_404(
+        Animal.objects.select_related("enclosure", "species"), accession_number=animal
+    )
     enclosure = animal.enclosure
 
     if redirect_if_not_permitted(request, enclosure):
@@ -754,7 +776,8 @@ def edit_animal_count(request, animal, year, month, day):
 
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
-def ingest_form(request):
+def ingest_form(request: HttpRequest):
+    """ For for submitting excel files for ingest """
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -763,6 +786,7 @@ def ingest_form(request):
                 changesets = handle_upload(request.FILES["file"])
             except Exception as e:
                 messages.error(request, e)
+                LOGGER.error("Error during data ingest")
                 return redirect("ingest_form")
 
             request.session["changesets"] = changesets
@@ -782,7 +806,8 @@ def ingest_form(request):
 
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
-def confirm_upload(request):
+def confirm_upload(request: HttpRequest):
+    """ after ingest form submit, show confirmation page before writing to db """
     changesets = request.session.get("changesets")
     upload_file = request.session.get("upload_file")
 
@@ -798,6 +823,7 @@ def confirm_upload(request):
             ingest_changesets(changesets)
         except Exception as e:
             messages.error(request, e)
+            LOGGER.error("error during data upload")
             return redirect("ingest_form")
 
         # clearing the changesets
@@ -805,6 +831,7 @@ def confirm_upload(request):
         request.session.pop("upload_file", None)
 
         messages.success(request, "Saved")
+        LOGGER.info("Uploaded data")
 
         return redirect("home")
 
@@ -816,11 +843,13 @@ def confirm_upload(request):
 
 
 @login_required
-def export(request):
-    accessible_enclosures = get_accessible_enclosures(request)
+def export(request: HttpRequest):
+    """ export counts to excel for user download w/ time range """
+    accessible_enclosures = get_accessible_enclosures(request.user)
 
     if request.method == "POST":
         form = ExportForm(request.POST)
+        form.fields["selected_enclosures"].queryset = accessible_enclosures
         if form.is_valid():
             selected_enclosures = form.cleaned_data["selected_enclosures"]
             # limit to only accessible enclosures
@@ -830,7 +859,7 @@ def export(request):
             start_date = form.cleaned_data["start_date"]
             end_date = form.cleaned_data["end_date"]
 
-            # TODO: these could be abstracted to a function that returns this for any model
+            # TODO: abstract to a function that returns this for any model?
             animal_counts = (
                 AnimalCount.objects.filter(
                     enclosure__in=enclosures,
@@ -872,33 +901,39 @@ def export(request):
             )
 
             if df_merge.empty:
-                messages.error(request, "No data in range")
-                return redirect("export")
+                form.add_error(None, "No data in range")
+                LOGGER.error("no data to export")
+                return render(request, "export.html", {"form": form})
 
             df_merge_clean = clean_df(df_merge)
 
             # create response object to save the data into
             response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                content_type=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "spreadsheetml.sheet"
+                )
             )
 
             enclosure_names = "_".join((enc.slug for enc in enclosures))
             start_date_str = start_date.strftime("%Y%m%d")
             end_date_str = end_date.strftime("%Y%m%d")
-            response[
-                "Content-Disposition"
-            ] = f'attachment; filename="zootable_export_{enclosure_names}_{start_date_str}_{end_date_str}.xlsx"'
+            response["Content-Disposition"] = (
+                "attachment; "
+                'filename="zootable_export_'
+                f'{enclosure_names}_{start_date_str}_{end_date_str}.xlsx"'
+            )
 
             # create xlsx object and put it into the response using pandas
             with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
                 df_merge_clean.to_excel(writer, sheet_name="Sheet1", index=False)
 
-            # TODO: (Fancy) redirect to home and have javascript serve the xlsx file from that page
+            # TODO: redirect to home w/ javascript serve xlsx file from that page
             # send it to the user
             return response
 
     else:
-        form = ExportForm(initial={"num_days": 7})
+        form = ExportForm()
         form.fields["selected_enclosures"].queryset = accessible_enclosures
 
     return render(request, "export.html", {"form": form})

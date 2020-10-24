@@ -100,7 +100,7 @@ class UploadFileForm(forms.Form):
 
 class ExportForm(forms.Form):
     selected_enclosures = forms.ModelMultipleChoiceField(
-        widget=forms.CheckboxSelectMultiple, queryset=Enclosure.objects.all()
+        widget=forms.CheckboxSelectMultiple, queryset=Enclosure.objects.none()
     )
     start_date = forms.DateField(required=True)
     end_date = forms.DateField(required=True)

@@ -164,22 +164,26 @@ class Species(models.Model):
         ordering = [Upper("common_name")]
         verbose_name_plural = "species"
 
-    def get_count_day(self, enclosure, day=None):
+    def count_on_day(self, enclosure, day=None):
         if day is None:
             day = today_time()
         try:
-            count = self.counts.filter(
-                datetimecounted__gte=day,
-                datetimecounted__lt=day + timezone.timedelta(days=1),
-                enclosure=enclosure,
-            ).latest("datetimecounted", "id")
+            count = (
+                self.counts.filter(
+                    datetimecounted__gte=day,
+                    datetimecounted__lt=day + timezone.timedelta(days=1),
+                    enclosure=enclosure,
+                )
+                .select_related("user")
+                .latest("datetimecounted", "id")
+            )
         except ObjectDoesNotExist:
             count = None
 
         return count
 
     def current_count(self, enclosure):
-        count = self.get_count_day(enclosure)
+        count = self.count_on_day(enclosure)
 
         if count is None:
             count = {"count": 0, "day": today_time()}
@@ -294,10 +298,14 @@ class Animal(AnimalSet):
         if day is None:
             day = today_time()
         try:
-            count = self.conditions.filter(
-                datetimecounted__gte=day,
-                datetimecounted__lt=day + timezone.timedelta(days=1),
-            ).latest("datetimecounted", "id")
+            count = (
+                self.conditions.filter(
+                    datetimecounted__gte=day,
+                    datetimecounted__lt=day + timezone.timedelta(days=1),
+                )
+                .select_related("user")
+                .latest("datetimecounted", "id")
+            )
         except ObjectDoesNotExist:
             count = None
 
@@ -378,21 +386,25 @@ class Group(AnimalSet):
     def __str__(self):
         return "|".join((self.species.common_name, str(self.accession_number)))
 
-    def get_count_day(self, day=None):
+    def count_on_day(self, day=None):
         if day is None:
             day = today_time()
         try:
-            count = self.counts.filter(
-                datetimecounted__gte=day,
-                datetimecounted__lt=day + timezone.timedelta(days=1),
-            ).latest("datetimecounted", "id")
+            count = (
+                self.counts.filter(
+                    datetimecounted__gte=day,
+                    datetimecounted__lt=day + timezone.timedelta(days=1),
+                )
+                .select_related("user")
+                .latest("datetimecounted", "id")
+            )
 
             return count
         except ObjectDoesNotExist:
             return None
 
     def current_count(self):
-        return self.get_count_day()
+        return self.count_on_day()
 
     def prior_counts(self, prior_days=3, ref_date=None):
         """Prior counts using a single query"""

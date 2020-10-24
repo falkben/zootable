@@ -24,8 +24,7 @@ TRACKS_REQ_COLS = [
 
 
 def validate(df):
-    """xlsx file needs certain columns, can't be empty
-    """
+    """xlsx file needs certain columns, can't be empty"""
 
     df_col_names = list(df.columns)
 
@@ -42,8 +41,7 @@ def validate(df):
 
 
 def read_xlsx_data(datafile):
-    """Reads a xlsx datafile and returns a pandas dataframe
-    """
+    """Reads a xlsx datafile and returns a pandas dataframe"""
     try:
         df = pd.read_excel(datafile)
         df = validate(df)
@@ -57,8 +55,7 @@ def get_enclosures(df):
 
 
 def create_enclosures(df):
-    """Given data in a pandas dataframe, create any missing enclosures
-    """
+    """Given data in a pandas dataframe, create any missing enclosures"""
     enclosures = get_enclosures(df)
     for enclosure in enclosures:
         create_enclosure_name(enclosure)
@@ -69,8 +66,7 @@ def create_enclosure_name(enclosure_name):
 
 
 def create_species(df):
-    """Create any species that exist in the pandas dataframe but not in the database
-    """
+    """Create any species that exist in the pandas dataframe but not in the database"""
     df_species = df.drop_duplicates(
         subset=["Common", "GSS", "Species", "Class", "Order", "Family"]
     )
@@ -146,8 +142,7 @@ def get_group_attributes(row):
 
 
 def create_groups(df):
-    """Creates groups
-    """
+    """Creates groups"""
 
     # we sometimes don't have any to add
     if len(df.index) == 0:
@@ -162,8 +157,8 @@ def create_groups(df):
         raise ValueError("Cannot create groups. Not all have a pop. > 1")
 
     # col names for groups:
-    # active, accession_number, species, population_male, population_female, population_unknown,
-    # enclosure, population_total
+    # active, accession_number, species, population_male, population_female,
+    # population_unknown, enclosure, population_total
     for _, row in df.iterrows():
         attributes = get_group_attributes(row)
 
@@ -198,8 +193,7 @@ def get_animal_attributes(row):
 
 
 def create_animals(df):
-    """Creates animals (individuals)
-    """
+    """Creates animals (individuals)"""
 
     # we sometimes don't have any to add
     if len(df.index) == 0:
@@ -223,8 +217,7 @@ def create_animals(df):
 
 
 def change_obj_active_state(model, accession_number, active_state):
-    """Marks an animal/group active/inactive
-    """
+    """Marks an animal/group active/inactive"""
     obj = model.objects.get(accession_number=accession_number)
     obj.active = active_state
     obj.save()
@@ -249,14 +242,12 @@ def get_species_obj(row):
 
 
 def get_enclosure_obj(row):
-    """Returns an Enclosure object from database given its name
-    """
+    """Returns an Enclosure object from database given its name"""
     return Enclosure.objects.get(name=row["Enclosure"])
 
 
 def get_animal_set_info(row):
-    """returns data common to all animal_sets
-    """
+    """returns data common to all animal_sets"""
     active = True
     accession_number = row["Accession"]
     species = get_species_obj(row)
@@ -265,8 +256,8 @@ def get_animal_set_info(row):
 
 
 def find_animals_groups(df):
-    """given a dataframe, return animals and groups dataframes based on population of each row (> 1 == group)
-    """
+    """given a dataframe, return animals and groups dataframes based on population of
+    each row (> 1 == group)"""
     pop_sums = df[
         ["Population _Male", "Population _Female", "Population _Unknown"]
     ].sum(axis=1)
@@ -284,13 +275,13 @@ def create_changeset_action(action, **kwargs):
 def get_objs_to_delete(df, modeltype, enclosure_names):
     changesets = []
 
-    # * this should mark for delete any anim/grps that get switched from one type to the other
+    # * mark for delete any anim/grps that get switched from one type to the other
     upload_accession_numbers = set(df["Accession"])
 
     enclosure_objects = Enclosure.objects.filter(name__in=enclosure_names)
 
-    # "active" animals/groups in the included enclosures which aren't in uploaded accession numbers
-    # need to be deleted
+    # "active" animals/groups in included enclosures that aren't in uploaded accession
+    # nums need to be deleted
     objs_to_delete = modeltype.objects.filter(
         active=True, enclosure__in=enclosure_objects
     ).exclude(accession_number__in=upload_accession_numbers)
@@ -346,7 +337,7 @@ def get_modeltype_changeset(df, modeltype):
 
 
 def get_changesets(df):
-    # get the set of enclosures that the user loaded -- that data is expected to be complete
+    # get set of enclosures the user loaded; that data is expected to be complete
     enclosures_uploaded = get_enclosures(df)
 
     animals, groups = find_animals_groups(df)

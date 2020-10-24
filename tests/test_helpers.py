@@ -84,6 +84,8 @@ def test_qs_to_df():
 def test_clean_df(anim_accession):
     timestamp = timezone.localtime()
 
+    # todo: create the dataframe to clean from db & use fixtures
+
     # df should contain:
     """
     'id', 'datetimecounted', 'datecounted', 'user__username', 'enclosure__name', 'condition',

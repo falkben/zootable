@@ -20,12 +20,11 @@ main {
 /* for message list */
 .msg {
   position: absolute;
-  left: 60px;
-  right: 60px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 2;
-
   border: 1px solid;
-  padding: 10px;
+  padding: 10px 40px;
   margin: 20px;
   color: grey;
 

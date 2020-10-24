@@ -232,10 +232,21 @@ function fill_conditions(selectObject) {
 
 function display_detail_table(selector_string) {
   // used to show/hide the detail table on enclosure listing
-  const table_elem = document.getElementById(selector_string);
-  if (table_elem.style.display === "none") {
-    table_elem.style.display = "block";
-  } else {
-    table_elem.style.display = "none";
+  const table_elems = document.querySelectorAll(selector_string);
+  table_elems.forEach((table_elem) => {
+    if (table_elem.style.display === "none") {
+      table_elem.style.display = "block";
+    } else {
+      table_elem.style.display = "none";
+    }
+  });
+}
+
+function set_date_value_on_element(selector_string, date) {
+  if (date != "None") {
+    var element = document.querySelector(selector_string);
+    var instance = M.Datepicker.getInstance(element);
+    instance.setDate(new Date(date));
+    instance.setInputValue(new Date(date));
   }
 }
