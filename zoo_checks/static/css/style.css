@@ -12,6 +12,34 @@ main {
   flex: 1 0 auto;
 }
 
+/* Home */
+
+/* top div on home page */
+/* mobile first... */
+.home_layout {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Roles */
+.home_enclosure_list {
+  flex: 3;
+  padding: 1rem;
+  order: 2;
+}
+
+/* Roles sidebar */
+.home_sidebar {
+  flex: 1;
+  order: 1;
+  font-size: 0.9rem;
+}
+
+.home_sidebar h5 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
 /* override materialize */
 .collection a.collection-item:not(.active):hover {
   background-color: #bbdefb !important;
@@ -398,5 +426,17 @@ a.increment i {
 @media only screen and (min-width: 560px) {
   #chart-text-container {
     flex-direction: row;
+  }
+
+  .home_layout {
+    flex-direction: row;
+  }
+
+  .home_enclosure_list {
+    order: 1;
+  }
+
+  .home_sidebar {
+    order: 2;
   }
 }

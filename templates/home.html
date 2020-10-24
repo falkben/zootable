@@ -4,8 +4,8 @@
 
 {% block content %}
 
-<div class="row" style="margin-top: 10px">
-  <div class="col s8">
+<div class="row home_layout" style="margin-top: 10px">
+  <div class="home_enclosure_list">
   {% if cts_dict.keys %}
     <table class="striped centered enclosure_list">
       <thead>
@@ -82,24 +82,37 @@
   </div>
 
   {% if roles %}
-  <div class="col s4 m4 right pin-top">
+  <div class="home_sidebar">
     <div class="collection with-header black-text">
 
       <div class="collection-header blue darken-4 white-text" style="border: 0px">
         <h5>Roles</h5>
       </div>
-
       <a href="/?view_all=true" class="collection-item blue lighten-5 black-text
         {% if selected_role == None %}
           active white-text accent-3
         {% endif %}
-      " style="border: 0px; padding-left: 20px">View all</a>
+      " style="border: 0px; padding-left: 20px">
+        <span class="valign-wrapper">
+        {% if selected_role == None %}
+          <i class="tiny material-icons" style="position: relative; margin-left: -10px">chevron_right</i>
+        {% endif %}
+        View all
+        </span>
+      </a>
       {% for role in roles %}
         <a href="?role={{role.slug}}" class="collection-item blue lighten-5 black-text
           {% if selected_role == role %}
             active white-text accent-3
           {% endif %}
-        " style="border: 0px">{{role.name}}</a>
+        " style="border: 0px; padding-left: 20px">
+          <span class="valign-wrapper">
+          {% if selected_role == role %}
+          <i class="tiny material-icons" style="position: relative; margin-left: -10px">chevron_right</i>
+          {% endif %}
+          {{role.name}}
+          </span>
+        </a>
       {% endfor %}
     </div>
   {% endif %}
