@@ -65,7 +65,7 @@ SECURE_BROWSER_XSS_FILTER = True
 # for prod
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.zoho.com"
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "default")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "default")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "app@zootable.com"
@@ -75,7 +75,7 @@ SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
 # add HSTS (HTTP Strict Transport Security)
 # default to 0 seconds
 # https://docs.djangoproject.com/en/3.1/ref/middleware/#http-strict-transport-security
-SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS", 0)
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", 0))
 
 try:
     from .local_settings import *
@@ -156,7 +156,7 @@ DATABASES = {
 }
 
 # for github actions
-if os.environ.get("GITHUB_WORKFLOW"):
+if os.getenv("GITHUB_WORKFLOW"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
