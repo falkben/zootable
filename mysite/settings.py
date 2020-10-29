@@ -72,6 +72,11 @@ EMAIL_HOST_USER = "app@zootable.com"
 DEFAULT_FROM_EMAIL = "app@zootable.com"  # used for all other email
 SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
 
+# add HSTS (HTTP Strict Transport Security)
+# default to 0 seconds
+# https://docs.djangoproject.com/en/3.1/ref/middleware/#http-strict-transport-security
+SECURE_HSTS_SECONDS = os.getenv("SECURE_HSTS_SECONDS", 0)
+
 try:
     from .local_settings import *
 except ImportError:
