@@ -21,7 +21,7 @@ from django.views.generic.base import TemplateView
 from zoo_checks import views
 
 urlpatterns = [
-    path("admin/", admin.site.urls, name="admin"),
+    path("manage/", admin.site.urls, name="admin"),
     path("accounts/", include("allauth.urls")),
     path(
         "account_management/",
