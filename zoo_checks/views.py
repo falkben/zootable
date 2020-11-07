@@ -849,6 +849,7 @@ def export(request: HttpRequest):
 
     if request.method == "POST":
         form = ExportForm(request.POST)
+        # initialize the selected enclosures queryset
         form.fields["selected_enclosures"].queryset = accessible_enclosures
         if form.is_valid():
             selected_enclosures = form.cleaned_data["selected_enclosures"]
@@ -902,7 +903,12 @@ def export(request: HttpRequest):
 
             if df_merge.empty:
                 form.add_error(None, "No data in range")
-                LOGGER.error("no data to export")
+                extra = {
+                    "enclosures": list(enclosures.values("id", "name")),
+                    "start_date": start_date.strftime("%m/%d/%Y"),
+                    "end_date": end_date.strftime("%m/%d/%Y"),
+                }
+                LOGGER.error(f"no data to export for enclosures", extra=extra)
                 return render(request, "export.html", {"form": form})
 
             df_merge_clean = clean_df(df_merge)
@@ -934,6 +940,7 @@ def export(request: HttpRequest):
 
     else:
         form = ExportForm()
+        # initialize the selected enclosures queryset to only ones accessible
         form.fields["selected_enclosures"].queryset = accessible_enclosures
 
     return render(request, "export.html", {"form": form})
