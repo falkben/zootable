@@ -95,7 +95,7 @@ def test_tally_date_handler(client, enclosure_base, user_base):
 
     resp = client.post(
         f"/tally_date_handler/{enclosure_base.slug}",
-        {"tally_date": f"{yesterday.month}/{yesterday.day}/{yesterday.year}"},
+        {"tally_date": yesterday.strftime("%m/%d/%Y")},
     )
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(
@@ -118,7 +118,7 @@ def test_tally_date_handler(client, enclosure_base, user_base):
 
     resp = client.post(
         f"/tally_date_handler/{enclosure_base.slug}",
-        {"tally_date": f"{tomorrow.month}/{tomorrow.day}/{tomorrow.year}"},
+        {"tally_date": tomorrow.strftime("%m/%d/%Y")},
     )
     assert resp.status_code == 302
     messages = list(resp.wsgi_request._messages)
@@ -530,7 +530,7 @@ def test_confirm_upload():
     pass
 
 
-def test_export(client, user_base, enclosure_base, user_factory):
+def test_export(client, user_base, enclosure_base, user_factory, caplog):
 
     # GET
 
@@ -553,6 +553,31 @@ def test_export(client, user_base, enclosure_base, user_factory):
     )
 
     # POST
+    # still with user_base logged in
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    yesterday
+
+    caplog.clear()
+    # w/ no counts
+    resp = client.post(
+        "/export/",
+        {
+            "start_date": yesterday.strftime("%m/%d/%Y"),
+            "end_date": datetime.date.today().strftime("%m/%d/%Y"),
+            "selected_enclosures": enclosure_base.id,
+        },
+    )
+    assert resp.status_code == 200
+    record = caplog.records[0]
+
+    assert record.message == "no data to export for enclosures"
+    assert record.enclosures[0]["name"] == enclosure_base.name
+    assert record.start_date == yesterday.strftime("%m/%d/%Y")
+    assert record.end_date == datetime.date.today().strftime("%m/%d/%Y")
+
+    # create some counts
+    # assert 201 status code
+    # load in excel data, convert to dataframe and check the counts
 
 
 def test_get_accessible_enclosures(
