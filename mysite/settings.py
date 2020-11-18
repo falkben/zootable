@@ -78,6 +78,10 @@ SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
 # https://docs.djangoproject.com/en/3.1/ref/middleware/#http-strict-transport-security
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", 0))
 
+# photo storage path
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
+
 try:
     from .local_settings import *
 except ImportError:

@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from zoo_checks.models import (
     Animal,
     AnimalCount,
+    AnimalPhoto,
     Enclosure,
     Group,
     GroupCount,
@@ -201,3 +202,4 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(Species)
+admin.site.register(AnimalPhoto)

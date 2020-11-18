@@ -4,6 +4,13 @@
 
 {% block content %}
 
+{% if animal.photo %}
+<img src="{{animal.photo.photo.url}}" alt="{{animal.accession_number}}">
+{{animal.photo.photo.url}}
+{% else %}
+no image
+{% endif %}
+
 <nav class="clean">
     <div class="nav-wrapper">
         <div class="col s12 truncate">
