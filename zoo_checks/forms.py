@@ -3,7 +3,7 @@ import datetime
 from django import forms
 from django.utils import timezone
 
-from .models import AnimalCount, Enclosure, GroupCount, SpeciesCount
+from .models import AnimalCount, AnimalPhoto, Enclosure, GroupCount, SpeciesCount
 
 
 class AnimalCountForm(forms.ModelForm):
@@ -158,3 +158,9 @@ class TallyDateForm(forms.Form):
             raise forms.ValidationError("Date needs to be in the past.")
 
         return cleaned_data
+
+
+class AnimalPhotoForm(forms.ModelForm):
+    class Meta:
+        model = AnimalPhoto
+        fields = ["photo", "animal"]

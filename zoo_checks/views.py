@@ -1,16 +1,21 @@
 import logging
+import os
 
 import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.generic import View
+from PIL import Image
 
+from zoo_checks.custom_storage import MediaStorage
 from zoo_checks.ingest import TRACKS_REQ_COLS
 
 from .forms import (
@@ -944,3 +949,58 @@ def export(request: HttpRequest):
         form.fields["selected_enclosures"].queryset = accessible_enclosures
 
     return render(request, "export.html", {"form": form})
+
+
+class PhotoUploadView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        file_obj = request.FILES.get("file", "")
+
+        try:
+            Image.open(file_obj)
+        except Exception:
+            # return error message about attempt at image load
+            return JsonResponse(
+                {
+                    "message": "Error opening image"
+                },
+                status=400,
+            )
+
+        # do your validation here e.g. file size/type check
+
+
+        # organize a path for the file in bucket
+        file_directory_within_bucket = "user_upload_files/{username}".format(
+            username=request.user
+        )
+
+        # synthesize a full file path; note that we included the filename
+        file_path_within_bucket = os.path.join(
+            file_directory_within_bucket, file_obj.name
+        )
+
+        media_storage = MediaStorage()
+
+        if not media_storage.exists(
+            file_path_within_bucket
+        ):  # avoid overwriting existing file
+            media_storage.save(file_path_within_bucket, file_obj)
+            file_url = media_storage.url(file_path_within_bucket)
+
+            return JsonResponse(
+                {
+                    "message": "OK",
+                    "fileUrl": file_url,
+                }
+            )
+        else:
+            return JsonResponse(
+                {
+                    "message": "Error: file {filename} already exists at {file_directory} in bucket {bucket_name}".format(
+                        filename=file_obj.name,
+                        file_directory=file_directory_within_bucket,
+                        bucket_name=media_storage.bucket_name,
+                    ),
+                },
+                status=400,
+            )

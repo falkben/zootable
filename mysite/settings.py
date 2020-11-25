@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 import django_heroku
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,38 +36,39 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# local_settings.py contains these:
+# .env contains these:
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = ''
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-# ALLOWED_HOSTS = []
+# DEBUG = 1
+# ALLOWED_HOSTS = ""
 # TIME_ZONE = "America/New_York"
-# SECURE_SSL_REDIRECT = False
-# SESSION_COOKIE_SECURE = False
-# CSRF_COOKIE_SECURE = False
-# EMAIL
-# override these for local dev in local_settings.py
+# SECURE_SSL_REDIRECT = 0
+# SESSION_COOKIE_SECURE = 0
+# CSRF_COOKIE_SECURE = 0
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com"]
-TIME_ZONE = "America/New_York"
+DEBUG = bool(int(os.getenv("DEBUG", False)))
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1 .herokuapp.com").split()
+TIME_ZONE = os.getenv("TIME_ZONE", "America/New_York")
 
 # security options suggested from `python manage.py check --deploy`
 # set to 1 to enable
-SECURE_SSL_REDIRECT = bool(int(os.getenv("SECURE_SSL_REDIRECT", 0)))
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = bool(int(os.getenv("SECURE_SSL_REDIRECT", 1)))
+SESSION_COOKIE_SECURE = bool(int(os.getenv("SESSION_COOKIE_SECURE", 1)))
+CSRF_COOKIE_SECURE = bool(int(os.getenv("CSRF_COOKIE_SECURE", 1)))
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 
 # for prod
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+# only matter w/ smtp backend
 EMAIL_HOST = "smtp.zoho.com"
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "default")
 EMAIL_USE_TLS = True
@@ -79,13 +83,20 @@ SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", 0))
 
 # photo storage path
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/media/"
+# note: this is a custom setting
+S3_MEDIA = bool(int(os.getenv("S3_MEDIA", 0)))
+if S3_MEDIA:
+    MEDIA_STORAGE = "zoo_checks.custom_storage.MediaStorageS3"
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = "us-east-1"
+else:
+    MEDIA_STORAGE = "django.core.files.storage.FileSystemStorage"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-try:
-    from .local_settings import *
-except ImportError:
-    pass  # fallback to env var
+
+MEDIA_URL = "/media/"
 
 # Application definition
 
@@ -111,6 +122,9 @@ INSTALLED_APPS = [
     # "allauth.socialaccount.providers.microsoft",
     "debug_toolbar",
 ]
+
+if S3_MEDIA:
+    INSTALLED_APPS += ["storages"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
