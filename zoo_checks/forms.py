@@ -163,4 +163,6 @@ class TallyDateForm(forms.Form):
 class AnimalPhotoForm(forms.ModelForm):
     class Meta:
         model = AnimalPhoto
-        fields = ["photo", "animal"]
+        fields = ["image", "animal"]
+
+        widgets = {"animal": forms.HiddenInput()}

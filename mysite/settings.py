@@ -92,11 +92,10 @@ if S3_MEDIA:
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = "us-east-1"
 else:
-    MEDIA_STORAGE = "django.core.files.storage.FileSystemStorage"
+    MEDIA_STORAGE = "zoo_checks.custom_storage.OverwriteStorage"
+    MEDIA_URL = "/media/"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-
-MEDIA_URL = "/media/"
 
 # Application definition
 

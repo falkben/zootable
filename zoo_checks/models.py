@@ -637,8 +637,9 @@ class AnimalPhoto(models.Model):
         editable=False,
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    photo = models.ImageField()
+    image = models.ImageField()
+    # thumbnail = models.ImageField()
 
     animal = models.OneToOneField(
-        Animal, on_delete=models.CASCADE, related_name="photo", blank=True
+        Animal, on_delete=models.CASCADE, related_name="photo", blank=True, null=True
     )

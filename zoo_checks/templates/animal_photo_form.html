@@ -1,0 +1,14 @@
+<div class="animal-photo">
+    {% if animal.photo and animal.photo.image %}
+        <img src="{{animal.photo.image.url}}" alt="Photo for animal {{animal.accession_number}}">
+        {{animal.photo.image.url}}
+    {% else %}
+        No image
+    {% endif %}
+</div>
+
+<form action="{% url 'animal_photo' animal.id %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ photo_form }}
+    <input type="submit" value="Save">
+</form>

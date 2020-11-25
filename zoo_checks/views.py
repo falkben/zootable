@@ -1,25 +1,24 @@
 import logging
 import os
+from io import BytesIO
 
 import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.storage import DefaultStorage
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.generic import View
 from PIL import Image
 
 from zoo_checks.ingest import TRACKS_REQ_COLS
 
 from .forms import (
     AnimalCountForm,
+    AnimalPhotoForm,
     ExportForm,
     GroupCountForm,
     SpeciesCountForm,
@@ -39,6 +38,7 @@ from .ingest import handle_upload, ingest_changesets
 from .models import (
     Animal,
     AnimalCount,
+    AnimalPhoto,
     Enclosure,
     Group,
     GroupCount,
@@ -558,7 +558,8 @@ def edit_group_count(request: HttpRequest, group, year, month, day):
 @login_required
 def animal_counts(request: HttpRequest, animal):
     animal_obj = get_object_or_404(
-        Animal.objects.select_related("enclosure", "species"), accession_number=animal
+        Animal.objects.select_related("enclosure", "species", "photo"),
+        accession_number=animal,
     )
     enclosure = animal_obj.enclosure
 
@@ -596,6 +597,12 @@ def animal_counts(request: HttpRequest, animal):
     # gets the full name of the condition (from second item in tuple)
     chart_labels = [c[1] for c in AnimalCount.CONDITIONS]
 
+    if hasattr(animal_obj, "photo"):
+        animal_photo = animal_obj.photo
+    else:
+        animal_photo = AnimalPhoto(animal=animal_obj)
+    photo_form = AnimalPhotoForm(instance=animal_photo)
+
     return render(
         request,
         "animal_counts.html",
@@ -606,6 +613,7 @@ def animal_counts(request: HttpRequest, animal):
             "chart_data": chart_data,
             "chart_labels": chart_labels,
             "page_range": page_range,
+            "photo_form": photo_form,
         },
     )
 
@@ -913,7 +921,7 @@ def export(request: HttpRequest):
                     "start_date": start_date.strftime("%m/%d/%Y"),
                     "end_date": end_date.strftime("%m/%d/%Y"),
                 }
-                LOGGER.error(f"no data to export for enclosures", extra=extra)
+                LOGGER.error("no data to export for enclosures", extra=extra)
                 return render(request, "export.html", {"form": form})
 
             df_merge_clean = clean_df(df_merge)
@@ -951,14 +959,23 @@ def export(request: HttpRequest):
     return render(request, "export.html", {"form": form})
 
 
-class PhotoUploadView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        file_obj = request.FILES.get("file", "")
+@login_required
+def animal_photo_upload(request: HttpRequest, animal_id):
+    animal = get_object_or_404(Animal, pk=animal_id)
+    if request.method == "POST":
+        # important: model form needs an instance otherwise it creates duplicate objects
+        form = AnimalPhotoForm(request.POST, request.FILES, instance=animal)
+        if not form.is_valid():
+            return JsonResponse({"message": "Form not valid"})
+
+        photo_obj = form.cleaned_data.get("image", "")
+
+        # todo: how do we delete photos
 
         try:
-            Image.open(file_obj)
+            img = Image.open(photo_obj)
         except Exception:
-            # return error message about attempt at image load
+            # return error message about image loading
             return JsonResponse(
                 {"message": "Error opening image"},
                 status=400,
@@ -966,38 +983,40 @@ class PhotoUploadView(LoginRequiredMixin, View):
 
         # do your validation here e.g. file size/type check
 
-        # organize a path for the file in bucket
-        file_directory_within_bucket = "user_upload_files/{username}".format(
-            username=request.user
+        # resizing
+        img = img.convert("RGB")
+        size = 300, 300
+        img.thumbnail(size, Image.ANTIALIAS)
+        background = Image.new("RGB", size, (255, 255, 255))
+        background.paste(
+            img, (int((size[0] - img.size[0]) / 2), int((size[1] - img.size[1]) / 2))
         )
+        img_file_buff = BytesIO()
+        background.save(img_file_buff, format="JPEG")
+
+        # organize a path for the file in bucket
+        file_directory_within_bucket = f"animal_photos/{animal.id}"
 
         # synthesize a full file path; note that we included the filename
         file_path_within_bucket = os.path.join(
-            file_directory_within_bucket, file_obj.name
+            file_directory_within_bucket, photo_obj.name
         )
 
-        media_storage = DefaultStorage()
-
-        if not media_storage.exists(
-            file_path_within_bucket
-        ):  # avoid overwriting existing file
-            media_storage.save(file_path_within_bucket, file_obj)
-            file_url = media_storage.url(file_path_within_bucket)
-
-            return JsonResponse(
-                {
-                    "message": "OK",
-                    "fileUrl": file_url,
-                }
-            )
+        if hasattr(animal, "photo"):
+            animal.photo.image.delete()
         else:
-            return JsonResponse(
-                {
-                    "message": "Error: file {filename} already exists at {file_directory} in bucket {bucket_name}".format(
-                        filename=file_obj.name,
-                        file_directory=file_directory_within_bucket,
-                        bucket_name=media_storage.bucket_name,
-                    ),
-                },
-                status=400,
-            )
+            animal.photo = AnimalPhoto()
+        animal.photo.image.save(
+            file_path_within_bucket,
+            img_file_buff,
+        )
+
+        file_url = animal.photo.image.url
+
+        # file_url = animal.photo.image.url
+        return JsonResponse(
+            {
+                "message": "OK",
+                "fileUrl": file_url,
+            }
+        )

@@ -396,6 +396,20 @@ a.increment i {
   display: none;
 }
 
+.animal-photo {
+  width: 300px;
+  height: 300px;
+  border: 1px #222 solid;
+  border-radius: 8px;
+  background-color: lightgray;
+}
+
+.animal-photo img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+
 /* media queries */
 @media only screen and (min-width: 1150px) {
   .condition-radio {
