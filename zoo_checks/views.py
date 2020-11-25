@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import DefaultStorage
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.forms import formset_factory
@@ -15,7 +16,6 @@ from django.utils import timezone
 from django.views.generic import View
 from PIL import Image
 
-from zoo_checks.custom_storage import MediaStorage
 from zoo_checks.ingest import TRACKS_REQ_COLS
 
 from .forms import (
@@ -960,14 +960,11 @@ class PhotoUploadView(LoginRequiredMixin, View):
         except Exception:
             # return error message about attempt at image load
             return JsonResponse(
-                {
-                    "message": "Error opening image"
-                },
+                {"message": "Error opening image"},
                 status=400,
             )
 
         # do your validation here e.g. file size/type check
-
 
         # organize a path for the file in bucket
         file_directory_within_bucket = "user_upload_files/{username}".format(
@@ -979,7 +976,7 @@ class PhotoUploadView(LoginRequiredMixin, View):
             file_directory_within_bucket, file_obj.name
         )
 
-        media_storage = MediaStorage()
+        media_storage = DefaultStorage()
 
         if not media_storage.exists(
             file_path_within_bucket
