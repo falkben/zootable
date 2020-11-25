@@ -960,20 +960,29 @@ def export(request: HttpRequest):
 
 
 @login_required
-def animal_photo_upload(request: HttpRequest, animal_id):
-    animal = get_object_or_404(Animal, pk=animal_id)
+def animal_photo_upload(request: HttpRequest, animal_photo_id):
+    old_image = None
+    try:
+        animal_photo = AnimalPhoto.objects.get(pk=animal_photo_id)
+        old_image = animal_photo.image
+    except ObjectDoesNotExist:
+        animal_photo = AnimalPhoto()
     if request.method == "POST":
         # important: model form needs an instance otherwise it creates duplicate objects
-        form = AnimalPhotoForm(request.POST, request.FILES, instance=animal)
+        form = AnimalPhotoForm(request.POST, request.FILES, instance=animal_photo)
+
+        # note that calling `is_valid()` updates the reference copy of the instance
+        # `animal_photo`
         if not form.is_valid():
             return JsonResponse({"message": "Form not valid"})
 
-        photo_obj = form.cleaned_data.get("image", "")
+        image_obj = form.cleaned_data.get("image", "")
+        animal = form.cleaned_data.get("animal", "")
 
         # todo: how do we delete photos
 
         try:
-            img = Image.open(photo_obj)
+            img = Image.open(image_obj)
         except Exception:
             # return error message about image loading
             return JsonResponse(
@@ -999,24 +1008,16 @@ def animal_photo_upload(request: HttpRequest, animal_id):
 
         # synthesize a full file path; note that we included the filename
         file_path_within_bucket = os.path.join(
-            file_directory_within_bucket, photo_obj.name
+            file_directory_within_bucket, image_obj.name
         )
 
-        if hasattr(animal, "photo"):
-            animal.photo.image.delete()
-        else:
-            animal.photo = AnimalPhoto()
-        animal.photo.image.save(
+        # delete the old image
+        if old_image:
+            old_image.delete()
+
+        animal_photo.image.save(
             file_path_within_bucket,
             img_file_buff,
         )
 
-        file_url = animal.photo.image.url
-
-        # file_url = animal.photo.image.url
-        return JsonResponse(
-            {
-                "message": "OK",
-                "fileUrl": file_url,
-            }
-        )
+        return redirect("animal_counts", animal=animal.accession_number)
