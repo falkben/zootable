@@ -4,6 +4,8 @@ on: [push]
 
 env:
   SECRET_KEY: secret_key_github_actions_12345_github_action_secret_key
+  SECURE_SSL_REDIRECT: 0
+  EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
 
 jobs:
   build:
