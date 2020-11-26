@@ -985,6 +985,7 @@ def animal_photo_upload(request: HttpRequest, animal_photo_id):
             img = Image.open(image_obj)
         except Exception:
             # return error message about image loading
+            # todo: log the error
             return JsonResponse(
                 {"message": "Error opening image"},
                 status=400,
@@ -995,12 +996,17 @@ def animal_photo_upload(request: HttpRequest, animal_photo_id):
         # resizing
         size = 300, 300
         img.thumbnail(size, Image.ANTIALIAS)
-        background = Image.new("RGBA", size, "WHITE")
+        mask = None
+        if len(img.size) == 4:
+            mask = img.split()[3]
+        background = Image.new("RGB", size, (255, 255, 255))
         background.paste(
-            img, (int((size[0] - img.size[0]) / 2), int((size[1] - img.size[1]) / 2))
+            img,
+            (int((size[0] - img.size[0]) / 2), int((size[1] - img.size[1]) / 2)),
+            mask=mask,
         )
         img_file_buff = BytesIO()
-        background.convert("RGB").save(img_file_buff, format="JPEG")
+        background.save(img_file_buff, format="JPEG")
 
         # organize a path for the file in bucket
         file_directory_within_bucket = f"animal_photos/{animal.id}"
