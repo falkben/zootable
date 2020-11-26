@@ -250,3 +250,8 @@ function set_date_value_on_element(selector_string, date) {
     instance.setInputValue(new Date(date));
   }
 }
+
+function preview(elem) {
+  var frame = document.getElementById("animal_image_frame");
+  frame.src = URL.createObjectURL(elem.files[0]);
+}

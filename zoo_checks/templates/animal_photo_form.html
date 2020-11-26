@@ -1,14 +1,17 @@
 <div class="animal-photo">
+    <img id="animal_image_frame" src=
     {% if animal.photo and animal.photo.image %}
-        <img src="{{animal.photo.image.url}}" alt="Photo for animal {{animal.accession_number}}">
-        {{animal.photo.image.url}}
+        "{{animal.photo.image.url}}" alt="Photo for animal {{animal.accession_number}}"
     {% else %}
-        No image
+        "" alt="No image"
     {% endif %}
+    >
 </div>
 
 <form action="{% url 'animal_photo' animal.photo.uuid %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ photo_form }}
+    <label for="id_image">Image:</label>
+    <input type="file" name="image" accept="image/*" required="" id="id_image" onchange="preview(this)">
+    <input type="hidden" name="animal" value="{{animal.id}}" id="id_animal">
     <input type="submit" value="Save">
 </form>
