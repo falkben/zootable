@@ -993,15 +993,14 @@ def animal_photo_upload(request: HttpRequest, animal_photo_id):
         # do your validation here e.g. file size/type check
 
         # resizing
-        img = img.convert("RGB")
         size = 300, 300
         img.thumbnail(size, Image.ANTIALIAS)
-        background = Image.new("RGB", size, (255, 255, 255))
+        background = Image.new("RGBA", size, "WHITE")
         background.paste(
             img, (int((size[0] - img.size[0]) / 2), int((size[1] - img.size[1]) / 2))
         )
         img_file_buff = BytesIO()
-        background.save(img_file_buff, format="JPEG")
+        background.convert("RGB").save(img_file_buff, format="JPEG")
 
         # organize a path for the file in bucket
         file_directory_within_bucket = f"animal_photos/{animal.id}"
