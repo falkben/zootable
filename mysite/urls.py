@@ -69,6 +69,11 @@ urlpatterns = [
     path(
         "animal_photo/<animal_photo_id>", views.animal_photo_upload, name="animal_photo"
     ),
+    path(
+        "delete_animal_photo/<animal_photo_id>",
+        views.delete_animal_photo,
+        name="delete_animal_photo",
+    ),
 ]
 
 

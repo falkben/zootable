@@ -12,6 +12,7 @@ from django.forms import formset_factory
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 from PIL import Image
 
 from zoo_checks.ingest import TRACKS_REQ_COLS
@@ -960,6 +961,16 @@ def export(request: HttpRequest):
 
 
 @login_required
+@require_http_methods(["POST"])
+def delete_animal_photo(request: HttpRequest, animal_photo_id):
+    animal_photo = get_object_or_404(AnimalPhoto, pk=animal_photo_id)
+    animal = animal_photo.animal
+    animal_photo.image.delete()
+    animal_photo.delete()
+    return redirect("animal_counts", animal=animal.accession_number)
+
+
+@login_required
 def animal_photo_upload(request: HttpRequest, animal_photo_id):
     old_image = None
     try:
@@ -974,18 +985,17 @@ def animal_photo_upload(request: HttpRequest, animal_photo_id):
         # note that calling `is_valid()` updates the reference copy of the instance
         # `animal_photo`
         if not form.is_valid():
+            LOGGER.warning(f"Form not valid. Errors {form.errors.as_data()}")
             return JsonResponse({"message": "Form not valid"})
 
         image_obj = form.cleaned_data.get("image", "")
         animal = form.cleaned_data.get("animal", "")
 
-        # todo: how do we delete photos
-
         try:
             img = Image.open(image_obj)
         except Exception:
             # return error message about image loading
-            # todo: log the error
+            LOGGER.exception("Error opening image")
             return JsonResponse(
                 {"message": "Error opening image"},
                 status=400,

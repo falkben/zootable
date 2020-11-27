@@ -1,3 +1,10 @@
+{% if animal.photo and animal.photo.image %}
+<form action="{% url 'delete_animal_photo' animal.photo.uuid %}" method="post">
+{% csrf_token %}
+<input type="submit" value="DELETE">
+</form>
+{% endif %}
+
 <div class="animal-photo">
     <img id="animal_image_frame" src=
     {% if animal.photo and animal.photo.image %}
