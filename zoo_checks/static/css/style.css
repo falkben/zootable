@@ -402,6 +402,7 @@ a.increment i {
   border: 1px #222 solid;
   border-radius: 8px;
   background-color: lightgray;
+  position: relative;
 }
 
 .animal-photo img {
@@ -409,6 +410,12 @@ a.increment i {
   height: 100%;
   border-radius: 8px;
   object-fit: contain;
+}
+
+#delete_photo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 /* media queries */

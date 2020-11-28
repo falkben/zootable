@@ -10,6 +10,17 @@
     {{anim.accession_number}}
 {% endif %}
 <br />{{anim.identifier}}
+{% if anim.photo and anim.photo.image %}
+    <br />
+    <a href="#show_image">
+        <i class="material-icons orange-text"
+            onclick="activate_animal_photo('{{anim.accession_number}}', '{{anim.photo.image.url}}')">photo</i>
+    </a>
+    <div class="material-placeholder">
+        <img id="photo_{{anim.accession_number}}" src="#placeholder" class="materialboxed"
+            style="display: none" width="300">
+    </div>
+{% endif %}
 </td>
 
 <td id="species_{{anim.species.id}}_animal_condition_form">

@@ -45,6 +45,17 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+// modal for delete image
+document.addEventListener("DOMContentLoaded", function () {
+  var elems = document.querySelectorAll(".modal");
+  var instances = M.Modal.init(elems, {});
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  var elems = document.querySelectorAll(".materialboxed");
+  var instances = M.Materialbox.init(elems, {});
+});
+
 function incrementValue(id, inc_val) {
   var value = parseInt(document.getElementById(id).value, 10);
   value = isNaN(value) ? 0 : value;
@@ -254,4 +265,17 @@ function set_date_value_on_element(selector_string, date) {
 function preview(elem) {
   var frame = document.getElementById("animal_image_frame");
   frame.src = URL.createObjectURL(elem.files[0]);
+
+  // submit the image
+  document.getElementById("photoForm").submit();
+}
+
+function activate_animal_photo(animAccession, imgURL) {
+  var img_elem = document.getElementById("photo_" + animAccession);
+  img_elem.style.display = "inline";
+  var instance = M.Materialbox.getInstance(img_elem);
+  img_elem.onload = function () {
+    instance.open();
+  };
+  img_elem.src = imgURL;
 }

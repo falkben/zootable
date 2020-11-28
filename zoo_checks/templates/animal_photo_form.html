@@ -1,12 +1,29 @@
-{% if animal.photo and animal.photo.image %}
-<form action="{% url 'delete_animal_photo' animal.photo.uuid %}" method="post">
-{% csrf_token %}
-<input type="submit" value="DELETE">
-</form>
-{% endif %}
-
 <div class="animal-photo">
-    <img id="animal_image_frame" src=
+    {% if animal.photo and animal.photo.image %}
+        <span id="delete_photo">
+        <a class="waves-effect waves-light btn-floating modal-trigger tooltipped"
+            href="#delete_modal" data-tooltip="Delete">
+            <i class="material-icons">delete</i>
+        </a>
+        </span>
+
+        <div id="delete_modal" class="modal">
+            <div class="modal-content">
+                <h4>Delete photo</h4>
+                <p>Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <form action="{% url 'delete_animal_photo' animal.photo.uuid %}" method="post">
+                    {% csrf_token %}
+                    <button class="modal-close btn-flat waves-effect waves-green" type="submit">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <img id="animal_image_frame" class="materialboxed" src=
     {% if animal.photo and animal.photo.image %}
         "{{animal.photo.image.url}}" alt="Photo for animal {{animal.accession_number}}"
     {% else %}
@@ -15,10 +32,20 @@
     >
 </div>
 
-<form action="{% url 'animal_photo' animal.photo.uuid %}" method="post" enctype="multipart/form-data">
+<form id="photoForm" action="{% url 'animal_photo' animal.photo.uuid %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <label for="id_image">Image:</label>
-    <input type="file" name="image" accept="image/*" required="" id="id_image" onchange="preview(this)">
     <input type="hidden" name="animal" value="{{animal.id}}" id="id_animal">
-    <input type="submit" value="Save">
+
+    <div class="row">
+        <div class="file-field input-field col s6">
+            <div class="btn">
+                <span>Photo:</span>
+                <input type="file" name="image" accept="image/*" required="" id="id_image" onchange="preview(this)">
+            </div>
+
+            <div class="file-path-wrapper">
+                <input class="file-path validate" type="text" placeholder="Upload photo"/>
+            </div>
+        </div>
+    </div>
 </form>

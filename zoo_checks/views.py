@@ -269,7 +269,7 @@ def count(request: HttpRequest, enclosure_slug, year=None, month=None, day=None)
     enclosure_animals = (
         enclosure.animals.filter(active=True)
         .order_by("species__common_name", "name", "accession_number")
-        .select_related("species")
+        .select_related("species", "photo")
     )
     enclosure_groups = (
         enclosure.groups.filter(active=True)
