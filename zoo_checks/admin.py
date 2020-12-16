@@ -36,7 +36,8 @@ class RoleAdmin(admin.ModelAdmin):
     readonly_fields = ("slug",)
     filter_horizontal = ("users", "enclosures")
     # these can be function names
-    # it uses what is defined in models.py which isn't what we want unless you give a "unique" name
+    # uses what is defined in models.py which isn't what we want unless you give a
+    # "unique" name
     list_display = ("name", "get_enclosures", "get_users")
 
     def get_queryset(self, request):

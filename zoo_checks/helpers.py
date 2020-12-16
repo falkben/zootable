@@ -39,7 +39,8 @@ def set_formset_order(
         formset_dict[spec.id]["species"] = spec
 
         # species
-        # NOTE: We could avoid the following when there's group's for that species since they are hidden
+        # NOTE: We could avoid the following when there's group's for that species since
+        # they are hidden
         formset_dict[spec.id]["formset"] = species_formset[ind]
         formset_dict[spec.id]["prior_counts"] = spec.prior_counts(
             enclosure, ref_date=dateday
@@ -68,7 +69,7 @@ def set_formset_order(
             range(anim_total, spec_anim_queryset.count() + anim_total)
         )
 
-        # create a dictionary for each animal in a species with its form and prior conditions
+        # create dict for each animal in a species with its form and prior conditions
         animals_form_dict_list = []
         for i, anim in enumerate(spec_anim_queryset):
             animals_form_dict_list.append(

@@ -514,8 +514,9 @@ class AnimalCount(Count):
             datecounted=self.datecounted,
             animal=self.animal,
             enclosure=self.enclosure,
-            # The update_or_create method tries to fetch an object from database based on the given kwargs.
-            # If a match is found, it updates the fields passed in the defaults dictionary.
+            # The update_or_create method tries to fetch an object from database based
+            # on the given kwargs. If a match is found, it updates the fields passed in
+            # the defaults dictionary.
             defaults={
                 "datetimecounted": self.datetimecounted,
                 "condition": self.condition,
