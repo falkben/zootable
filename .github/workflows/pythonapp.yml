@@ -1,4 +1,4 @@
-name: Python application
+name: Build and Test
 
 on: [push]
 
@@ -9,6 +9,7 @@ env:
 
 jobs:
   build:
+    name: Build and test
     runs-on: ubuntu-latest
 
     services:
@@ -24,9 +25,9 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
       - name: Install dependencies
@@ -43,3 +44,17 @@ jobs:
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
+
+  lint:
+    name: Python Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Run flake8
+        run: |
+          pip install flake8
+          flake8 zoo_checks
