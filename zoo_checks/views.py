@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from PIL import Image
 
-from zoo_checks.ingest import TRACKS_REQ_COLS
+from zoo_checks.ingest import TRACKS_REQ_COLS, ExcelUploadError
 
 from .forms import (
     AnimalCountForm,
@@ -798,9 +798,9 @@ def ingest_form(request: HttpRequest):
             # where we compute changes
             try:
                 changesets = handle_upload(request.FILES["file"])
-            except Exception as e:
+            except ExcelUploadError as e:
                 messages.error(request, e)
-                LOGGER.error("Error during data ingest")
+                LOGGER.exception("Error processing uploaded data")
                 return redirect("ingest_form")
 
             request.session["changesets"] = changesets

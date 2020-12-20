@@ -1,10 +1,9 @@
-from zipfile import BadZipFile
-
 import pandas as pd
 import pytest
 from django.core.exceptions import ObjectDoesNotExist
 
 from zoo_checks.ingest import (
+    ExcelUploadError,
     create_animals,
     create_enclosures,
     create_groups,
@@ -14,7 +13,7 @@ from zoo_checks.ingest import (
     handle_upload,
     ingest_changesets,
     read_xlsx_data,
-    validate_input,
+    validate_accession_numbers,
 )
 from zoo_checks.models import Animal, Enclosure, Group, Species
 
@@ -28,9 +27,15 @@ ONLY_ANIMALS_EXAMPLE = "test_data/only_animals.xlsx"
 
 
 def test_read_xlsx_data():
-    pytest.raises(TypeError, read_xlsx_data, INPUT_EMPTY)
-    pytest.raises(TypeError, read_xlsx_data, INPUT_WRONG_COL)
-    pytest.raises(BadZipFile, read_xlsx_data, INPUT_MALFORMED)
+    with pytest.raises(ExcelUploadError, match="No data found in file"):
+        read_xlsx_data(INPUT_EMPTY)
+    with pytest.raises(
+        ExcelUploadError,
+        match="Not all columns found in file",
+    ):
+        read_xlsx_data(INPUT_WRONG_COL)
+    with pytest.raises(ExcelUploadError, match="Unable to read file"):
+        read_xlsx_data(INPUT_MALFORMED)
 
     df = read_xlsx_data(INPUT_EXAMPLE)
     assert df.shape[0] == 5
@@ -42,16 +47,16 @@ def test_validate_input():
     with pytest.raises(
         ValueError, match="Accession numbers should only have 6 characters"
     ):
-        validate_input(df)
+        validate_accession_numbers(df)
 
     df_simple_bad = pd.DataFrame({"Accession": "12345"}, index=[0])
     with pytest.raises(
         ValueError, match="Accession numbers should only have 6 characters"
     ):
-        validate_input(df_simple_bad)
+        validate_accession_numbers(df_simple_bad)
 
     df_simple_good = pd.DataFrame([{"Accession": "654321"}])
-    df_validated = validate_input(df_simple_good)
+    df_validated = validate_accession_numbers(df_simple_good)
     assert df_validated is not None
     assert df_validated.loc[0, "Accession"] == "654321"
 
