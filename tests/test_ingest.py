@@ -1,7 +1,8 @@
+from zipfile import BadZipFile
+
 import pandas as pd
 import pytest
 from django.core.exceptions import ObjectDoesNotExist
-from xlrd import XLRDError
 
 from zoo_checks.ingest import (
     create_animals,
@@ -29,7 +30,7 @@ ONLY_ANIMALS_EXAMPLE = "test_data/only_animals.xlsx"
 def test_read_xlsx_data():
     pytest.raises(TypeError, read_xlsx_data, INPUT_EMPTY)
     pytest.raises(TypeError, read_xlsx_data, INPUT_WRONG_COL)
-    pytest.raises(XLRDError, read_xlsx_data, INPUT_MALFORMED)
+    pytest.raises(BadZipFile, read_xlsx_data, INPUT_MALFORMED)
 
     df = read_xlsx_data(INPUT_EXAMPLE)
     assert df.shape[0] == 5
@@ -242,8 +243,7 @@ def test_ingest_changesets():
 
 @pytest.mark.django_db
 def test_group_becomes_individuals():
-    """ Tests that when a group's numbers go to 1 it transforms into an "animal" from a "group"
-    """
+    """Tests that when a group's numbers go to 1 it transforms into an "animal" from a "group" """
     df = read_xlsx_data(INPUT_EXAMPLE)
     create_enclosures(df)
     create_species(df)
@@ -283,8 +283,7 @@ def test_group_becomes_individuals():
 
 @pytest.mark.django_db
 def test_individual_becomes_group():
-    """ Tests that when an individual's numbers go > 1 it transforms into a "group" from an "animal"
-    """
+    """Tests that when an individual's numbers go > 1 it transforms into a "group" from an "animal" """
     df = read_xlsx_data(INPUT_EXAMPLE)
     create_enclosures(df)
     create_species(df)

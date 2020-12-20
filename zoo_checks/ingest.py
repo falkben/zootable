@@ -42,11 +42,10 @@ def validate(df):
 
 def read_xlsx_data(datafile):
     """Reads a xlsx datafile and returns a pandas dataframe"""
-    try:
-        df = pd.read_excel(datafile)
-        df = validate(df)
-    except Exception as e:
-        raise e
+
+    df = pd.read_excel(datafile, engine="openpyxl")
+    df.dropna(how="all", inplace=True)
+    df = validate(df)
     return df
 
 
