@@ -45,13 +45,13 @@ def test_validate_input():
 
     df = read_xlsx_data(INPUT_ACCESSIONS_BAD)
     with pytest.raises(
-        ValueError, match="Accession numbers should only have 6 characters"
+        ExcelUploadError, match="Accession numbers should only have 6 characters"
     ):
         validate_accession_numbers(df)
 
     df_simple_bad = pd.DataFrame({"Accession": "12345"}, index=[0])
     with pytest.raises(
-        ValueError, match="Accession numbers should only have 6 characters"
+        ExcelUploadError, match="Accession numbers should only have 6 characters"
     ):
         validate_accession_numbers(df_simple_bad)
 
