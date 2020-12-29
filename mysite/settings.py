@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+import logging
 import os
 
 import django_heroku
@@ -32,6 +33,7 @@ STATIC_URL = "/static/"
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+GITHUB_WORKFLOW = os.getenv("GITHUB_WORKFLOW")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -139,6 +141,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+if DEBUG or GITHUB_WORKFLOW:
+    INSTALLED_APPS += ["nplusone.ext.django"]
+    MIDDLEWARE += ["nplusone.ext.django.NPlusOneMiddleware"]
+
+    NPLUSONE_LOGGER = logging.getLogger("nplusone")
+    NPLUSONE_LOG_LEVEL = logging.WARN
+
 ROOT_URLCONF = "mysite.urls"
 
 TEMPLATES = [
@@ -174,7 +183,7 @@ DATABASES = {
 }
 
 # for github actions
-if os.getenv("GITHUB_WORKFLOW"):
+if GITHUB_WORKFLOW:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -263,7 +272,13 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-    "loggers": {"zootable": {"handlers": ["console"], "level": "INFO"}},
+    "loggers": {
+        "zootable": {"handlers": ["console"], "level": "INFO"},
+        "nplusone": {
+            "handlers": ["console"],
+            "level": "WARN",
+        },
+    },
 }
 
 # django debug toolbar allowlist

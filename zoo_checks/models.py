@@ -502,6 +502,7 @@ class AnimalCount(Count):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
+            .select_related("animal")
             .order_by("animal__accession_number", "-datetimecounted")
             .distinct("animal__accession_number")
         )
@@ -559,6 +560,7 @@ class GroupCount(Count):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
+            .select_related("group")
             .order_by("group__accession_number", "-datetimecounted")
             .distinct("group__accession_number")
         )
@@ -615,6 +617,7 @@ class SpeciesCount(Count):
                 datetimecounted__gte=day,
                 datetimecounted__lt=day + timezone.timedelta(days=1),
             )
+            .select_related("species")
             .order_by("species__common_name", "-datetimecounted")
             .distinct("species__common_name")
         )

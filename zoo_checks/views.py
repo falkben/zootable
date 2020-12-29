@@ -203,7 +203,6 @@ def get_selected_role(request: HttpRequest):
 
 @login_required
 # TODO: logins may not be sufficient - user a part of a group?
-# TODO: add pagination
 def home(request: HttpRequest):
     enclosures_query = get_accessible_enclosures(request.user)
 
