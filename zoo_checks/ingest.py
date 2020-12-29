@@ -1,6 +1,5 @@
 import re
 from operator import itemgetter
-from zipfile import BadZipFile
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
@@ -50,7 +49,7 @@ def read_xlsx_data(datafile):
 
     try:
         df = pd.read_excel(datafile, engine="openpyxl")
-    except BadZipFile:
+    except ValueError:
         raise ExcelUploadError("Unable to read file")
     df.dropna(how="all", inplace=True)
     df = validate_input_file(df)

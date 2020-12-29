@@ -22,7 +22,7 @@ A working demo can be found [here](https://demo.zootable.com)
 
 #### Install postgres
 
-- `sudo apt install postgresql postgresql-contrib libpq-dev python3.8 python3.8-dev`
+- `sudo apt install postgresql postgresql-contrib libpq-dev python3.9 python3.9-dev`
 
 #### Config postgres
 
