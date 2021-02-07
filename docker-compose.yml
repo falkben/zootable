@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:12
+    environment:
+      - POSTGRES_DB=zootable
+      - POSTGRES_USER=zootable
+      - POSTGRES_PASSWORD=zootable
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  web:
+    build: .
+    command: uvicorn mysite.asgi:application --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    restart: always
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
