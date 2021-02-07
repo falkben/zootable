@@ -232,7 +232,9 @@ function fill_conditions(selectObject) {
 
 function display_detail_table(selector_string) {
   // used to show/hide the detail table on enclosure listing
-  const table_elems = document.querySelectorAll(selector_string);
+  const table_elems = document.querySelectorAll(
+    "." + CSS.escape(selector_string)
+  );
   table_elems.forEach((table_elem) => {
     if (table_elem.style.display === "none") {
       table_elem.style.display = "block";
