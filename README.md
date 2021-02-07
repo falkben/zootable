@@ -132,10 +132,15 @@ Documentation on clearing session store: <https://docs.djangoproject.com/en/dev/
 
 See: <https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups>
 
-## Update all requirements
+## Update requirements
 
 [Pur](https://pypi.org/project/pur/)
 
 1. `pip install pur`
 1. `pur -p django -m "*" -r requirements.txt` (or `pur -r requirements-test.txt`) (`-p` to limit to patch updates only, `-m` for minor)
 1. `pip install -e .` (or `pip install -e .[test]`)
+
+For npm:
+
+1. `npm install`
+2. `npm audit fix`
