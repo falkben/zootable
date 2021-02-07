@@ -31,7 +31,7 @@
 
         <td style="vertical-align:top">
           {% if enclosure.animals.all|length > 0 %}
-            <a onclick="display_detail_table('.{{enclosure.slug}}_detail_table')" href="javascript:;">
+            <a onclick="display_detail_table('{{enclosure.slug}}_detail_table')" href="javascript:;">
               {{encl_counts_dict.animal_count_total}}
               / {{encl_counts_dict.total_animals}}
             </a>
@@ -53,7 +53,7 @@
 
         <td style="vertical-align:top">
           {% if enclosure.groups.all|length > 0 %}
-            <a onclick="display_detail_table('.{{enclosure.slug}}_detail_table')" href="javascript:;">
+            <a onclick="display_detail_table('{{enclosure.slug}}_detail_table')" href="javascript:;">
               {{encl_counts_dict.group_count_total}}
               / {{encl_counts_dict.total_groups}}
             </a>
