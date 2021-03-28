@@ -400,7 +400,7 @@ def count(request: HttpRequest, enclosure_slug, year=None, month=None, day=None)
         request,
         "tally.html",
         {
-            "dateday": dateday,
+            "dateday": dateday.date(),
             "enclosure": enclosure,
             "species_formset": species_formset,
             "groups_formset": groups_formset,

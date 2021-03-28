@@ -1,9 +1,10 @@
-import datetime
+import datetime as dt
 from random import randint
 
 from django.test import SimpleTestCase
 from django.urls import reverse
 from django.utils import timezone
+from freezegun import freeze_time
 
 from zoo_checks.ingest import TRACKS_REQ_COLS
 from zoo_checks.models import AnimalCount, Enclosure
@@ -13,6 +14,8 @@ from zoo_checks.views import (
     get_selected_role,
     redirect_if_not_permitted,
 )
+
+DST_DATETIME = dt.datetime(2021, 3, 14, 12, 0, 0)
 
 
 def test_home(client, user_base):
@@ -79,11 +82,38 @@ def test_count(
     # POST
 
 
+def test_count_todays_date(
+    client, user_base, enclosure_base, animal_A, animal_count_A_BAR, group_B
+):
+    """ whenever you ge the count, it should always have todays date in it """
+
+    client.force_login(user_base)
+
+    resp = client.get(f"/count/{enclosure_base.slug}/")
+    assert "Today's Count" in resp.content.decode()
+
+
+@freeze_time(DST_DATETIME)  # daylight savings
+def test_count_todays_date_dst(
+    client, user_base, enclosure_base, animal_A, animal_count_A_BAR, group_B
+):
+    """mock the current date to be on daylight savings (@12pm)
+    we should still be seeing "todays date" -- this requires us being at 12pm currently
+    because today_time utility uses localtime to generate a date
+    """
+
+    client.force_login(user_base)
+
+    resp = client.get(f"/count/{enclosure_base.slug}/")
+    assert "Today's Count" in resp.content.decode()
+    assert resp.context["todays_date"] == DST_DATETIME.strftime("%Y-%m-%d")
+
+
 def test_tally_date_handler(client, enclosure_base, user_base):
     client.force_login(user_base)
 
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+    yesterday = dt.date.today() - dt.timedelta(days=1)
+    tomorrow = dt.date.today() + dt.timedelta(days=1)
 
     resp = client.post(f"/tally_date_handler/{enclosure_base.slug}")
     assert resp.status_code == 302
@@ -137,7 +167,7 @@ def test_edit_species_count(
     client.force_login(user_base)
 
     # todo: timezone ...?
-    yesterday_time = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday_time = dt.datetime.now() - dt.timedelta(days=1)
     yesterday = yesterday_time.date()
 
     enc_not_permit = enclosure_factory("not_permit", None)
@@ -204,7 +234,7 @@ def test_edit_group_count(
     client.force_login(user_base)
 
     # todo: timezone ...?
-    yesterday_time = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday_time = dt.datetime.now() - dt.timedelta(days=1)
     yesterday = yesterday_time.date()
 
     enc_not_permit = enclosure_factory("not_permit", None)
@@ -282,7 +312,7 @@ def test_edit_animal_count(
     client.force_login(user_base)
 
     # todo: timezone ...?
-    yesterday_time = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday_time = dt.datetime.now() - dt.timedelta(days=1)
     yesterday = yesterday_time.date()
 
     enc_not_permit = enclosure_factory("not_permit", None)
@@ -377,7 +407,7 @@ def test_animal_counts(
         counts.append(
             animal_count_factory(
                 "BA",
-                timezone.localtime() - datetime.timedelta(days=d),
+                timezone.localtime() - dt.timedelta(days=d),
                 comment=f"test count on day {d}",
             )
         )
@@ -431,9 +461,7 @@ def test_group_counts(
     counts = []
     for d in range(num_counts):
         counts.append(
-            group_B_count_datetime_factory(
-                timezone.localtime() - datetime.timedelta(days=d)
-            )
+            group_B_count_datetime_factory(timezone.localtime() - dt.timedelta(days=d))
         )
 
     # test some counts w/ context
@@ -481,7 +509,7 @@ def test_species_counts(
     for d in range(num_counts):
         counts.append(
             species_count_factory(
-                50, datetimecounted=timezone.localtime() - datetime.timedelta(days=d)
+                50, datetimecounted=timezone.localtime() - dt.timedelta(days=d)
             )
         )
 
@@ -554,7 +582,7 @@ def test_export(client, user_base, enclosure_base, user_factory, caplog):
 
     # POST
     # still with user_base logged in
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    yesterday = dt.date.today() - dt.timedelta(days=1)
     yesterday
 
     caplog.clear()
@@ -563,7 +591,7 @@ def test_export(client, user_base, enclosure_base, user_factory, caplog):
         "/export/",
         {
             "start_date": yesterday.strftime("%m/%d/%Y"),
-            "end_date": datetime.date.today().strftime("%m/%d/%Y"),
+            "end_date": dt.date.today().strftime("%m/%d/%Y"),
             "selected_enclosures": enclosure_base.id,
         },
     )
@@ -573,7 +601,7 @@ def test_export(client, user_base, enclosure_base, user_factory, caplog):
     assert record.message == "no data to export for enclosures"
     assert record.enclosures[0]["name"] == enclosure_base.name
     assert record.start_date == yesterday.strftime("%m/%d/%Y")
-    assert record.end_date == datetime.date.today().strftime("%m/%d/%Y")
+    assert record.end_date == dt.date.today().strftime("%m/%d/%Y")
 
     # create some counts
     # assert 201 status code
