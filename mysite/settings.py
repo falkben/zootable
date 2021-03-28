@@ -51,7 +51,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com"]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 TIME_ZONE = "America/New_York"
 
 # security options suggested from `python manage.py check --deploy`
@@ -150,9 +150,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "zootable",
-        "USER": "zootable",
-        "PASSWORD": "",
-        "HOST": "",
+        "USER": os.getenv("DB_USER", "zootable"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": "5432",
     }
 }
 

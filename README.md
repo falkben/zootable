@@ -18,6 +18,24 @@ A working demo can be found [here](https://demo.zootable.com)
 
 ## Install
 
+### Docker
+
+To run using docker:
+
+Create a `.env` file with environment variables
+
+`docker-compose -d up --build`
+
+If this is the first time starting the server, init the superuser:
+
+`docker-compose exec web python manage.py createsuperuser`
+
+Migrate the database:
+
+`docker-compose exec web python manage.py migrate`
+
+Todo: put this into a bash script
+
 ### Database
 
 #### Install postgres
