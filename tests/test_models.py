@@ -1,8 +1,12 @@
 """ test models """
 
 
+import datetime
+
 import pytest
+from dateutil import tz
 from django.utils.timezone import localtime
+
 from zoo_checks.models import Animal, AnimalCount, Enclosure, Group, GroupCount, Species
 
 
@@ -107,3 +111,21 @@ def test_enclosure_all_counts(create_many_counts, user_base, django_assert_num_q
 
     assert all(c.user == user_base for c in group_counts)
     assert all(c.count_total == 6 for c in group_counts)
+
+
+def test_prior_conditions(animal_count_A_BAR_datetime_factory, animal_A):
+
+    tzinfo = tz.gettz("America/New_York")
+    datetime_bef_dst = datetime.datetime(2021, 3, 13, 6, 0, 0, tzinfo=tzinfo)
+    datetime_bef_dst_midnight = datetime.datetime(
+        2021, 3, 13, 23, 59, 59, tzinfo=tzinfo
+    )
+    datetime_aft_dst = datetime.datetime(2021, 3, 14, 6, 0, 0, tzinfo=tzinfo)
+
+    counts = []
+    for dt in [datetime_bef_dst, datetime_bef_dst_midnight, datetime_aft_dst]:
+        counts.append(animal_count_A_BAR_datetime_factory(dt))
+
+    conditions = animal_A.prior_conditions()
+
+    print(conditions)

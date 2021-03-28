@@ -269,8 +269,7 @@ class AnimalSet(models.Model):
 
 
 class Animal(AnimalSet):
-    """An AnimalSet of 1
-    """
+    """An AnimalSet of 1"""
 
     SEX = [("M", "Male"), ("F", "Female"), ("U", "Unknown")]
 
@@ -300,8 +299,7 @@ class Animal(AnimalSet):
         try:
             count = (
                 self.conditions.filter(
-                    datetimecounted__gte=day,
-                    datetimecounted__lt=day + timezone.timedelta(days=1),
+                    datecounted=day.date(),
                 )
                 .select_related("user")
                 .latest("datetimecounted", "id")
@@ -326,8 +324,7 @@ class Animal(AnimalSet):
             return ""
 
     def prior_conditions(self, prior_days=3, ref_date=None):
-        """Given a set of animals, returns their counts from the prior N days
-        """
+        """Given a set of animals, returns their counts from the prior N days"""
 
         if ref_date is None:
             ref_date = today_time()
@@ -364,8 +361,7 @@ class Animal(AnimalSet):
 
 
 class Group(AnimalSet):
-    """Same as an animal, just represents a group of them w/ no identifier
-    """
+    """Same as an animal, just represents a group of them w/ no identifier"""
 
     population_male = models.PositiveSmallIntegerField(default=0)
     population_female = models.PositiveSmallIntegerField(default=0)
@@ -494,16 +490,14 @@ class AnimalCount(Count):
 
     @classmethod
     def counts_on_day(cls, animals, day=None):
-        """Returns counts on a given day from a list of animals
-        """
+        """Returns counts on a given day from a list of animals"""
         if day is None:
             day = today_time()
 
         return (
             cls.objects.filter(
                 animal__in=animals,
-                datetimecounted__gte=day,
-                datetimecounted__lt=day + timezone.timedelta(days=1),
+                datecounted=day.date(),
             )
             .order_by("animal__accession_number", "-datetimecounted")
             .distinct("animal__accession_number")
@@ -551,8 +545,7 @@ class GroupCount(Count):
 
     @classmethod
     def counts_on_day(cls, groups, day=None):
-        """Returns counts on a given day from a list of groups
-        """
+        """Returns counts on a given day from a list of groups"""
         if day is None:
             day = today_time()
 
@@ -607,8 +600,7 @@ class SpeciesCount(Count):
 
     @classmethod
     def counts_on_day(cls, species, enclosure, day=None):
-        """Returns the counts on a given day from a list of species for an enclosure
-        """
+        """Returns the counts on a given day from a list of species for an enclosure"""
         if day is None:
             day = today_time()
 
