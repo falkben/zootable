@@ -50,6 +50,7 @@ CSRF_COOKIE_SECURE = bool(int(os.getenv("CSRF_COOKIE_SECURE", 1)))
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
+SECURE_REFERRER_POLICY = "same-origin"
 
 # for prod
 EMAIL_BACKEND = os.getenv(
@@ -140,7 +141,7 @@ DATABASES = {
         "NAME": "zootable",
         "USER": os.getenv("DB_USER", "zootable"),
         "PASSWORD": os.getenv("DB_PASSWORD", "zootable"),
-        "HOST": os.getenv("DB_HOST", "localhost"),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": "5432",
     }
 }

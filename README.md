@@ -24,25 +24,21 @@ To run using docker:
 
 Create a `.env` file with environment variables
 
-`docker-compose -d up --build`
+`docker-compose -d up --build` will build and run
 
 If this is the first time starting the server, init the superuser:
 
 `docker-compose exec web python manage.py createsuperuser`
 
-Migrate the database:
+### Local install
 
-`docker-compose exec web python manage.py migrate`
+#### Database
 
-Todo: put this into a bash script
-
-### Database
-
-#### Install postgres
+##### Install postgres
 
 - `sudo apt install postgresql postgresql-contrib libpq-dev python3.8 python3.8-dev`
 
-#### Config postgres
+##### Config postgres
 
 - Start the database server
   - `sudo service postgresql start`
@@ -62,7 +58,7 @@ Todo: put this into a bash script
 
 - Restart database: `sudo service postgresql restart`
 
-### Setup
+#### App Setup
 
 - Create & activate virtual environment
   - `python -m venv venv`
@@ -76,7 +72,8 @@ Todo: put this into a bash script
 - `python manage.py createsuperuser`
 - Upload data
   - `python scripts/ingest_xlsx_data.py <DATA.xlsx>`
-  - Or can upload it from within the app once running
+  - Or upload xlsx file from within the app once running
+  - Or ingest from a dumped database (see [below](#heroku-and-database-actions) on pulling and loading a database dump from heroku)
 
 ## Run
 
