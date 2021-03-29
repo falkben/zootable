@@ -12,9 +12,16 @@ services:
       - postgres_data:/var/lib/postgresql/data
   web:
     build: .
-    command: gunicorn mysite.asgi:application -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --log-file -
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python manage.py migrate --noinput
+        gunicorn mysite.asgi:application -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --log-file -
     ports:
       - "8000:8000"
+    environment:
+      - DB_HOST=db
     env_file:
       - ./.env
     volumes:

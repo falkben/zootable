@@ -70,8 +70,7 @@ Todo: put this into a bash script
 - Install
   - `pip install -e .[test]` (this installs pytest)
   - `npm install` (installs "hot reloading" `browser-sync`)
-- Create `local_settings.py` with [required variables](mysite/settings.py)
-  - `mysite/local_settings.py`
+- Create `.env` with [required variables](mysite/settings.py)
 - Migrate database forward
   - `python manage.py migrate`
 - `python manage.py createsuperuser`

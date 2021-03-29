@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 import django_heroku
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,59 +32,44 @@ STATIC_URL = "/static/"
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
-# local_settings.py contains these:
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = ''
+SECRET_KEY = os.getenv("SECRET_KEY", "abcdefg")
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-# ALLOWED_HOSTS = []
-# TIME_ZONE = "America/New_York"
-# SECURE_SSL_REDIRECT = False
-# SESSION_COOKIE_SECURE = False
-# CSRF_COOKIE_SECURE = False
-# EMAIL
-# override these for local dev in local_settings.py
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-SECRET_KEY = os.getenv("SECRET_KEY")  # returns None if no env var
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
-TIME_ZONE = "America/New_York"
+DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes", "y")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost 127.0.0.1 [::1]").split(
+    " "
+)
+TIME_ZONE = os.getenv("TIME_ZONE", "America/New_York")
 
 # security options suggested from `python manage.py check --deploy`
 # set to 1 to enable
-SECURE_SSL_REDIRECT = bool(int(os.getenv("SECURE_SSL_REDIRECT", 0)))
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = bool(int(os.getenv("SECURE_SSL_REDIRECT", 1)))
+SESSION_COOKIE_SECURE = bool(int(os.getenv("SESSION_COOKIE_SECURE", 1)))
+CSRF_COOKIE_SECURE = bool(int(os.getenv("CSRF_COOKIE_SECURE", 1)))
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 
 # for prod
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.zoho.com"
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "default")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = "app@zootable.com"
-DEFAULT_FROM_EMAIL = "app@zootable.com"  # used for all other email
-SERVER_EMAIL = "app@zootable.com"  # used for email to ADMINS and MANAGERS
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "app@zootable.com")
+DEFAULT_FROM_EMAIL = os.getenv(
+    "EMAIL_HOST_USER", "app@zootable.com"
+)  # used for all other email
+SERVER_EMAIL = os.getenv(
+    "EMAIL_HOST_USER", "app@zootable.com"
+)  # used for email to ADMINS and MANAGERS
 
 # add HSTS (HTTP Strict Transport Security)
-# default to 0 seconds
-# https://docs.djangoproject.com/en/3.1/ref/middleware/#http-strict-transport-security
+# https://docs.djangoproject.com/en/dev/ref/middleware/#http-strict-transport-security
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", 0))
-
-try:
-    from .local_settings import *
-except ImportError:
-    pass  # fallback to env var
 
 # Application definition
 
@@ -151,25 +139,11 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "zootable",
         "USER": os.getenv("DB_USER", "zootable"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", "zootable"),
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": "5432",
     }
 }
-
-# for github actions
-if os.getenv("GITHUB_WORKFLOW"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "postgres",
-            "USER": "postgres",
-            "PASSWORD": "postgres",
-            "HOST": "127.0.0.1",
-            "PORT": "5432",
-        }
-    }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
