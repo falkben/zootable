@@ -1,9 +1,10 @@
-name: Python application
+name: Build and Test
 
 on: [push]
 
 env:
   SECRET_KEY: secret_key_github_actions_12345_github_action_secret_key
+  SECURE_SSL_REDIRECT: 0
 
 jobs:
   build:
@@ -13,13 +14,13 @@ jobs:
       postgres:
         image: postgres:12
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_USER: zootable
+          POSTGRES_PASSWORD: zootable
+          POSTGRES_DB: zootable
         ports:
           - 5432:5432
         # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --mount type=tmpfs,destination=/var/lib/postgresql/data --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - uses: actions/checkout@v1

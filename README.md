@@ -18,13 +18,27 @@ A working demo can be found [here](https://demo.zootable.com)
 
 ## Install
 
-### Database
+### Docker
 
-#### Install postgres
+To run using docker:
+
+Create a `.env` file with environment variables
+
+`docker-compose -d up --build` will build and run
+
+If this is the first time starting the server, init the superuser:
+
+`docker-compose exec web python manage.py createsuperuser`
+
+### Local install
+
+#### Database
+
+##### Install postgres
 
 - `sudo apt install postgresql postgresql-contrib libpq-dev python3.8 python3.8-dev`
 
-#### Config postgres
+##### Config postgres
 
 - Start the database server
   - `sudo service postgresql start`
@@ -44,7 +58,7 @@ A working demo can be found [here](https://demo.zootable.com)
 
 - Restart database: `sudo service postgresql restart`
 
-### Setup
+#### App Setup
 
 - Create & activate virtual environment
   - `python -m venv venv`
@@ -52,14 +66,14 @@ A working demo can be found [here](https://demo.zootable.com)
 - Install
   - `pip install -e .[test]` (this installs pytest)
   - `npm install` (installs "hot reloading" `browser-sync`)
-- Create `local_settings.py` with [required variables](mysite/settings.py)
-  - `mysite/local_settings.py`
+- Create `.env` with [required variables](mysite/settings.py)
 - Migrate database forward
   - `python manage.py migrate`
 - `python manage.py createsuperuser`
 - Upload data
   - `python scripts/ingest_xlsx_data.py <DATA.xlsx>`
-  - Or can upload it from within the app once running
+  - Or upload xlsx file from within the app once running
+  - Or ingest from a dumped database (see [below](#heroku-and-database-actions) on pulling and loading a database dump from heroku)
 
 ## Run
 
