@@ -26,6 +26,18 @@ Create a `.env` file with environment variables
 
 `docker-compose -d up --build` will build and run
 
+To store the volume in a different default location (e.g. not on SD card when running on rpi), change the compose file:
+
+```yml
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/ssd/data
+```
+
 If this is the first time starting the server, init the superuser:
 
 `docker-compose exec web python manage.py createsuperuser`
