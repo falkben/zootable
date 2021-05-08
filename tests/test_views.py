@@ -166,8 +166,7 @@ def test_edit_species_count(
 ):
     client.force_login(user_base)
 
-    # todo: timezone ...?
-    yesterday_time = dt.datetime.now() - dt.timedelta(days=1)
+    yesterday_time = timezone.localtime() - dt.timedelta(days=1)
     yesterday = yesterday_time.date()
 
     enc_not_permit = enclosure_factory("not_permit", None)
@@ -233,8 +232,7 @@ def test_edit_group_count(
 ):
     client.force_login(user_base)
 
-    # todo: timezone ...?
-    yesterday_time = dt.datetime.now() - dt.timedelta(days=1)
+    yesterday_time = timezone.localtime() - dt.timedelta(days=1)
     yesterday = yesterday_time.date()
 
     enc_not_permit = enclosure_factory("not_permit", None)
@@ -311,8 +309,7 @@ def test_edit_animal_count(
 ):
     client.force_login(user_base)
 
-    # todo: timezone ...?
-    yesterday_time = dt.datetime.now() - dt.timedelta(days=1)
+    yesterday_time = timezone.localtime() - dt.timedelta(days=1)
     yesterday = yesterday_time.date()
 
     enc_not_permit = enclosure_factory("not_permit", None)
@@ -631,6 +628,10 @@ def test_get_accessible_enclosures(
 def test_redirect_if_not_permitted(
     rf_get_factory, enclosure_factory, enclosure_base, user_super
 ):
+    """uses our request factory to directly test `redirect_if_not_permitted`
+    without actually making requests to any endpoints
+    """
+
     request = rf_get_factory("/count/")
     forbidden_enc = enclosure_factory("forbidden_enc", role=None)
 

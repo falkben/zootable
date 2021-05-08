@@ -10,7 +10,9 @@ from typing import Optional
 import pytest
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import HttpResponse
 from django.utils.timezone import datetime, localtime, timedelta
+
 from zoo_checks.models import (
     Animal,
     AnimalCount,
@@ -27,7 +29,12 @@ from zoo_checks.models import (
 @pytest.fixture
 def rf_get_factory(rf, user_base):
     """request factory factory
-    adds session and messages "middleware" to the request object"""
+    adds session and messages "middleware" to the request object
+
+    Remember that when using RequestFactory, the request does not pass
+    through middleware. If your view expects fields such as request.user
+    to be set, you need to set them explicitly.
+    """
 
     def _rf_get_factory(url: str, user: Optional[User] = user_base):
         request = rf.get(url)
@@ -36,7 +43,7 @@ def rf_get_factory(rf, user_base):
             request.user = user
 
         # adding session
-        middleware = SessionMiddleware()
+        middleware = SessionMiddleware(lambda req: HttpResponse())
         middleware.process_request(request)
         request.session.save()
 

@@ -32,6 +32,10 @@ STATIC_URL = "/static/"
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Once transition to 3.1 is complete you can stop overriding DEFAULT_HASHING_ALGORITHM
+# https://docs.djangoproject.com/en/3.2/releases/3.1/#default-hashing-algorithm-settings
+DEFAULT_HASHING_ALGORITHM = "sha1"
+
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 SECRET_KEY = os.getenv("SECRET_KEY", "abcdefg")
