@@ -1,5 +1,5 @@
-from operator import itemgetter
 import re
+from operator import itemgetter
 
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
@@ -23,17 +23,21 @@ TRACKS_REQ_COLS = [
 ]
 
 
-def validate(df):
+class ExcelUploadError(Exception):
+    """ custom exception for the excel loading """
+
+
+def validate_input_file(df):
     """xlsx file needs certain columns, can't be empty"""
 
     df_col_names = list(df.columns)
 
     # ensure # of rows > 0
     if not df.shape[0] > 0:
-        raise TypeError("No data found in file")
+        raise ExcelUploadError("No data found in file")
 
     if not all([col in df_col_names for col in TRACKS_REQ_COLS]):
-        raise TypeError("Not all columns found in file")
+        raise ExcelUploadError("Not all columns found in file")
 
     df["Accession"] = df["Accession"].apply(str)
 
@@ -44,9 +48,10 @@ def read_xlsx_data(datafile):
     """Reads a xlsx datafile and returns a pandas dataframe"""
     try:
         df = pd.read_excel(datafile)
-        df = validate(df)
-    except Exception as e:
-        raise e
+    except ValueError:
+        raise ExcelUploadError("Unable to read file")
+    df.dropna(how="all", inplace=True)
+    df = validate_input_file(df)
     return df
 
 
@@ -357,12 +362,12 @@ def get_changesets(df):
     return changesets
 
 
-def validate_input(df):
+def validate_accession_numbers(df):
     # check that all accession numbers are of 6 digit length
     digit_list = df["Accession"]
     digits = list(map(lambda a: len(str(a)), digit_list))
     if any(d != 6 for d in digits):
-        raise ValueError("Accession numbers should only have 6 characters")
+        raise ExcelUploadError("Accession numbers should only have 6 characters")
 
     return df
 
@@ -373,7 +378,7 @@ def handle_upload(f):
     """
     df = read_xlsx_data(f)
 
-    df_validated = validate_input(df)
+    df_validated = validate_accession_numbers(df)
 
     changeset = get_changesets(df_validated)
 

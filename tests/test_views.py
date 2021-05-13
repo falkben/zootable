@@ -580,7 +580,6 @@ def test_export(client, user_base, enclosure_base, user_factory, caplog):
     # POST
     # still with user_base logged in
     yesterday = dt.date.today() - dt.timedelta(days=1)
-    yesterday
 
     caplog.clear()
     # w/ no counts

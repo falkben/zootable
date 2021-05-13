@@ -30,7 +30,7 @@ from .helpers import (
     set_formset_order,
     today_time,
 )
-from .ingest import handle_upload, ingest_changesets
+from .ingest import ExcelUploadError, handle_upload, ingest_changesets
 from .models import (
     Animal,
     AnimalCount,
@@ -784,9 +784,9 @@ def ingest_form(request: HttpRequest):
             # where we compute changes
             try:
                 changesets = handle_upload(request.FILES["file"])
-            except Exception as e:
+            except ExcelUploadError as e:
                 messages.error(request, e)
-                LOGGER.error("Error during data ingest")
+                LOGGER.exception("Error processing uploaded data")
                 return redirect("ingest_form")
 
             request.session["changesets"] = changesets
@@ -908,7 +908,7 @@ def export(request: HttpRequest):
                     "start_date": start_date.strftime("%m/%d/%Y"),
                     "end_date": end_date.strftime("%m/%d/%Y"),
                 }
-                LOGGER.error(f"no data to export for enclosures", extra=extra)
+                LOGGER.error("no data to export for enclosures", extra=extra)
                 return render(request, "export.html", {"form": form})
 
             df_merge_clean = clean_df(df_merge)
@@ -931,7 +931,7 @@ def export(request: HttpRequest):
             )
 
             # create xlsx object and put it into the response using pandas
-            with pd.ExcelWriter(response, engine="xlsxwriter") as writer:
+            with pd.ExcelWriter(response) as writer:
                 df_merge_clean.to_excel(writer, sheet_name="Sheet1", index=False)
 
             # TODO: redirect to home w/ javascript serve xlsx file from that page
