@@ -6,7 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN \
+    pip install pip-tools &&\
+    pip-sync
 
 COPY . /app
 

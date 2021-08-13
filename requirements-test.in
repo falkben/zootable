@@ -1,0 +1,6 @@
+-c requirements.txt
+pytest==6.2.4
+pytest-django==4.4.0
+pytest-cov==2.12.1
+pytest-sugar==0.9.4
+freezegun==1.1.0
