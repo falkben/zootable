@@ -1,0 +1,11 @@
+django<4
+django-allauth
+gunicorn
+uvicorn[standard]
+pandas
+openpyxl
+django_heroku
+whitenoise[brotli]
+psycopg2<3
+django-extensions  # using for auto-slug field
+python-dotenv

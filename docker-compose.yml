@@ -24,8 +24,6 @@ services:
       - DB_HOST=db
     env_file:
       - ./.env
-    volumes:
-      - .:/app
     restart: unless-stopped
     depends_on:
       - db

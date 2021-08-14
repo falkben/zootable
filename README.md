@@ -158,15 +158,45 @@ Documentation on clearing session store: <https://docs.djangoproject.com/en/dev/
 
 See: <https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups>
 
-## Update requirements
+## Dependencies
 
-[Pur](https://pypi.org/project/pur/)
+### Python dependencies
 
-1. `pip install pur`
-1. `pur -p django -m "*" -r requirements.txt` (or `pur -r requirements-test.txt`) (`-p` to limit to patch updates only, `-m` for minor)
-1. `pip install -e .` (or `pip install -e .[test]`)
+#### Create a lock file (pip-tools)
 
-For npm:
+Install `pip-tools` into your local environment (`pip install pip-tools`)
+
+To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
+
+1. `pip-compile --generate-hashes --allow-unsafe`
+2. `pip-compile --generate-hashes --allow-unsafe requirements-dev.in`
+
+*note:* `--allow-unsafe` option allows pinning `setuptools`. Possibly no longer needed.
+
+#### Upgrade dependencies
+
+1. `pip-compile --upgrade --generate-hashes --allow-unsafe`
+2. `pip-compile --upgrade --generate-hashes --allow-unsafe requirements-dev.in`
+
+This updates the lock files while still maintaining constraints in `requirements.in` (or `requirements-dev.in`)
+
+To upgrade to a new **django** version, edit the `requirements.in` file and then run the upgrade compile command above.
+
+#### Install into local environment
+
+```command
+pip install -r requirements.txt
+pip install -e .
+```
+
+For dev
+
+```command
+pip install -r requirements.txt -r requirements-dev.txt
+pip install -e .
+```
+
+### npm
 
 1. `npm install`
 2. `npm audit fix`
