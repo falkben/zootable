@@ -1,0 +1,7 @@
+-c requirements.txt
+pytest
+pytest-django
+pytest-cov
+pytest-sugar
+freezegun
+django-debug-toolbar
