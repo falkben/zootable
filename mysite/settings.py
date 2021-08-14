@@ -102,15 +102,14 @@ INSTALLED_APPS = [
     # "allauth.socialaccount.providers.github",
     # "allauth.socialaccount.providers.facebook",
     # "allauth.socialaccount.providers.microsoft",
-    "debug_toolbar",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     # Simplified static file serving.
     # https://warehouse.python.org/project/whitenoise/
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -118,6 +117,15 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# add django-debug-toolbar if installed
+try:
+    import debug_toolbar  # noqa: F401
+
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+except ImportError:
+    pass
 
 ROOT_URLCONF = "mysite.urls"
 
