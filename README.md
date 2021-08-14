@@ -184,9 +184,17 @@ To upgrade to a new **django** version, edit the `requirements.in` file and then
 
 #### Install into local environment
 
-`pip install -r requirements.txt && pip install -e .`
+```command
+pip install -r requirements.txt
+pip install -e .
+```
 
-Or for dev, `pip install -r requirements-dev.txt && pip install -e .`
+For dev
+
+```command
+pip install -r requirements.txt -r requirements-dev.txt
+pip install -e .
+```
 
 ### npm
 
