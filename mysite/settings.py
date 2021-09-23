@@ -32,10 +32,6 @@ STATIC_URL = "/static/"
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Once transition to 3.1 is complete you can stop overriding DEFAULT_HASHING_ALGORITHM
-# https://docs.djangoproject.com/en/3.2/releases/3.1/#default-hashing-algorithm-settings
-DEFAULT_HASHING_ALGORITHM = "sha1"
-
 # to prevent unneeded migrations (django 3.2)
 # https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
