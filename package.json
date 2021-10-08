@@ -14,8 +14,8 @@
   "homepage": "https://zootable.com",
   "devDependencies": {
     "browser-sync": "^2.26.14",
-    "concurrently": "^5.2.0",
-    "node-sass": "^6.0.1"
+    "concurrently": "^6.3.0",
+    "node-sass": "^4.14.0"
   },
   "license": "AGPL-3.0-or-later"
 }
