@@ -48,7 +48,7 @@ If this is the first time starting the server, init the superuser:
 
 ##### Install postgres
 
-- `sudo apt install postgresql postgresql-contrib libpq-dev python3.8 python3.8-dev`
+- `sudo apt install postgresql postgresql-contrib libpq-dev python3.9 python3.9-dev`
 
 ##### Config postgres
 
