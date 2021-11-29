@@ -161,8 +161,8 @@ django==3.2.9 \
     #   django-allauth
     #   django-extensions
     #   django-heroku
-django-allauth==0.45.0 \
-    --hash=sha256:6d46be0e1480316ccd45476db3aefb39db70e038d2a543112d314b76bb999a4e
+django-allauth==0.46.0 \
+    --hash=sha256:8217b8dc46f85812ff209fc542f4bf378f1751cdbe867008169d4c85685df50d
     # via -r requirements.in
 django-extensions==3.1.5 \
     --hash=sha256:28e1e1bf49f0e00307ba574d645b0af3564c981a6dfc87209d48cb98f77d0b1a \
