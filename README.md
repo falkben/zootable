@@ -20,9 +20,25 @@ A working demo can be found [here](https://demo.zootable.com)
 
 ### Docker
 
-To run using docker:
+`docker build --pull --tag zootable .`
 
-Create a `.env` file with environment variables
+```cmd
+docker run --rm -p 8080:8080 \
+  -v $(pwd)/.env:/app/.env \
+  zootable
+```
+
+Debugging:
+
+```cmd
+docker run --rm -it -p 8080:8080 \
+  -v $(pwd)/.env:/app/.env \
+  zootable /bin/bash
+```
+
+### Docker-compose
+
+Create a `.env` file for configured environment variables
 
 `docker-compose -d up --build` will build and run
 
