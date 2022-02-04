@@ -1,4 +1,4 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.9-slim
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -19,4 +19,4 @@ RUN \
 COPY . /app
 
 EXPOSE 8080
-CMD ["gunicorn", "mysite.asgi:application", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8080"]
+CMD ["docker/start.sh"]
