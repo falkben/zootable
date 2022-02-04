@@ -1,11 +1,11 @@
-django<4
+dj-database-url
 django-allauth
-gunicorn
-uvicorn[standard]
-pandas
-openpyxl
-django_heroku
-whitenoise[brotli]
-psycopg2<3
 django-extensions  # using for auto-slug field
+django<4
+gunicorn
+openpyxl
+pandas
+psycopg2-binary
 python-dotenv
+uvicorn[standard]
+whitenoise[brotli]
