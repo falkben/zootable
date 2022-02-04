@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-import django_heroku
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -147,16 +147,23 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "zootable",
-        "USER": os.getenv("DB_USER", "zootable"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "zootable"),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-        "PORT": "5432",
+MAX_CONN_AGE = 600
+if "DATABASE_URL" in os.environ:
+    DATABASES = {
+        "default": dj_database_url.config(conn_max_age=MAX_CONN_AGE, ssl_require=True)
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "zootable",
+            "USER": os.getenv("DB_USER", "zootable"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "zootable"),
+            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "PORT": "5432",
+            "CONN_MAX_AGE": MAX_CONN_AGE,
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -208,9 +215,6 @@ ACCOUNT_SIGNUP_FORM_CLASS = "zoo_checks.forms.SignupForm"
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 if ADMIN_EMAIL is not None:
     ADMINS = [("admin", ADMIN_EMAIL)]
-
-# Configure Django App for Heroku.
-django_heroku.settings(locals())
 
 LOGGING = {
     "version": 1,
