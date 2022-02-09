@@ -207,7 +207,7 @@ def test_handle_upload(animal_B_enc):
 
 @pytest.mark.django_db
 def test_ingest_changesets():
-    """ Test example ingest from df """
+    """Test example ingest from df"""
 
     df = read_xlsx_data(INPUT_EXAMPLE)
     ch_s = get_changesets(df)
@@ -263,8 +263,8 @@ def test_group_becomes_individuals():
     assert gp.population_total > 1
 
     # modify the df to have only one population
-    df.at[df.index[df["Accession"] == accession], "Population _Female"] = 0
-    df.at[df.index[df["Accession"] == accession], "Population _Unknown"] = 1
+    df.at[df[df["Accession"] == accession].index[0], "Population _Female"] = 0
+    df.at[df[df["Accession"] == accession].index[0], "Population _Unknown"] = 1
 
     # get_changesets on that dataframe
     changeset = get_changesets(df)
@@ -304,8 +304,8 @@ def test_individual_becomes_group():
     Animal.objects.get(accession_number=accession)
 
     # modify the df to have > one population
-    df.at[df.index[df["Accession"] == accession], "Population _Female"] = 1
-    df.at[df.index[df["Accession"] == accession], "Population _Unknown"] = 1
+    df.at[df[df["Accession"] == accession].index[0], "Population _Female"] = 1
+    df.at[df[df["Accession"] == accession].index[0], "Population _Unknown"] = 1
 
     # get_changesets on that dataframe
     changeset = get_changesets(df)
