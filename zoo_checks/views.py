@@ -777,7 +777,7 @@ def edit_animal_count(request: HttpRequest, animal, year, month, day):
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
 def ingest_form(request: HttpRequest):
-    """ For for submitting excel files for ingest """
+    """For for submitting excel files for ingest"""
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -807,7 +807,7 @@ def ingest_form(request: HttpRequest):
 
 @user_passes_test(lambda u: u.is_staff, redirect_field_name=None)
 def confirm_upload(request: HttpRequest):
-    """ after ingest form submit, show confirmation page before writing to db """
+    """after ingest form submit, show confirmation page before writing to db"""
     changesets = request.session.get("changesets")
     upload_file = request.session.get("upload_file")
 
@@ -844,7 +844,7 @@ def confirm_upload(request: HttpRequest):
 
 @login_required
 def export(request: HttpRequest):
-    """ export counts to excel for user download w/ time range """
+    """export counts to excel for user download w/ time range"""
     accessible_enclosures = get_accessible_enclosures(request.user)
 
     if request.method == "POST":
