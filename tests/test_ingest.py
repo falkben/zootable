@@ -9,6 +9,7 @@ from zoo_checks.ingest import (
     create_groups,
     create_species,
     find_animals_groups,
+    get_animal_attributes,
     get_changesets,
     handle_upload,
     ingest_changesets,
@@ -99,14 +100,42 @@ def test_create_animals():
         create_animals(df)
 
     animals, groups = find_animals_groups(df)
-    create_animals(animals)
+    created_animals = create_animals(animals)
 
     for acc_num in animals["Accession"]:
-        Animal.objects.get(accession_number=acc_num)
+        animal = Animal.objects.get(accession_number=acc_num)
+        assert animal in created_animals
 
+    # assert we didn't create any animals w/ a Group accession number
     for acc_num in groups["Accession"]:
         with pytest.raises(ObjectDoesNotExist):
             Animal.objects.get(accession_number=acc_num)
+
+
+def test_get_animal_attributes(enclosure_base, species_base):
+    data = {
+        "Accession": "211111",
+        "Internal  House  Name": "Doug",  # name
+        "Tag /Band": "Yellow",  # identifier
+        "Enclosure": enclosure_base.name,
+        "Common": species_base.common_name,
+        "Sex": None,
+        "Population _Male": 1,
+        "Population _Female": 0,
+        "Population _Unknown": 0,
+    }
+
+    df = pd.DataFrame(data, index=[0])
+    row = df.iloc[0]
+    attributes = get_animal_attributes(row)
+
+    assert attributes["accession_number"] == "211111"
+    assert attributes["name"] == "Doug"
+    assert attributes["identifier"] == "Yellow"
+    assert attributes["active"] is True
+    assert attributes["sex"] == "M"
+    assert attributes["enclosure"] == enclosure_base
+    assert attributes["species"] == species_base
 
 
 def test_find_animals_groups():

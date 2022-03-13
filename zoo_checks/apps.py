@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ZooChecksConfig(AppConfig):
-    name = 'zoo_checks'
+    name = "zoo_checks"

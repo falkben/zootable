@@ -1,4 +1,6 @@
-import re
+from __future__ import annotations
+
+from itertools import compress
 from operator import itemgetter
 
 import pandas as pd
@@ -16,7 +18,8 @@ TRACKS_REQ_COLS = [
     "GSS",
     "Species",
     "Sex",
-    "Identifiers",  # * contains both name and identifier for an animal
+    "Tag /Band",
+    "Internal  House  Name",
     "Population _Male",
     "Population _Female",
     "Population _Unknown",
@@ -24,7 +27,7 @@ TRACKS_REQ_COLS = [
 
 
 class ExcelUploadError(Exception):
-    """ custom exception for the excel loading """
+    """custom exception for the excel loading"""
 
 
 def validate_input_file(df):
@@ -36,15 +39,17 @@ def validate_input_file(df):
     if not df.shape[0] > 0:
         raise ExcelUploadError("No data found in file")
 
-    if not all([col in df_col_names for col in TRACKS_REQ_COLS]):
-        raise ExcelUploadError("Not all columns found in file")
+    cols_not_in_req_cols = [col not in df_col_names for col in TRACKS_REQ_COLS]
+    if any(cols_not_in_req_cols):
+        missing_cols = ",".join(compress(TRACKS_REQ_COLS, cols_not_in_req_cols))
+        raise ExcelUploadError(f"Not all columns found in file, missing {missing_cols}")
 
     df["Accession"] = df["Accession"].apply(str)
 
     return df[TRACKS_REQ_COLS]
 
 
-def read_xlsx_data(datafile):
+def read_xlsx_data(datafile: str) -> pd.DataFrame:
     """Reads a xlsx datafile and returns a pandas dataframe"""
     try:
         df = pd.read_excel(datafile)
@@ -55,22 +60,23 @@ def read_xlsx_data(datafile):
     return df
 
 
-def get_enclosures(df):
+def get_enclosures(df: pd.DataFrame) -> set[str]:
     return set(df["Enclosure"])
 
 
-def create_enclosures(df):
+def create_enclosures(df: pd.DataFrame):
     """Given data in a pandas dataframe, create any missing enclosures"""
     enclosures = get_enclosures(df)
     for enclosure in enclosures:
         create_enclosure_name(enclosure)
 
 
-def create_enclosure_name(enclosure_name):
+def create_enclosure_name(enclosure_name: str) -> Enclosure:
     encl, _ = Enclosure.objects.get_or_create(name=enclosure_name)
+    return encl
 
 
-def create_species(df):
+def create_species(df: pd.DataFrame):
     """Create any species that exist in the pandas dataframe but not in the database"""
     df_species = df.drop_duplicates(
         subset=["Common", "GSS", "Species", "Class", "Order", "Family"]
@@ -92,19 +98,6 @@ def create_species(df):
                 "family_name": family_name,
             },
         )
-
-
-def get_animal_identifier(identifiers):
-    """Returns any identifiers joined into a single string, comma separated
-    Name and identifier stored in the same col. and can be any order
-    """
-    if pd.isna(identifiers):
-        return ""
-    # finds any sections of text following "Tag/Band:" optionally followed by a comma
-    tag_band = r"Tag/Band:([\w\s\d#]*)[,]?"
-    mm = re.findall(tag_band, identifiers)
-    tag = ",".join(mm)
-    return tag
 
 
 def get_sex(row):
@@ -146,7 +139,7 @@ def get_group_attributes(row):
     return attributes
 
 
-def create_groups(df):
+def create_groups(df: pd.DataFrame):
     """Creates groups"""
 
     # we sometimes don't have any to add
@@ -175,13 +168,17 @@ def create_groups(df):
 
 def get_animal_attributes(row):
     # zootable animal col names:
-    # name, active, accession, species, identifier, enclosure, sex
+    # name, active, accession, species, Tag /Band, Internal  House  Name, enclosure, sex
 
     # todo: we need to always make sure we grab _all_ the attributes
 
     active, accession_number, species, enclosure = get_animal_set_info(row)
-    identifier = get_animal_identifier(row["Identifiers"])
-    name = get_animal_name(row["Identifiers"])
+    name = (
+        row["Internal  House  Name"]
+        if not pd.isna(row["Internal  House  Name"])
+        else ""
+    )
+    identifier = row["Tag /Band"] if not pd.isna(row["Tag /Band"]) else ""
     sex = get_sex(row)
 
     attributes = {
@@ -197,12 +194,12 @@ def get_animal_attributes(row):
     return attributes
 
 
-def create_animals(df):
+def create_animals(df: pd.DataFrame) -> list[Animal]:
     """Creates animals (individuals)"""
 
     # we sometimes don't have any to add
     if len(df.index) == 0:
-        return None
+        return []
 
     pop_sum = df[["Population _Male", "Population _Female", "Population _Unknown"]].sum(
         axis=1
@@ -212,13 +209,16 @@ def create_animals(df):
     except AssertionError:
         raise ValueError("Cannot create individuals. Not all have a pop. of 1")
 
+    created_animals = []
     for _, row in df.iterrows():
         attributes = get_animal_attributes(row)
 
         # * This overrides anything in the database for this accession number
-        Animal.objects.update_or_create(
+        animal, _ = Animal.objects.update_or_create(
             accession_number=attributes.pop("accession_number"), defaults=attributes
         )
+        created_animals.append(animal)
+    return created_animals
 
 
 def change_obj_active_state(model, accession_number, active_state):
@@ -226,19 +226,6 @@ def change_obj_active_state(model, accession_number, active_state):
     obj = model.objects.get(accession_number=accession_number)
     obj.active = active_state
     obj.save()
-
-
-def get_animal_name(identifiers):
-    """Returns the name of the animal, if mult. comma separated
-    Name and identifier stored in same
-    """
-    if pd.isna(identifiers):
-        return ""
-    # finds any sections of text following "Internal House Name:"
-    intern_name = r"Internal House Name:([\w|\s\d#]*)[,]?"
-    mm = re.findall(intern_name, identifiers)
-    name = ",".join(mm)
-    return name
 
 
 def get_species_obj(row):
