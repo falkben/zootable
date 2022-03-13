@@ -115,7 +115,7 @@ def test_create_animals():
 def test_get_animal_attributes(enclosure_base, species_base):
     data = {
         "Accession": "211111",
-        "Internal House Name": "Doug",  # name
+        "Internal  House  Name": "Doug",  # name
         "Tag /Band": "Yellow",  # identifier
         "Enclosure": enclosure_base.name,
         "Common": species_base.common_name,

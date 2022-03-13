@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import compress
 from operator import itemgetter
 
 import pandas as pd
@@ -18,7 +19,7 @@ TRACKS_REQ_COLS = [
     "Species",
     "Sex",
     "Tag /Band",
-    "Internal House Name",
+    "Internal  House  Name",
     "Population _Male",
     "Population _Female",
     "Population _Unknown",
@@ -38,8 +39,10 @@ def validate_input_file(df):
     if not df.shape[0] > 0:
         raise ExcelUploadError("No data found in file")
 
-    if not all([col in df_col_names for col in TRACKS_REQ_COLS]):
-        raise ExcelUploadError("Not all columns found in file")
+    cols_not_in_req_cols = [col not in df_col_names for col in TRACKS_REQ_COLS]
+    if any(cols_not_in_req_cols):
+        missing_cols = ",".join(compress(TRACKS_REQ_COLS, cols_not_in_req_cols))
+        raise ExcelUploadError(f"Not all columns found in file, missing {missing_cols}")
 
     df["Accession"] = df["Accession"].apply(str)
 
@@ -165,12 +168,16 @@ def create_groups(df: pd.DataFrame):
 
 def get_animal_attributes(row):
     # zootable animal col names:
-    # name, active, accession, species, Tag /Band, Internal House Name, enclosure, sex
+    # name, active, accession, species, Tag /Band, Internal  House  Name, enclosure, sex
 
     # todo: we need to always make sure we grab _all_ the attributes
 
     active, accession_number, species, enclosure = get_animal_set_info(row)
-    name = row["Internal House Name"] if not pd.isna(row["Internal House Name"]) else ""
+    name = (
+        row["Internal  House  Name"]
+        if not pd.isna(row["Internal  House  Name"])
+        else ""
+    )
     identifier = row["Tag /Band"] if not pd.isna(row["Tag /Band"]) else ""
     sex = get_sex(row)
 
