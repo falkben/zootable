@@ -63,9 +63,9 @@ django==3.2.13 \
     # via
     #   -c requirements.txt
     #   django-debug-toolbar
-django-debug-toolbar==3.2.4 \
-    --hash=sha256:644bbd5c428d3283aa9115722471769cac1bec189edf3a0c855fd8ff870375a9 \
-    --hash=sha256:6b633b6cfee24f232d73569870f19aa86c819d750e7f3e833f2344a9eb4b4409
+django-debug-toolbar==3.3.0 \
+    --hash=sha256:74151c292db9455fa5127d64a4414faee8ee3b1cddfb17f0e93cf3f13cd84bc1 \
+    --hash=sha256:85015fedbf937a6f3526617546fefaf21859eb1f9bbbc82a2fcba313d7c15917
     # via -r requirements-dev.in
 freezegun==1.2.1 \
     --hash=sha256:15103a67dfa868ad809a8f508146e396be2995172d25f927e48ce51c0bf5cb09 \
