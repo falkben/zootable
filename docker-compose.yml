@@ -11,15 +11,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
   web:
-    build: .
-    command:
-      - /bin/bash
-      - -c
-      - |
-        python manage.py migrate --noinput
-        gunicorn mysite.asgi:application -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --log-file -
+    image: zootable
     ports:
-      - "8000:8000"
+      - "8080:8080"
     environment:
       - DB_HOST=db
     env_file:
