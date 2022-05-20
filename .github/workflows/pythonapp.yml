@@ -57,7 +57,9 @@ jobs:
           fail_ci_if_error: false
 
       - name: Get flyctl
+        if: github.ref == 'refs/heads/main'
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy to fly
+        if: github.ref == 'refs/heads/main'
         run: flyctl deploy --remote-only
