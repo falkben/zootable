@@ -56,6 +56,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_REFERRER_POLICY = "same-origin"
 
+#! Should only be used in a proxied environment
+if os.getenv("PROXY_SSL_HEADER", "false").lower() in ("true", "1", "yes", "y"):
+    # fly.io proxies requests and sets X-Forwarded-Proto
+    # https://fly.io/docs/reference/runtime-environment/#x-forwarded-proto
+    # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # for prod
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
