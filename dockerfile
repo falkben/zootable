@@ -4,18 +4,21 @@ FROM python:${PYTHON_VERSION}-slim
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONFAULTHANDLER=true
 
 RUN \
+    export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
-    apt install -y libpq-dev gcc && \
-    rm -rf /var/lib/apt/lists/*
+    apt install --yes --no-install-recommends libpq-dev gcc && \
+    apt clean && rm -rf /var/lib/apt/lists/*
 
 # create virtual environment
-ENV VIRTUAL_ENV=/opt/venv
+ENV VIRTUAL_ENV=/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-WORKDIR /app
+RUN useradd --create-home appuser
+WORKDIR /home/appuser
 
 COPY requirements.txt .
 
@@ -23,7 +26,8 @@ RUN \
     python -m pip install --no-cache pip -U && \
     python -m pip install --no-cache -r requirements.txt
 
-COPY . /app
+USER appuser
+COPY --chown=appuser:appuser . .
 
 RUN python manage.py collectstatic --noinput
 
