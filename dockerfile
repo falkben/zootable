@@ -4,9 +4,9 @@ FROM python:${PYTHON_VERSION}-slim as build
 
 RUN \
     export DEBIAN_FRONTEND=noninteractive && \
-    apt update && \
-    apt install --yes --no-install-recommends libpq-dev gcc && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && \
+    apt-get install --yes --no-install-recommends libpq-dev gcc && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV VIRTUAL_ENV=/venv
 RUN python3 -m venv $VIRTUAL_ENV
