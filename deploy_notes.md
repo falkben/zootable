@@ -24,6 +24,12 @@ Can also proxy to localhost using `flyctl proxy`.
 cat .private/.env-fly | flyctl secrets import
 ```
 
+## printenv
+
+`flyctl ssh console`
+
+`printenv`
+
 ## Upload db dump
 
 Proxy postgres server to `localhost`:
@@ -42,4 +48,20 @@ Apply the database dump
 
 ```sh
 pg_restore --verbose --clean --no-acl --no-owner -U zootable -d "$FLY_POSTGRES_URI" latest.dump
+```
+
+## Certs
+
+This is a one-time setup (example for `test-na.zootable.com`)
+
+Add CNAME or A record to cloudflare for the subdomain.
+
+```sh
+flyctl certs create test-na.zootable.com
+```
+
+Then check on it with
+
+```sh
+flyctl certs check test-na.zootable.com
 ```
