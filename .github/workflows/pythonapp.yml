@@ -5,6 +5,7 @@ on: [push]
 env:
   SECRET_KEY: secret_key_github_actions_12345_github_action_secret_key
   SECURE_SSL_REDIRECT: 0
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
 jobs:
   build:
@@ -23,13 +24,13 @@ jobs:
         options: --mount type=tmpfs,destination=/var/lib/postgresql/data --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.9
-          cache: 'pip'
+          cache: "pip"
           cache-dependency-path: |
             requirements.txt
             requirements-dev.txt
@@ -54,3 +55,11 @@ jobs:
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
+
+      - name: Get flyctl
+        if: github.ref == 'refs/heads/main'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to fly
+        if: github.ref == 'refs/heads/main'
+        run: flyctl deploy --remote-only

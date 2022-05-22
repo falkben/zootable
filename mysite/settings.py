@@ -56,6 +56,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_REFERRER_POLICY = "same-origin"
 
+#! Should only be used in a proxied environment
+if os.getenv("PROXY_SSL_HEADER", "false").lower() in ("true", "1", "yes", "y"):
+    # fly.io proxies requests and sets X-Forwarded-Proto
+    # https://fly.io/docs/reference/runtime-environment/#x-forwarded-proto
+    # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # for prod
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
@@ -150,7 +157,7 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 MAX_CONN_AGE = 600
 if "DATABASE_URL" in os.environ:
     DATABASES = {
-        "default": dj_database_url.config(conn_max_age=MAX_CONN_AGE, ssl_require=True)
+        "default": dj_database_url.config(conn_max_age=MAX_CONN_AGE, ssl_require=False)
     }
 else:
     DATABASES = {
