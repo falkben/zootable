@@ -8,6 +8,10 @@ processes = []
 
 [env]
   PORT = "8080"
+  DJANGO_ALLOWED_HOSTS="127.0.0.1 .fly.dev .zootable.com"
+  EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+  SECURE_HSTS_SECONDS="31536000"
+  PROXY_SSL_HEADER="1"
 
 [build]
   dockerfile = "dockerfile"
