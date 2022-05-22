@@ -20,27 +20,15 @@ A working demo can be found [here](https://demo.zootable.com)
 
 ### Docker
 
+#### Build
+
 `docker build --pull --tag zootable .`
 
-```cmd
-docker run --rm -p 8080:8080 \
-  -v $(pwd)/.env:/app/.env \
-  zootable
-```
-
-Debugging:
-
-```cmd
-docker run --rm -it -p 8080:8080 \
-  -v $(pwd)/.env:/app/.env \
-  zootable /bin/bash
-```
-
-### Docker-compose
+#### Docker-compose
 
 Create a `.env` file for configured environment variables
 
-`docker-compose -d up --build` will build and run
+`docker-compose up -d`
 
 To store the volume in a different default location (e.g. not on SD card when running on rpi), change the compose file:
 
@@ -57,6 +45,22 @@ volumes:
 If this is the first time starting the server, init the superuser:
 
 `docker-compose exec web python manage.py createsuperuser`
+
+If you have a local database you'd rather use instead of the docker-compose volume, you can use the following:
+
+```sh
+docker run --rm -p 8080:8080 \
+  -v $(pwd)/.env:/home/appuser/.env \
+  zootable
+```
+
+Debugging:
+
+```sh
+docker run --rm -it -p 8080:8080 \
+  -v $(pwd)/.env:/home/appuser/.env \
+  zootable /bin/bash
+```
 
 ### Local install
 
@@ -134,6 +138,8 @@ npm start
    `pytest --cov=zoo_checks --cov-report=xml`
 
 ## Heroku and database actions
+
+Note: deploys are being moved to fly.io. See [deploy notes](deploy_notes.md) for more information.
 
 ### Setup CLI
 
