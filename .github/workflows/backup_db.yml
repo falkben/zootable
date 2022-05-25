@@ -28,4 +28,6 @@ jobs:
             -e PGPASSWORD=$PGPASSWORD \
             postgres:14-alpine \
             pg_dump -Fc -h localhost -U na_zootable zootable > zootable.dump
+          du -h zootable.dump
+          ls -lah
           kill %1
