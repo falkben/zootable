@@ -1,6 +1,7 @@
 name: Backup database
 
 on:
+  push:
   schedule:
     - cron: "17 3 * * *" # daily
   # Allows running this workflow manually from the Actions tab
