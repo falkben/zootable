@@ -25,7 +25,7 @@ jobs:
           docker run --rm --network host \
             -v $(pwd):$(pwd) \
             -w $(pwd) \
-            -e POSTGRES_PASSWORD=$PGPASSWORD \
+            -e PGPASSWORD=$PGPASSWORD \
             postgres:14-alpine \
             pg_dump -Fc -h localhost -U na_zootable zootable > zootable.dump
           kill %1
