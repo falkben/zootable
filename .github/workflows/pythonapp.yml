@@ -55,6 +55,10 @@ jobs:
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
+          
+      - name: Ensure that we can build the image
+        run: |
+          docker build --pull --tag zootable .
 
       - name: Get flyctl
         if: github.ref == 'refs/heads/main'
