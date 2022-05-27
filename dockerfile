@@ -12,13 +12,16 @@ ENV VIRTUAL_ENV=/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# disable pip warning check
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
 WORKDIR /home/appuser
 
 COPY requirements.txt .
 
 RUN \
-    python -m pip install --no-cache pip -U && \
-    python -m pip install --no-cache -r requirements.txt
+    python -m pip install --no-cache-dir pip -U && \
+    python -m pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
