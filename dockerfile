@@ -20,7 +20,7 @@ WORKDIR /home/appuser
 COPY requirements.txt .
 
 RUN \
-    python -m pip install --no-cache-dir pip -U && \
+    python -m pip install --no-cache-dir pip wheel setuptools -U && \
     python -m pip install --no-cache-dir -r requirements.txt
 
 COPY . .
