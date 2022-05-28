@@ -82,7 +82,7 @@ docker run --rm -it -p 8080:8080 \
   - `createuser --interactive`
   - If don't make superuser, grant permissions to zootable
     - `psql=# grant all privileges on database zootable to zootable;`
-- Edit `/etc/postgresql/12/main/pg_hba.conf` and insert near the top
+- Edit `/etc/postgresql/14/main/pg_hba.conf` and insert near the top
 
   ```cfg
   local   all             zootable                                trust

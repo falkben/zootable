@@ -43,7 +43,7 @@ Dump the database to `latest.dump`:
 note: need to have same version as server version (14.2)
 
 ```sh
-PGPASSWORD=[PASSWORD]
+export PGPASSWORD=[PASSWORD]
 pg_dump -Fc --no-acl --no-owner -h localhost -p 15432 -v -U na_zootable zootable > latest.dump
 ```
 

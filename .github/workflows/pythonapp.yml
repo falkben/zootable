@@ -13,7 +13,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:12
+        image: postgres:14-alpine
         env:
           POSTGRES_USER: zootable
           POSTGRES_PASSWORD: zootable
