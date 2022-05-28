@@ -16,6 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - uses: actions/checkout@v3
+
       - name: Get flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
 
@@ -29,13 +36,6 @@ jobs:
             postgres:14-alpine \
             pg_dump -Fc -h localhost -U na_zootable zootable > zootable.dump
           kill %1
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.9"
-
-      - uses: actions/checkout@v3
 
       - name: upload the db dump to dropbox
         env:
