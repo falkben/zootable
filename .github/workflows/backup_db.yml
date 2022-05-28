@@ -1,7 +1,6 @@
 name: Backup database
 
 on:
-  push: #todo: remove this before merging
   schedule:
     - cron: "17 3 * * *" # daily
   # Allows running this workflow manually from the Actions tab
