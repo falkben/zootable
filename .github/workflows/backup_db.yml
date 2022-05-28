@@ -1,7 +1,7 @@
 name: Backup database
 
 on:
-  push:
+  push: #todo: remove this before merging
   schedule:
     - cron: "17 3 * * *" # daily
   # Allows running this workflow manually from the Actions tab
@@ -28,6 +28,18 @@ jobs:
             -e PGPASSWORD=$PGPASSWORD \
             postgres:14-alpine \
             pg_dump -Fc -h localhost -U na_zootable zootable > zootable.dump
-          du -h zootable.dump
-          ls -lah
           kill %1
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - uses: actions/checkout@v3
+
+      - name: upload the db dump to dropbox
+        env:
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+        run: |
+          pip install dropbox python-dotenv
+          python scripts/uploader.py zootable.dump /zootable.dump
