@@ -181,8 +181,8 @@ django==3.2.13 \
     #   -r requirements.in
     #   django-allauth
     #   django-extensions
-django-allauth==0.50.0 \
-    --hash=sha256:ee3a174e249771caeb1d037e64b2704dd3c56cfec44f2058fae2214b224d35e8
+django-allauth==0.51.0 \
+    --hash=sha256:ca1622733b6faa591580ccd3984042f12d8c79ade93438212de249b7ffb6f91f
     # via -r requirements.in
 django-extensions==3.1.5 \
     --hash=sha256:28e1e1bf49f0e00307ba574d645b0af3564c981a6dfc87209d48cb98f77d0b1a \
