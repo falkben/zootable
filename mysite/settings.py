@@ -192,6 +192,7 @@ LANGUAGE_CODE = "en-us"
 
 USE_I18N = True
 
+# default is True in django>=4.0
 USE_L10N = True
 
 USE_TZ = True
