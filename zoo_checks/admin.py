@@ -39,7 +39,7 @@ class RoleAdmin(admin.ModelAdmin):
     list_display = ("name", "get_enclosures", "get_users")
 
     def get_queryset(self, request):
-        qs = super(RoleAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
         return qs.prefetch_related("users", "enclosures")
 
     def get_users(self, obj):
@@ -144,7 +144,7 @@ class EnclosureAdmin(admin.ModelAdmin):
     inlines = (AnimalInline, GroupInline, RoleEnclosureMembershipInline)
 
     def get_queryset(self, request):
-        qs = super(EnclosureAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
         return qs.prefetch_related("animals", "groups")
 
     def animals(self, obj):
