@@ -75,10 +75,8 @@ def redirect_if_not_permitted(request: HttpRequest, enclosure: Enclosure) -> boo
         request, f"You do not have permissions to access enclosure {enclosure.name}"
     )
     LOGGER.error(
-        (
-            "Insufficient permissions to access enclosure"
-            f" {enclosure.name}, user: {request.user.username}"
-        )
+        "Insufficient permissions to access enclosure"
+        f" {enclosure.name}, user: {request.user.username}"
     )
     return True
 
@@ -921,7 +919,7 @@ def export(request: HttpRequest):
                 )
             )
 
-            enclosure_names = "_".join((enc.slug for enc in enclosures))
+            enclosure_names = "_".join(enc.slug for enc in enclosures)
             start_date_str = start_date.strftime("%Y%m%d")
             end_date_str = end_date.strftime("%Y%m%d")
             response["Content-Disposition"] = (
