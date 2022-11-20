@@ -76,9 +76,9 @@ django-debug-toolbar==3.7.0 \
     --hash=sha256:1e3acad24e3d351ba45c6fa2072e4164820307332a776b16c9f06d1f89503465 \
     --hash=sha256:80de23066b624d3970fd296cf02d61988e5d56c31aa0dc4a428970b46e2883a8
     # via -r requirements-dev.in
-exceptiongroup==1.0.0 \
-    --hash=sha256:2ac84b496be68464a2da60da518af3785fff8b7ec0d090a581604bc870bdee41 \
-    --hash=sha256:affbabf13fb6e98988c38d9c5650e701569fe3c1de3233cfb61c5f33774690ad
+exceptiongroup==1.0.4 \
+    --hash=sha256:542adf9dea4055530d6e1279602fa5cb11dab2395fa650b8674eaec35fc4a828 \
+    --hash=sha256:bd14967b79cd9bdb54d97323216f8fdf533e278df937aa2a90089e7d6e06e5ec
     # via pytest
 freezegun==1.2.2 \
     --hash=sha256:cd22d1ba06941384410cd967d8a99d5ae2442f57dfafeff2fda5de8dc5c05446 \
@@ -118,9 +118,9 @@ pytest-django==4.5.2 \
     --hash=sha256:c60834861933773109334fe5a53e83d1ef4828f2203a1d6a0fa9972f4f75ab3e \
     --hash=sha256:d9076f759bb7c36939dbdd5ae6633c18edfc2902d1a69fdbefd2426b970ce6c2
     # via -r requirements-dev.in
-pytest-sugar==0.9.5 \
-    --hash=sha256:3da42de32ce4e1e95b448d61c92804433f5d4058c0a765096991c2e93d5a289f \
-    --hash=sha256:eea78b6f15b635277d3d90280cd386d8feea1cab0f9be75947a626e8b02b477d
+pytest-sugar==0.9.6 \
+    --hash=sha256:30e5225ed2b3cc988a8a672f8bda0fc37bcd92d62e9273937f061112b3f2186d \
+    --hash=sha256:c4793495f3c32e114f0f5416290946c316eb96ad5a3684dcdadda9267e59b2b8
     # via -r requirements-dev.in
 python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
@@ -147,9 +147,9 @@ sqlparse==0.4.3 \
     #   -c requirements.txt
     #   django
     #   django-debug-toolbar
-termcolor==2.1.0 \
-    --hash=sha256:91dd04fdf661b89d7169cefd35f609b19ca931eb033687eaa647cef1ff177c49 \
-    --hash=sha256:b80df54667ce4f48c03fe35df194f052dc27a541ebbf2544e4d6b47b5d6949c4
+termcolor==2.1.1 \
+    --hash=sha256:67cee2009adc6449c650f6bcf3bdeed00c8ba53a8cda5362733c53e0a39fb70b \
+    --hash=sha256:fa852e957f97252205e105dd55bbc23b419a70fec0085708fc0515e399f304fd
     # via pytest-sugar
 tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
