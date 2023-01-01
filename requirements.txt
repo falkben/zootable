@@ -218,8 +218,8 @@ django==3.2.16 \
     #   dj-database-url
     #   django-allauth
     #   django-extensions
-django-allauth==0.51.0 \
-    --hash=sha256:ca1622733b6faa591580ccd3984042f12d8c79ade93438212de249b7ffb6f91f
+django-allauth==0.52.0 \
+    --hash=sha256:e380661ceafe55734c40102819ae720403027036f28e9f9827f0faeddc24ed5f
     # via -r requirements.in
 django-extensions==3.2.1 \
     --hash=sha256:2a4f4d757be2563cd1ff7cfdf2e57468f5f931cc88b23cf82ca75717aae504a4 \
