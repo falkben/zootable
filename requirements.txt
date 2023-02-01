@@ -320,9 +320,9 @@ oauthlib==3.2.2 \
     --hash=sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca \
     --hash=sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918
     # via requests-oauthlib
-openpyxl==3.0.10 \
-    --hash=sha256:0ab6d25d01799f97a9464630abacbb34aafecdcaa0ef3cba6d6b3499867d0355 \
-    --hash=sha256:e47805627aebcf860edb4edf7987b1309c1b3632f3750538ed962bbcc3bd7449
+openpyxl==3.1.0 \
+    --hash=sha256:24d7d361025d186ba91eff58135d50855cf035a84371b891e58fb6eb5125660f \
+    --hash=sha256:eccedbe1cdd8b2494057e73959b496821141038dbb7eb9266ea59e3f34208231
     # via -r requirements.in
 pandas==1.5.2 \
     --hash=sha256:0183cb04a057cc38fde5244909fca9826d5d57c4a5b7390c0cc3fa7acd9fa883 \
@@ -506,6 +506,10 @@ requests-oauthlib==1.3.1 \
     --hash=sha256:2577c501a2fb8d05a304c09d090d6e47c306fef15809d102b327cf8364bddab5 \
     --hash=sha256:75beac4a47881eeb94d5ea5d6ad31ef88856affe2332b9aafb52c6452ccf0d7a
     # via django-allauth
+setuptools==65.6.0 \
+    --hash=sha256:6211d2f5eddad8757bd0484923ca7c0a6302ebc4ab32ea5e94357176e0ca0840 \
+    --hash=sha256:d1eebf881c6114e51df1664bc2c9133d022f78d12d5f4f665b9191f084e2862d
+    # via gunicorn
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
@@ -653,9 +657,3 @@ whitenoise[brotli]==6.2.0 \
     --hash=sha256:8e9c600a5c18bd17655ef668ad55b5edf6c24ce9bdca5bf607649ca4b1e8e2c2 \
     --hash=sha256:8fa943c6d4cd9e27673b70c21a07b0aa120873901e099cd46cab40f7cc96d567
     # via -r requirements.in
-
-# The following packages are considered to be unsafe in a requirements file:
-setuptools==65.6.0 \
-    --hash=sha256:6211d2f5eddad8757bd0484923ca7c0a6302ebc4ab32ea5e94357176e0ca0840 \
-    --hash=sha256:d1eebf881c6114e51df1664bc2c9133d022f78d12d5f4f665b9191f084e2862d
-    # via gunicorn
