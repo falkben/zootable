@@ -9,13 +9,6 @@ Web app to tally zoo animals. See [zootable.com](https://zootable.com) for infor
 
 This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0.html) license
 
-## Demo
-
-A working demo can be found [here](https://demo.zootable.com)
-
-- username: `demo-user`
-- password: `demo-password`
-
 ## Install
 
 ### Docker
