@@ -15,7 +15,7 @@
   "devDependencies": {
     "browser-sync": "^2.27.7",
     "concurrently": "^6.3.0",
-    "node-sass": "^7.0.1"
+    "node-sass": "^8.0.0"
   },
   "license": "AGPL-3.0-or-later"
 }
