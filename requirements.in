@@ -9,3 +9,4 @@ psycopg2-binary
 python-dotenv
 uvicorn[standard]
 whitenoise[brotli]
+django-browser-reload
