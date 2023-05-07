@@ -99,6 +99,15 @@ docker run --rm -it -p 8080:8080 \
   - Or upload xlsx file from within the app once running
   - Or ingest from a dumped database (see [below](#heroku-and-database-actions) on pulling and loading a database dump from heroku)
 
+#### Watchman
+
+Use the [watchman](https://facebook.github.io/watchman/) service and [pywatchman](https://github.com/facebook/watchman) to reduce CPU load.
+
+1. install watchman (on Ubuntu do not install from Ubuntu supplied package, instead follow [this guide](https://facebook.github.io/watchman/docs/install.html#ubuntu-prebuilt-debs)).
+2. `pywatchman` dependency is in the [requirements-dev.txt](/requirements-dev.txt) and will be installed when using that lock file.
+
+`python manage.py runserver` will use watchman now.
+
 ## Run
 
 Standard

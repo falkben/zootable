@@ -123,6 +123,9 @@ pytz==2023.3 \
     # via
     #   -c requirements.txt
     #   django
+pywatchman==1.4.1 \
+    --hash=sha256:d0047eb275deafb0011eda0a1a815fbd9742478c3d2b5ad6956d300e447dc2f9
+    # via -r requirements-dev.in
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
