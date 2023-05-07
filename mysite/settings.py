@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     # greater consistency between gunicorn and `./manage.py runserver`. See:
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     "whitenoise.runserver_nostatic",
+    "django_browser_reload",
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "allauth",
@@ -119,6 +120,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 # add django-debug-toolbar if installed

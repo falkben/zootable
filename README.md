@@ -90,7 +90,6 @@ docker run --rm -it -p 8080:8080 \
   - `. venv/bin/activate` (or activate.fish)
 - Install
   - `pip install -e .[test]` (this installs pytest)
-  - `npm install` (installs "hot reloading" `browser-sync`)
 - Create `.env` with [required variables](mysite/settings.py)
 - Migrate database forward
   - `python manage.py migrate`
@@ -106,12 +105,6 @@ Standard
 
 ```sh
 python manage.py runserver
-```
-
-or w/ `browser-sync`
-
-```sh
-npm start
 ```
 
 ## Deployment check
@@ -183,8 +176,10 @@ Install `pip-tools` into your local environment (`pip install pip-tools`)
 
 To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
 
-1. `pip-compile --generate-hashes --allow-unsafe`
-2. `pip-compile --generate-hashes --allow-unsafe requirements-dev.in`
+```sh
+pip-compile --generate-hashes --allow-unsafe && \
+  pip-compile --generate-hashes --allow-unsafe requirements-dev.in
+```
 
 *note:* `--allow-unsafe` option allows pinning `setuptools`. Possibly no longer needed.
 
@@ -210,8 +205,3 @@ For dev
 pip install -r requirements.txt -r requirements-dev.txt
 pip install -e .
 ```
-
-### npm
-
-1. `npm install`
-2. `npm audit fix`

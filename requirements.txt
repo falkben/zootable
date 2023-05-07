@@ -276,16 +276,21 @@ dj-database-url==2.0.0 \
     --hash=sha256:9c9e5f7224f62635a787e9cc3c6762c9be2b19541a21e3c08fa573bd01609b4b \
     --hash=sha256:a35a9f0f43775ca6f90d819dc456233ef7bcc76b47377d5d908b75c7eb320624
     # via -r requirements.in
-django==3.2.18 \
-    --hash=sha256:08208dfe892eb64fff073ca743b3b952311104f939e7f6dae954fe72dcc533ba \
-    --hash=sha256:4d492d9024c7b3dfababf49f94511ab6a58e2c9c3c7207786f1ba4eb77750706
+django==3.2.19 \
+    --hash=sha256:031365bae96814da19c10706218c44dff3b654cc4de20a98bd2d29b9bde469f0 \
+    --hash=sha256:21cc991466245d659ab79cb01204f9515690f8dae00e5eabde307f14d24d4d7d
     # via
     #   -r requirements.in
     #   dj-database-url
     #   django-allauth
+    #   django-browser-reload
     #   django-extensions
 django-allauth==0.54.0 \
     --hash=sha256:120e265f802b65738899c6cb627b827fde46a4d03067034c633f516c2adf3e3e
+    # via -r requirements.in
+django-browser-reload==1.8.0 \
+    --hash=sha256:054ef5ce8b80f46e0beda1a3c847becdff51272cad6f2bda607e201a7afe7425 \
+    --hash=sha256:6db7e6c5807fff87e421b53926c50cfa3de0115e438f3c2de6103d3069557adb
     # via -r requirements.in
 django-extensions==3.2.1 \
     --hash=sha256:2a4f4d757be2563cd1ff7cfdf2e57468f5f931cc88b23cf82ca75717aae504a4 \
