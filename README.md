@@ -185,8 +185,10 @@ pip-compile --generate-hashes --allow-unsafe && \
 
 #### Upgrade dependencies
 
-1. `pip-compile --upgrade --generate-hashes --allow-unsafe`
-2. `pip-compile --upgrade --generate-hashes --allow-unsafe requirements-dev.in`
+```sh
+pip-compile --generate-hashes --allow-unsafe --upgrade && \
+  pip-compile --generate-hashes --allow-unsafe requirements-dev.in --upgrade
+```
 
 This updates the lock files while still maintaining constraints in `requirements.in` (or `requirements-dev.in`)
 
