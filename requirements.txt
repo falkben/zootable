@@ -288,9 +288,9 @@ django==3.2.19 \
 django-allauth==0.54.0 \
     --hash=sha256:120e265f802b65738899c6cb627b827fde46a4d03067034c633f516c2adf3e3e
     # via -r requirements.in
-django-browser-reload==1.9.0 \
-    --hash=sha256:4384cccd49580b4d60f3266166462912b771e55e510fdb1a945270862209b799 \
-    --hash=sha256:f8017d33fa8e72e6038f2a6a6e5215d1ff2ce1d2be49957722a0919d5fb1e6e0
+django-browser-reload==1.10.0 \
+    --hash=sha256:7528891a2d231e9fa6b04575154e636d099b03480cd75c571aad97c3c5b9d9b9 \
+    --hash=sha256:a4c72ad7e7c670ce15d9c8e8f649d47c661fd1de383f3e5a0cd9da613b439364
     # via -r requirements.in
 django-extensions==3.2.3 \
     --hash=sha256:44d27919d04e23b3f40231c4ab7af4e61ce832ef46d610cc650d53e68328410a \
