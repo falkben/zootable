@@ -17,11 +17,11 @@ This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0
 
 `docker build --pull --tag zootable .`
 
-#### Docker-compose
+#### Docker compose
 
 Create a `.env` file for configured environment variables
 
-`docker-compose up -d`
+`docker compose up -d`
 
 To store the volume in a different default location (e.g. not on SD card when running on rpi), change the compose file:
 
@@ -37,9 +37,9 @@ volumes:
 
 If this is the first time starting the server, init the superuser:
 
-`docker-compose exec web python manage.py createsuperuser`
+`docker compose exec web python manage.py createsuperuser`
 
-If you have a local database you'd rather use instead of the docker-compose volume, you can use the following:
+If you have a local database you'd rather use instead of the docker compose volume, you can use the following:
 
 ```sh
 docker run --rm -p 8080:8080 \
