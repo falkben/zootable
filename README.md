@@ -106,6 +106,33 @@ Standard
 python manage.py runserver
 ```
 
+## Database actions
+
+### Database download
+
+Proxy postgres server (fly.io) to `localhost`:
+
+```sh
+flyctl proxy 15432:5432 -a zootable-na-db
+```
+
+Dump the database to `latest.dump`:
+
+note: need to have same version as server version (14.2)
+
+```sh
+PGPASSWORD=[PASSWORD] pg_dump -Fc --no-acl --no-owner -h localhost -p 15432 -v -U na_zootable zootable > latest.dump
+```
+
+### Restore database from dump
+
+1. Drop local database before restore (optional):
+   1. `sudo -u postgres psql`
+   2. `DROP DATABASE zootable;`
+   3. `CREATE DATABASE zootable;`
+2. Restore from the dump
+   1. `pg_restore --verbose --clean --no-acl -p 5432 --no-owner -U zootable -d zootable latest.dump`
+
 ## Deployment check
 
 <https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/>
