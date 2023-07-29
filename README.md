@@ -17,11 +17,11 @@ This project is licensed under the [AGPLv3](http://www.gnu.org/licenses/agpl-3.0
 
 `docker build --pull --tag zootable .`
 
-#### Docker-compose
+#### Docker compose
 
 Create a `.env` file for configured environment variables
 
-`docker-compose up -d`
+`docker compose up -d`
 
 To store the volume in a different default location (e.g. not on SD card when running on rpi), change the compose file:
 
@@ -37,9 +37,9 @@ volumes:
 
 If this is the first time starting the server, init the superuser:
 
-`docker-compose exec web python manage.py createsuperuser`
+`docker compose exec web python manage.py createsuperuser`
 
-If you have a local database you'd rather use instead of the docker-compose volume, you can use the following:
+If you have a local database you'd rather use instead of the docker compose volume, you can use the following:
 
 ```sh
 docker run --rm -p 8080:8080 \
@@ -97,7 +97,6 @@ docker run --rm -it -p 8080:8080 \
 - Upload data
   - `python scripts/ingest_xlsx_data.py <DATA.xlsx>`
   - Or upload xlsx file from within the app once running
-  - Or ingest from a dumped database (see [below](#heroku-and-database-actions) on pulling and loading a database dump from heroku)
 
 ## Run
 
@@ -122,49 +121,6 @@ python manage.py runserver
 1. For coverage, coverage settings are in `.coveragerc` and run:
 
    `pytest --cov=zoo_checks --cov-report=xml`
-
-## Heroku and database actions
-
-Note: deploys are being moved to fly.io. See [deploy notes](deploy_notes.md) for more information.
-
-### Setup CLI
-
-1. [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#standalone-installation)
-1. `heroku login`
-
-### Database download
-
-1. `heroku pg:backups:capture -a zootable`
-1. `heroku pg:backups:download -a zootable`
-
-### Local restore database from dump
-
-1. Possibly drop local database before restore:
-
-   1. `sudo -u postgres psql`
-   1. `DROP DATABASE zootable;`
-   1. `CREATE DATABASE zootable;`
-
-1. Command linked in heroku docs had `-h localhost` but that always required password
-
-   `pg_restore --verbose --clean --no-acl --no-owner -U zootable -d zootable latest.dump`
-
-[heroku docs](https://devcenter.heroku.com/articles/heroku-postgres-import-export)
-
-[postgres docs](https://www.postgresql.org/docs/9.1/app-pgrestore.html)
-
-### To clear sessions
-
-1. First log into heroku bash: `heroku run bash -a zootable`
-1. Next clear the sessions: `django-admin clearsessions --settings=mysite.settings`
-
-Documentation on clearing session store: <https://docs.djangoproject.com/en/dev/topics/http/sessions/#clearing-the-session-store>
-
-### Automatic database backups
-
-`heroku pg:backups:schedule DATABASE_URL --at '02:00 America/New_York' --app zootable`
-
-See: <https://devcenter.heroku.com/articles/heroku-postgres-backups#scheduling-backups>
 
 ## Dependencies
 
