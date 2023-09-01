@@ -289,8 +289,8 @@ django==3.2.20 \
     #   django-allauth
     #   django-browser-reload
     #   django-extensions
-django-allauth==0.54.0 \
-    --hash=sha256:120e265f802b65738899c6cb627b827fde46a4d03067034c633f516c2adf3e3e
+django-allauth==0.55.2 \
+    --hash=sha256:7b713c9947f1917e5c1c5a106fd6208d2c2c71435542fec6d60b01fd7bada3a8
     # via -r requirements.in
 django-browser-reload==1.11.0 \
     --hash=sha256:ce9576bd31562fda01dd8fca73e07696a9a1c7138d2aee084abfb7315dc633a4 \
