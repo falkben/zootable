@@ -179,14 +179,14 @@ To upgrade to a new **django** version, edit the `requirements.in` file and then
 
 #### Install into local environment
 
-```command
+```sh
 pip install -r requirements.txt
 pip install -e .
 ```
 
 For dev
 
-```command
+```sh
 pip install -r requirements.txt -r requirements-dev.txt
 pip install -e .
 ```
