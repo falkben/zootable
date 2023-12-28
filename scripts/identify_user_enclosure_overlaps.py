@@ -49,4 +49,3 @@ for users_group in shared_users_set:
     print(", ".join([u.first_name for u in users_group]))
     print(", ".join([e.name for e in enclosure_group]), "\n")
     shared_enclosures_set.add(enclosure_group)
-

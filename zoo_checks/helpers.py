@@ -90,7 +90,6 @@ def set_formset_order(
 
 
 def get_init_spec_count_form(enclosure, enclosure_species, counts):
-
     # dict of counts to easily access
     if counts:
         counts_dict = {cc.species: cc.count for cc in counts}
@@ -107,7 +106,6 @@ def get_init_spec_count_form(enclosure, enclosure_species, counts):
 
 
 def get_init_group_count_form(enclosure_groups, counts):
-
     if counts:
         counts_dict = {cc.group: cc for cc in counts}
     else:

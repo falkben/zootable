@@ -1,17 +1,11 @@
-[tool.isort]
-profile = "black"
-
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "mysite.test_settings"
-testpaths = [
-    "tests"
-]
-python_files = [
-    "tests.py",
-    "test_*.py",
-    "*_tests.py",
-]
+testpaths = ["tests"]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
 
 [tool.coverage.run]
 omit = ["*/migrations/*"]
 source = ["."]
+
+[tool.ruff]
+extend-exclude = ["**/migrations/**"]

@@ -33,7 +33,6 @@ def test_home(client, user_base):
 
 
 def test_home_counts(client, create_many_counts, user_base):
-
     num_enc = 7
     num_anim = 4
     num_species = 5
@@ -85,7 +84,7 @@ def test_count(
 def test_count_todays_date(
     client, user_base, enclosure_base, animal_A, animal_count_A_BAR, group_B
 ):
-    """ whenever you ge the count, it should always have todays date in it """
+    """whenever you ge the count, it should always have todays date in it"""
 
     client.force_login(user_base)
 
@@ -385,7 +384,6 @@ def test_animal_counts(
     user_factory,
     enclosure_base,
 ):
-
     num_counts = 100
 
     rando_user = user_factory("rando")
@@ -556,7 +554,6 @@ def test_confirm_upload():
 
 
 def test_export(client, user_base, enclosure_base, user_factory, caplog):
-
     # GET
 
     # user w/ no enclosures empty list of enclosures
@@ -647,7 +644,6 @@ def test_redirect_if_not_permitted(
 
 
 def test_selected_role(rf_get_factory, role_base):
-
     # test view all query param returns None and clears session
     request = rf_get_factory("/home/?view_all=true")
     request.session["selected_role"] = "role_base"
