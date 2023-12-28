@@ -152,7 +152,6 @@ def species_count_factory(species_base, enclosure_base, user_base):
 
 @pytest.fixture
 def species_base_count(species_count_factory):
-
     # closure
     def _species_base_count(datetimecounted=None):
         if datetimecounted is None:
@@ -198,7 +197,6 @@ def animal_A(animal_factory):
 def animal_B_enc(enclosure_factory, animal_factory):
     # closure
     def _animal_B_enc(enclosure_name):
-
         enc = enclosure_factory(enclosure_name)
         return animal_factory("B_name", "B_id", "F", "111555", enclosure=enc)
 

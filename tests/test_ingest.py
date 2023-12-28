@@ -43,7 +43,6 @@ def test_read_xlsx_data():
 
 
 def test_validate_input():
-
     df = read_xlsx_data(INPUT_ACCESSIONS_BAD)
     with pytest.raises(
         ExcelUploadError, match="Accession numbers should only have 6 characters"
@@ -64,7 +63,6 @@ def test_validate_input():
 
 @pytest.mark.django_db
 def test_create_enclosures():
-
     encl_name = "example_enclosure"
 
     df = pd.DataFrame({"Enclosure": encl_name}, index=[0])
@@ -77,7 +75,6 @@ def test_create_enclosures():
 
 @pytest.mark.django_db
 def test_create_species():
-
     df = read_xlsx_data(INPUT_EXAMPLE)
     create_species(df)
 
