@@ -24,10 +24,10 @@ jobs:
         options: --mount type=tmpfs,destination=/var/lib/postgresql/data --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
@@ -51,7 +51,7 @@ jobs:
           pytest --cov=zoo_checks --cov-report=xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
