@@ -63,12 +63,10 @@ coverage[toml]==7.4.3 \
     --hash=sha256:f6a09b360d67e589236a44f0c39218a8efba2593b6abdccc300a8862cffc2f94 \
     --hash=sha256:fcc66e222cf4c719fe7722a403888b1f5e1682d1679bd780e2b26c18bb648cdc \
     --hash=sha256:fd6545d97c98a192c5ac995d21c894b581f1fd14cf389be90724d21808b657e2
-    # via
-    #   coverage
-    #   pytest-cov
-django==4.2.10 \
-    --hash=sha256:a2d4c4d4ea0b6f0895acde632071aff6400bfc331228fc978b05452a0ff3e9f1 \
-    --hash=sha256:b1260ed381b10a11753c73444408e19869f3241fc45c985cd55a30177c789d13
+    # via pytest-cov
+django==5.0.3 \
+    --hash=sha256:5c7d748ad113a81b2d44750ccc41edc14e933f56581683db548c9257e078cc83 \
+    --hash=sha256:5fb37580dcf4a262f9258c1f4373819aacca906431f505e4688e37f3a99195df
     # via
     #   -c requirements.txt
     #   django-debug-toolbar
