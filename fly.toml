@@ -21,6 +21,10 @@ dockerfile = "dockerfile"
 [experimental]
 auto_rollback = true
 
+[[vm]]
+size = "shared-cpu-2x"
+memory = "512mb"
+
 [[services]]
 internal_port = 8080
 processes = ["app"]
