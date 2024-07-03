@@ -172,11 +172,9 @@ def test_edit_species_count(
 
     # not permitted
     resp = client.get(
-        (
-            "/edit_species_count/"
-            f"{species_base.slug}/{enc_not_permit.name}"
-            f"/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
-        )
+        "/edit_species_count/"
+        f"{species_base.slug}/{enc_not_permit.name}"
+        f"/{yesterday.year}/{yesterday.month}/{yesterday.day}/"
     )
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(resp, "/")
@@ -185,11 +183,9 @@ def test_edit_species_count(
 
     # GET
     resp = client.get(
-        (
-            "/edit_species_count/"
-            f"{species_base.slug}/{enclosure_base.name}/"
-            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
-        )
+        "/edit_species_count/"
+        f"{species_base.slug}/{enclosure_base.name}/"
+        f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
     )
     assert resp.status_code == 200
     assert resp.context["species"] == species_base
@@ -239,11 +235,9 @@ def test_edit_group_count(
 
     # not permitted
     resp = client.get(
-        (
-            "/edit_group_count/"
-            f"{group_not_permit.accession_number}/"
-            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
-        )
+        "/edit_group_count/"
+        f"{group_not_permit.accession_number}/"
+        f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
     )
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(resp, "/")
@@ -252,11 +246,9 @@ def test_edit_group_count(
 
     # GET
     resp = client.get(
-        (
-            "/edit_group_count/"
-            f"{group_B.accession_number}/"
-            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
-        )
+        "/edit_group_count/"
+        f"{group_B.accession_number}/"
+        f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
     )
     assert resp.status_code == 200
     assert resp.context["count"] == count
@@ -323,11 +315,9 @@ def test_edit_animal_count(
 
     # not permitted
     resp = client.get(
-        (
-            "/edit_animal_count/"
-            f"{anim_not_permit.accession_number}/"
-            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
-        )
+        "/edit_animal_count/"
+        f"{anim_not_permit.accession_number}/"
+        f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
     )
     assert resp.status_code == 302
     SimpleTestCase().assertRedirects(resp, "/")
@@ -336,11 +326,9 @@ def test_edit_animal_count(
 
     # GET
     resp = client.get(
-        (
-            "/edit_animal_count/"
-            f"{animal_A.accession_number}/"
-            f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
-        )
+        "/edit_animal_count/"
+        f"{animal_A.accession_number}/"
+        f"{yesterday.year}/{yesterday.month}/{yesterday.day}/"
     )
     assert resp.status_code == 200
     assert resp.context["count"] == count

@@ -61,7 +61,7 @@ docker run --rm -it -p 8080:8080 \
 
 ##### Install postgres
 
-- `sudo apt install postgresql postgresql-contrib libpq-dev python3.11 python3.11-dev`
+- `sudo apt install postgresql postgresql-contrib libpq-dev python3.12 python3.12-dev`
 
 ##### Config postgres
 
@@ -160,8 +160,8 @@ Install `pip-tools` into your local environment (`pip install pip-tools`)
 To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
 
 ```sh
-uv pip compile -o requirements.txt --generate-hashes requirements.in --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --quiet
+uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.12 --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12  --quiet
 ```
 
 *note:* `--allow-unsafe` option allows pinning `setuptools`. Possibly no longer needed.
@@ -169,8 +169,8 @@ uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --q
 #### Upgrade dependencies
 
 ```sh
-uv pip compile -o requirements.txt --generate-hashes requirements.in --upgrade --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --upgrade --quiet
+uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.12 --upgrade --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12 --upgrade --quiet
 ```
 
 This updates the lock files while still maintaining constraints in `requirements.in` (or `requirements-dev.in`)

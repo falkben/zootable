@@ -10,7 +10,7 @@ import os
 import time
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
 
 import dropbox
 from dotenv import load_dotenv
