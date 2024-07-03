@@ -1,5 +1,4 @@
-""" test models """
-
+"""test models"""
 
 import pytest
 from django.utils.timezone import localtime

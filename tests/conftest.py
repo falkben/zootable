@@ -5,7 +5,6 @@ https://docs.pytest.org/en/stable/fixture.html#conftest-py-sharing-fixture-funct
 
 import random
 import string
-from typing import Optional
 
 import pytest
 from django.contrib.messages.storage.fallback import FallbackStorage
@@ -36,7 +35,7 @@ def rf_get_factory(rf, user_base):
     to be set, you need to set them explicitly.
     """
 
-    def _rf_get_factory(url: str, user: Optional[User] = user_base):
+    def _rf_get_factory(url: str, user: User | None = user_base):
         request = rf.get(url)
 
         if user is not None:
@@ -85,7 +84,7 @@ def role_base(user_base):
 @pytest.fixture
 def enclosure_factory(role_base):
     # closure
-    def _enclosure_factory(name, role: Optional[Enclosure] = role_base):
+    def _enclosure_factory(name, role: Enclosure | None = role_base):
         enc = Enclosure.objects.create(name=name)
         if role is not None:
             enc.roles.add(role)

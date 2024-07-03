@@ -3,7 +3,6 @@ script which identifies common permissions between users/enclosures
 prior to adding roles
 """
 
-
 import os
 
 import django  # noqa: E402
