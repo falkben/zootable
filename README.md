@@ -160,8 +160,8 @@ Install `pip-tools` into your local environment (`pip install pip-tools`)
 To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
 
 ```sh
-pip-compile --generate-hashes --allow-unsafe && \
-  pip-compile --generate-hashes --allow-unsafe requirements-dev.in
+uv pip compile -o requirements.txt --generate-hashes requirements.in --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --quiet
 ```
 
 *note:* `--allow-unsafe` option allows pinning `setuptools`. Possibly no longer needed.
@@ -169,8 +169,8 @@ pip-compile --generate-hashes --allow-unsafe && \
 #### Upgrade dependencies
 
 ```sh
-pip-compile --generate-hashes --allow-unsafe --upgrade --quiet && \
-pip-compile --generate-hashes --allow-unsafe requirements-dev.in --upgrade --quiet
+uv pip compile -o requirements.txt --generate-hashes requirements.in --upgrade --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --upgrade --quiet
 ```
 
 This updates the lock files while still maintaining constraints in `requirements.in` (or `requirements-dev.in`)
