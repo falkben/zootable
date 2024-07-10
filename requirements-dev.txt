@@ -6,7 +6,7 @@ asgiref==3.8.1 \
     # via
     #   -c requirements.txt
     #   django
-coverage==7.5.4 \
+coverage[toml]==7.5.4 \
     --hash=sha256:018a12985185038a5b2bcafab04ab833a9a0f2c59995b3cec07e10074c78635f \
     --hash=sha256:02ff6e898197cc1e9fa375581382b72498eb2e6d5fc0b53f03e496cfee3fac6d \
     --hash=sha256:042183de01f8b6d531e10c197f7f0315a61e8d805ab29c5f7b51a01d62782747 \
@@ -60,9 +60,9 @@ coverage==7.5.4 \
     --hash=sha256:e564c2cf45d2f44a9da56f4e3a26b2236504a496eb4cb0ca7221cd4cc7a9aca9 \
     --hash=sha256:ed550e7442f278af76d9d65af48069f1fb84c9f745ae249c1a183c1e9d1b025c
     # via pytest-cov
-django==4.2.13 \
-    --hash=sha256:837e3cf1f6c31347a1396a3f6b65688f2b4bb4a11c580dcb628b5afe527b68a5 \
-    --hash=sha256:a17fcba2aad3fc7d46fdb23215095dbbd64e6174bf4589171e732b18b07e426a
+django==4.2.14 \
+    --hash=sha256:3ec32bc2c616ab02834b9cac93143a7dc1cdcd5b822d78ac95fc20a38c534240 \
+    --hash=sha256:fc6919875a6226c7ffcae1a7d51e0f2ceaf6f160393180818f6c95f51b1e7b96
     # via
     #   -c requirements.txt
     #   django-debug-toolbar
