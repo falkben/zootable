@@ -115,9 +115,9 @@ django==4.2.16 \
 django-allauth==65.0.2 \
     --hash=sha256:6b5b3a7a65b1c28078b6eb0dd234310b58a44e8addfd187dc30437b0b2bc41a5
     # via -r requirements.in
-django-browser-reload==1.15.0 \
-    --hash=sha256:55b72335568b988e3a2beddb1703db6951516355925d3fc9c587f0bbd9e8efaa \
-    --hash=sha256:ed094386c587a95ff4f34a0d302ecd58f15e919784c4c76a97f7cb977446104c
+django-browser-reload==1.17.0 \
+    --hash=sha256:3667939cde0eee1a6d698dbe3b78cf10b573dabc4e711fb7933f1ba91fb98da4 \
+    --hash=sha256:d372c12c1c5962c02279a53cac7e8a020c48f104592c637a06d0768b28d2d6be
     # via -r requirements.in
 django-extensions==3.2.3 \
     --hash=sha256:44d27919d04e23b3f40231c4ab7af4e61ce832ef46d610cc650d53e68328410a \
@@ -447,7 +447,7 @@ tzdata==2024.2 \
     --hash=sha256:7d85cc416e9382e69095b7bdf4afd9e3880418a2413feec7069d533d6b4e31cc \
     --hash=sha256:a48093786cdcde33cad18c2555e8532f34422074448fbc874186f0abd79565cd
     # via pandas
-uvicorn==0.31.0 \
+uvicorn[standard]==0.31.0 \
     --hash=sha256:13bc21373d103859f68fe739608e2eb054a816dea79189bc3ca08ea89a275906 \
     --hash=sha256:cac7be4dd4d891c363cd942160a7b02e69150dcbc7a36be04d5f4af4b17c8ced
     # via -r requirements.in
@@ -657,7 +657,7 @@ websockets==13.1 \
     --hash=sha256:f48c749857f8fb598fb890a75f540e3221d0976ed0bf879cf3c7eef34151acee \
     --hash=sha256:f779498eeec470295a2b1a5d97aa1bc9814ecd25e1eb637bd9d1c73a327387f6
     # via uvicorn
-whitenoise==6.7.0 \
+whitenoise[brotli]==6.7.0 \
     --hash=sha256:58c7a6cd811e275a6c91af22e96e87da0b1109e9a53bb7464116ef4c963bf636 \
     --hash=sha256:a1ae85e01fdc9815d12fa33f17765bc132ed2c54fa76daf9e39e879dd93566f6
     # via -r requirements.in
