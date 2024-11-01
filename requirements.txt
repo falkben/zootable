@@ -99,9 +99,9 @@ click==8.1.7 \
     --hash=sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28 \
     --hash=sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de
     # via uvicorn
-dj-database-url==2.2.0 \
-    --hash=sha256:3e792567b0aa9a4884860af05fe2aa4968071ad351e033b6db632f97ac6db9de \
-    --hash=sha256:9f9b05058ddf888f1e6f840048b8d705ff9395e3b52a07165daa3d8b9360551b
+dj-database-url==2.3.0 \
+    --hash=sha256:ae52e8e634186b57e5a45e445da5dc407a819c2ceed8a53d1fac004cc5288787 \
+    --hash=sha256:bb0d414ba0ac5cd62773ec7f86f8cc378a9dbb00a80884c2fc08cc570452521e
     # via -r requirements.in
 django==4.2.16 \
     --hash=sha256:1ddc333a16fc139fd253035a1606bb24261951bbc3a6ca256717fa06cc41a898 \
@@ -447,7 +447,7 @@ tzdata==2024.2 \
     --hash=sha256:7d85cc416e9382e69095b7bdf4afd9e3880418a2413feec7069d533d6b4e31cc \
     --hash=sha256:a48093786cdcde33cad18c2555e8532f34422074448fbc874186f0abd79565cd
     # via pandas
-uvicorn==0.31.0 \
+uvicorn[standard]==0.31.0 \
     --hash=sha256:13bc21373d103859f68fe739608e2eb054a816dea79189bc3ca08ea89a275906 \
     --hash=sha256:cac7be4dd4d891c363cd942160a7b02e69150dcbc7a36be04d5f4af4b17c8ced
     # via -r requirements.in
@@ -657,7 +657,7 @@ websockets==13.1 \
     --hash=sha256:f48c749857f8fb598fb890a75f540e3221d0976ed0bf879cf3c7eef34151acee \
     --hash=sha256:f779498eeec470295a2b1a5d97aa1bc9814ecd25e1eb637bd9d1c73a327387f6
     # via uvicorn
-whitenoise==6.7.0 \
+whitenoise[brotli]==6.7.0 \
     --hash=sha256:58c7a6cd811e275a6c91af22e96e87da0b1109e9a53bb7464116ef4c963bf636 \
     --hash=sha256:a1ae85e01fdc9815d12fa33f17765bc132ed2c54fa76daf9e39e879dd93566f6
     # via -r requirements.in
