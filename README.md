@@ -86,10 +86,11 @@ docker run --rm -it -p 8080:8080 \
 #### App Setup
 
 - Create & activate virtual environment
-  - `python -m venv venv`
-  - `. venv/bin/activate` (or activate.fish)
+  - `uv venv .venv --seed`
+  - `. .venv/bin/activate`
 - Install
-  - `pip install -e .[test]` (this installs pytest)
+  - `uv pip install -r requirements.txt && uv pip install -r requirements-dev.txt`
+  - `uv pip install -e .`
 - Create `.env` with [required variables](mysite/settings.py)
 - Migrate database forward
   - `python manage.py migrate`
@@ -153,9 +154,7 @@ PGPASSWORD=[PASSWORD] pg_dump -Fc --no-acl --no-owner -h localhost -p 15432 -v -
 
 ### Python dependencies
 
-#### Create a lock file (pip-tools)
-
-Install `pip-tools` into your local environment (`pip install pip-tools`)
+#### Create a lock file
 
 To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
 
@@ -163,8 +162,6 @@ To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`
 uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.12 --quiet && \
 uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12  --quiet
 ```
-
-*note:* `--allow-unsafe` option allows pinning `setuptools`. Possibly no longer needed.
 
 #### Upgrade dependencies
 
@@ -180,13 +177,13 @@ To upgrade to a new **django** version, edit the `requirements.in` file and then
 #### Install into local environment
 
 ```sh
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 ```
 
 For dev
 
 ```sh
-pip install -r requirements.txt -r requirements-dev.txt
-pip install -e .
+uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install -e .
 ```
