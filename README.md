@@ -160,7 +160,7 @@ To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`
 
 ```sh
 uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.12 --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12  --quiet
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12 --quiet
 ```
 
 #### Upgrade dependencies
