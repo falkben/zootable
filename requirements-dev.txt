@@ -71,15 +71,15 @@ coverage==7.8.0 \
     --hash=sha256:f9983d01d7705b2d1f7a95e10bbe4091fabc03a46881a256c2787637b087003f \
     --hash=sha256:fa260de59dfb143af06dcf30c2be0b200bed2a73737a8a59248fcb9fa601ef0f
     # via pytest-cov
-django==4.2.20 \
-    --hash=sha256:213381b6e4405f5c8703fffc29cd719efdf189dec60c67c04f76272b3dc845b9 \
-    --hash=sha256:92bac5b4432a64532abb73b2ac27203f485e40225d2640a7fbef2b62b876e789
+django==4.2.21 \
+    --hash=sha256:1d658c7bf5d31c7d0cac1cab58bc1f822df89255080fec81909256c30e6180b3 \
+    --hash=sha256:b54ac28d6aa964fc7c2f7335138a54d78980232011e0cd2231d04eed393dcb0d
     # via
     #   -c requirements.txt
     #   django-debug-toolbar
-django-debug-toolbar==5.1.0 \
-    --hash=sha256:8a3b9da4aeab8d384a366e20304bd939a451f0242523c5b7b402248ad474eed2 \
-    --hash=sha256:c0591e338ee9603bdfce5aebf8d18ca7341fdbb69595e2b0b34869be5857180e
+django-debug-toolbar==5.2.0 \
+    --hash=sha256:15627f4c2836a9099d795e271e38e8cf5204ccd79d5dbcd748f8a6c284dcd195 \
+    --hash=sha256:9e7f0145e1a1b7d78fcc3b53798686170a5b472d9cf085d88121ff823e900821
     # via -r requirements-dev.in
 freezegun==1.5.1 \
     --hash=sha256:b29dedfcda6d5e8e083ce71b2b542753ad48cfec44037b3fc79702e2980a89e9 \
@@ -89,16 +89,16 @@ iniconfig==2.1.0 \
     --hash=sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7 \
     --hash=sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760
     # via pytest
-packaging==24.2 \
-    --hash=sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759 \
-    --hash=sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f
+packaging==25.0 \
+    --hash=sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484 \
+    --hash=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f
     # via
     #   -c requirements.txt
     #   pytest
     #   pytest-sugar
-pluggy==1.5.0 \
-    --hash=sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1 \
-    --hash=sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669
+pluggy==1.6.0 \
+    --hash=sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3 \
+    --hash=sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746
     # via pytest
 pytest==8.3.5 \
     --hash=sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820 \
@@ -139,7 +139,7 @@ sqlparse==0.5.3 \
     #   -c requirements.txt
     #   django
     #   django-debug-toolbar
-termcolor==3.0.1 \
-    --hash=sha256:a6abd5c6e1284cea2934443ba806e70e5ec8fd2449021be55c280f8a3731b611 \
-    --hash=sha256:da1ed4ec8a5dc5b2e17476d859febdb3cccb612be1c36e64511a6f2485c10c69
+termcolor==3.1.0 \
+    --hash=sha256:591dd26b5c2ce03b9e43f391264626557873ce1d379019786f99b0c2bee140aa \
+    --hash=sha256:6a6dd7fbee581909eeec6a756cff1d7f7c376063b14e4a298dc4980309e55970
     # via pytest-sugar
