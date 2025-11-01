@@ -6,7 +6,7 @@ asgiref==3.10.0 \
     # via
     #   -c requirements.txt
     #   django
-coverage==7.10.7 \
+coverage[toml]==7.10.7 \
     --hash=sha256:03ffc58aacdf65d2a82bbeb1ffe4d01ead4017a21bfd0454983b88ca73af94b9 \
     --hash=sha256:097c1591f5af4496226d5783d036bf6fd6cd0cbc132e071b33861de756efb880 \
     --hash=sha256:0b944ee8459f515f28b851728ad224fa2d068f1513ef6b7ff1efafeb2185f999 \
@@ -118,9 +118,9 @@ django==4.2.25 \
     # via
     #   -c requirements.txt
     #   django-debug-toolbar
-django-debug-toolbar==6.0.0 \
-    --hash=sha256:0cf2cac5c307b77d6e143c914e5c6592df53ffe34642d93929e5ef095ae56841 \
-    --hash=sha256:6eb9fa6f4a5884bf04004700ffb5a44043f1fff38784447fc52c1633448c8c14
+django-debug-toolbar==6.1.0 \
+    --hash=sha256:e214dea4494087e7cebdcea84223819c5eb97f9de3110a3665ad673f0ba98413 \
+    --hash=sha256:e962ec350c9be8bdba918138e975a9cdb193f60ec396af2bb71b769e8e165519
     # via -r requirements-dev.in
 freezegun==1.5.5 \
     --hash=sha256:ac7742a6cc6c25a2c35e9292dfd554b897b517d2dec26891a2e8debf205cb94a \
