@@ -1,6 +1,6 @@
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 
-FROM python:${PYTHON_VERSION}-slim as build
+FROM python:${PYTHON_VERSION}-slim AS build
 
 RUN \
     export DEBIAN_FRONTEND=noninteractive && \

@@ -61,7 +61,7 @@ docker run --rm -it -p 8080:8080 \
 
 ##### Install postgres
 
-- `sudo apt install postgresql postgresql-contrib libpq-dev python3.12 python3.12-dev`
+- `sudo apt install postgresql postgresql-contrib libpq-dev python3.13 python3.13-dev`
 
 ##### Config postgres
 
@@ -159,15 +159,15 @@ PGPASSWORD=[PASSWORD] pg_dump -Fc --no-acl --no-owner -h localhost -p 15432 -v -
 To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
 
 ```sh
-uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.12 --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12 --quiet
+uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.13 --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.13 --quiet
 ```
 
 #### Upgrade dependencies
 
 ```sh
-uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.12 --upgrade --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.12 --upgrade --quiet
+uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.13 --upgrade --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.13 --upgrade --quiet
 ```
 
 This updates the lock files while still maintaining constraints in `requirements.in` (or `requirements-dev.in`)
