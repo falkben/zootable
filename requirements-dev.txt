@@ -100,9 +100,9 @@ coverage==7.13.0 \
     --hash=sha256:fe81055d8c6c9de76d60c94ddea73c290b416e061d40d542b24a5871bad498b7 \
     --hash=sha256:ff45e0cd8451e293b63ced93161e189780baf444119391b3e7d25315060368a6
     # via pytest-cov
-django==4.2.27 \
-    --hash=sha256:b865fbe0f4a3d1ee36594c5efa42b20db3c8bbb10dff0736face1c6e4bda5b92 \
-    --hash=sha256:f393a394053713e7d213984555c5b7d3caeee78b2ccb729888a0774dff6c11a8
+django==5.0.14 \
+    --hash=sha256:29019a5763dbd48da1720d687c3522ef40d1c61be6fb2fad27ed79e9f655bc11 \
+    --hash=sha256:e762bef8629ee704de215ebbd32062b84f4e56327eed412e5544f6f6eb1dfd74
     # via
     #   -c requirements.txt
     #   django-debug-toolbar
