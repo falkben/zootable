@@ -1,7 +1,7 @@
 dj-database-url
 django-allauth
 django-extensions  # using for auto-slug field
-django>=5.0,<5.1
+django>=5.1,<5.2
 gunicorn
 openpyxl
 pandas
