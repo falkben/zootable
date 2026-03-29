@@ -16,13 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.13"
 
@@ -32,13 +32,27 @@ jobs:
       - name: dump the database
         run: |
           flyctl proxy 5432:5432 -a zootable-na-db &
+          PROXY_PID=$!
+
+          # Wait for proxy to be ready
+          sleep 5
+          for i in {1..30}; do
+            if pg_isready -h localhost -U na_zootable -d zootable; then
+              echo "Database proxy is ready"
+              break
+            fi
+            echo "Waiting for database proxy... ($i/30)"
+            sleep 2
+          done
+
           docker run --rm --network host \
             -v $(pwd):$(pwd) \
             -w $(pwd) \
             -e PGPASSWORD=$PGPASSWORD \
             postgres:14-alpine \
             pg_dump -Fc -h localhost -U na_zootable zootable > zootable.dump
-          kill %1
+
+            kill $PROXY_PID || true
 
       - name: upload the db dump to dropbox
         env:
