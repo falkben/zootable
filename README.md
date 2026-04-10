@@ -159,31 +159,27 @@ PGPASSWORD=[PASSWORD] pg_dump -Fc --no-acl --no-owner -h localhost -p 15432 -v -
 To generate compiled dependencies (`requirements.txt` and `requirements-dev.txt`):
 
 ```sh
-uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.13 --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.13 --quiet
+uv pip compile -o requirements.txt --generate-hashes pyproject.toml --quiet && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --quiet
 ```
 
 #### Upgrade dependencies
 
 ```sh
-uv pip compile -o requirements.txt --generate-hashes requirements.in --python-version 3.13 --upgrade --quiet && \
-uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --python-version 3.13 --upgrade --quiet
+uv pip compile -o requirements.txt --generate-hashes pyproject.toml --quiet --upgrade && \
+uv pip compile -o requirements-dev.txt --generate-hashes requirements-dev.in --quiet --upgrade
 ```
 
-This updates the lock files while still maintaining constraints in `requirements.in` (or `requirements-dev.in`)
-
-To upgrade to a new **django** version, edit the `requirements.in` file and then run the upgrade compile command above.
+To upgrade to a new **django** version, edit the `pyproject.toml` file and then run the upgrade compile command above.
 
 #### Install into local environment
 
 ```sh
-uv pip install -r requirements.txt
-uv pip install -e .
+uv pip install -e . -r requirements.txt
 ```
 
 For dev
 
 ```sh
-uv pip install -r requirements.txt -r requirements-dev.txt
-uv pip install -e .
+uv pip install -e . -r requirements.txt -r requirements-dev.txt
 ```

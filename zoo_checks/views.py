@@ -914,8 +914,7 @@ def export(request: HttpRequest):
             # create response object to save the data into
             response = HttpResponse(
                 content_type=(
-                    "application/vnd.openxmlformats-officedocument."
-                    "spreadsheetml.sheet"
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
             )
 
