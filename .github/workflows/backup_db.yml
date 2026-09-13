@@ -49,7 +49,7 @@ jobs:
             -v $(pwd):$(pwd) \
             -w $(pwd) \
             -e PGPASSWORD=$PGPASSWORD \
-            postgres:15-alpine \
+            postgres:16-alpine \
             pg_dump -Fc -h localhost -U na_zootable zootable > zootable.dump
 
             kill $PROXY_PID || true
