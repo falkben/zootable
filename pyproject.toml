@@ -10,7 +10,7 @@ dependencies = [
     "dj-database-url",
     "django-allauth",
     "django-extensions",
-    "django>=5.2,<6",
+    "django>=6.1,<6.2",
     "gunicorn",
     "openpyxl",
     "pandas",
