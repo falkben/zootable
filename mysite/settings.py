@@ -68,19 +68,34 @@ if os.getenv("PROXY_SSL_HEADER", "false").lower() in ("true", "1", "yes", "y"):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # for prod
-EMAIL_BACKEND = os.getenv(
+email_backend = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
-EMAIL_HOST = os.getenv("EMAIL_HOST", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "default")
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "app@zootable.com")
+email_host = os.getenv("EMAIL_HOST", "")
+email_host_password = os.getenv("EMAIL_HOST_PASSWORD", "default")
+email_host_user = os.getenv("EMAIL_HOST_USER", "app@zootable.com")
+
+email_options = {}
+if email_backend == "django.core.mail.backends.smtp.EmailBackend":
+    email_options = {
+        "host": email_host,
+        "password": email_host_password,
+        "use_tls": True,
+        "port": 587,
+        "username": email_host_user,
+    }
+
+MAILERS = {
+    "default": {
+        "BACKEND": email_backend,
+        "OPTIONS": email_options,
+    }
+}
 DEFAULT_FROM_EMAIL = os.getenv(
-    "EMAIL_HOST_USER", "app@zootable.com"
+    "DEFAULT_FROM_EMAIL", email_host_user
 )  # used for all other email
 SERVER_EMAIL = os.getenv(
-    "EMAIL_HOST_USER", "app@zootable.com"
+    "SERVER_EMAIL", email_host_user
 )  # used for email to ADMINS and MANAGERS
 
 # add HSTS (HTTP Strict Transport Security)
@@ -215,18 +230,16 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000  # we were triggering this at default 1000
 
 SITE_ID = 1
 
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*"]
+ACCOUNT_LOGIN_METHODS = {"email", "username"}
 ACCOUNT_SESSION_REMEMBER = True
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_UNIQUE_EMAIL = True
 
 ACCOUNT_SIGNUP_FORM_CLASS = "zoo_checks.forms.SignupForm"
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 if ADMIN_EMAIL is not None:
-    ADMINS = [("admin", ADMIN_EMAIL)]
+    ADMINS = [ADMIN_EMAIL]
 
 LOGGING = {
     "version": 1,
