@@ -20,7 +20,7 @@ dependencies = [
     "whitenoise[brotli]",
     "django-browser-reload",
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.15"
 
 [tool.setuptools.packages]
 find = {}

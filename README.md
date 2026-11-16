@@ -61,7 +61,7 @@ docker run --rm -it -p 8080:8080 \
 
 ##### Install postgres
 
-- `sudo apt install postgresql postgresql-contrib libpq-dev python3.13 python3.13-dev`
+- `sudo apt install postgresql postgresql-contrib libpq-dev python3.15 python3.15-dev`
 
 ##### Config postgres
 
